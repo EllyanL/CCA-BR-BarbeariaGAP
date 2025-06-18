@@ -1,0 +1,25 @@
+<header class="admin-header">
+  <button
+    mat-mini-fab
+    color="secondary"
+    class="admin__logout-button"
+    (click)="logout()"
+    title="Sair"
+  >
+    <img
+      src="assets/images/logout.png"
+      alt="Logout"
+      class="admin__logout-icon"
+      width="30"
+      height="30"
+    />
+  </button>
+</header>
+<div class="admin-container">
+  <h1>Painel de Administração</h1>
+  <button mat-raised-button color="primary" (click)="gerenciarHorariosOficial()">Horários - Oficial</button>
+  <button mat-raised-button color="primary" (click)="gerenciarHorariosGraduado()">Horários - Graduado</button>
+  <button mat-raised-button color="warn" (click)="logout()" style="margin-left: 10px;">Sair</button>
+</div>
+
+<router-outlet></router-outlet>

@@ -1,0 +1,230 @@
+import { Component, Inject, OnInit, Input } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+  import { Militar } from 'src/app/models/militar';
+  import { UserData } from 'src/app/models/userData';
+  import { UserService } from 'src/app/services/user.service';
+  import { AgendamentoService } from 'src/app/services/agendamento.service'; // Adicione o serviço
+  import { Agendamento } from 'src/app/models/agendamento'; // Adicione a interface/modelo
+  import { LoggingService } from 'src/app/services/logging.service';
+
+    @Component({
+      selector: 'app-dialogo-agendamento',
+      template: `
+    <h1 mat-dialog-title class="agendar-corte-dialog__title">Agendar Corte</h1>
+    <div mat-dialog-content class="agendar-corte-dialog__content">
+      <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+      <p class="agendar-corte-dialog__info">
+        Data: <b>{{ data.diaSemana | uppercase }} </b>
+      </p>
+      <p class="agendar-corte-dialog__info">Hora: <b>{{ data.hora }}</b></p>
+      <!-- SARAM -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>SARAM</mat-label>
+        <input
+          matInput
+          [(ngModel)]="militar.saram"
+          maxlength="9"
+          (input)="validateNumericInput($event)"
+          [disabled]="true"
+        />
+      </mat-form-field>
+      <!-- Nome Completo -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Nome Completo</mat-label>
+        <input
+          matInput
+          [(ngModel)]="militar.nomeCompleto"
+          maxlength="50"
+          [disabled]="true"
+        />
+      </mat-form-field>
+      <!-- POSTO/GRADUAÇÃO -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Graduação / Posto</mat-label>
+        <mat-select [(ngModel)]="militar.postoGrad" [disabled]="true">
+          <mat-option *ngFor="let opcao of opcoesPostoGrad" [value]="opcao">
+            {{ opcao }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <!-- NOME DE GUERRA -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Nome de Guerra</mat-label>
+        <input
+          matInput
+          [(ngModel)]="militar.nomeDeGuerra"
+          maxlength="25"
+          [disabled]="true"
+        />
+      </mat-form-field>
+      <!-- EMAIL -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Email</mat-label>
+        <input
+          matInput
+          [(ngModel)]="militar.email"
+          maxlength="50"
+          [disabled]="true"
+        />
+      </mat-form-field>
+      <!-- OM -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Organização Militar (OM)</mat-label>
+        <mat-select [(ngModel)]="militar.om" [disabled]="true">
+          <mat-option *ngFor="let opcao of oms" [value]="opcao">
+            {{ opcao }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <!-- SEÇÃO -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Seção</mat-label>
+        <input
+          matInput
+          [(ngModel)]="militar.secao"
+          maxlength="10"
+          [disabled]="true"
+        />
+      </mat-form-field>
+      <!-- RAMAL -->
+      <mat-form-field class="agendar-corte-dialog__form-field">
+        <mat-label>Ramal</mat-label>
+        <input
+          matInput
+          [(ngModel)]="militar.ramal"
+          maxlength="5"
+          [disabled]="true"
+        />
+      </mat-form-field>
+    </div>
+    <!-- Garantir que mat-dialog-actions aparece apenas uma vez -->
+    <div mat-dialog-actions class="agendar-corte-dialog__actions">
+      <button mat-button (click)="onNoClick()" class="agendar-corte-dialog__button">
+        CANCELAR
+      </button>
+      <button
+        mat-button
+        color="primary"
+        (click)="onSaveClick()"
+        class="agendar-corte-dialog__button"
+      >
+        AGENDAR
+      </button>
+    </div>
+      `,
+      styles: [`
+        .agendar-corte-dialog__form-field {
+          width: 100%;
+        }
+
+        .agendar-corte-dialog__form-field input {
+          text-transform: uppercase;
+        }
+
+        .error-message {
+          color: #f44336;
+          font-weight: bold;
+          margin-bottom: 10px;
+          text-align: center;
+        }
+      `]
+    })
+    export class DialogoAgendamentoComponent implements OnInit {
+      @Input() opcoesPostoGrad?: string[] = [];
+
+      userData: UserData[] = [];
+      militar: Militar = {
+        saram: '',
+        nomeCompleto: '',
+        postoGrad: '',
+        nomeDeGuerra: '',
+        email: '',
+        om: '',
+        categoria: '',
+        secao: '',
+        ramal: '',
+        cpf: '',
+        role: ''
+      };
+      errorMessage: string = "";
+
+      oms: string[] = ['CCA-BR', 'CDCAER', 'CIAER', 'COMGEP',
+                      'COPAC','DIREF', 'DIRENS', 'EMAER',
+                      'OABR','SEFA','CENCIAR','SECPROM',
+                      'ASPAER', 'CECOMSAER', 'GABAER', 'COJAER'];
+
+      constructor(
+        public dialogRef: MatDialogRef<DialogoAgendamentoComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private userService: UserService,
+        private agendamentoService: AgendamentoService,
+        private logger: LoggingService,
+        private snackBar: MatSnackBar
+      ) {}
+
+      ngOnInit(): void {
+        this.opcoesPostoGrad = this.data.opcoesPostoGrad;
+        this.setUserData();
+      }
+
+      setUserData() {
+        this.userService.userData$.subscribe(data => {
+          this.logger.log('Dados recebidos do UserService:', data);
+          this.userData = data;
+          if (this.userData.length > 0) {
+            const user = this.userData[0];
+            this.militar.saram = user.saram || '';
+            this.militar.nomeCompleto = user.nomeCompleto || '';
+            this.militar.postoGrad = user.postoGrad || '';
+            this.militar.nomeDeGuerra = user.nomeDeGuerra || '';
+            this.militar.email = user.email || '';
+            this.militar.om = user.om || '';
+            this.militar.cpf = user.cpf || '';
+            this.militar.secao = user.secao || '';
+            this.militar.ramal = user.ramal || '';
+            
+            // 🚨 CORREÇÃO AQUI
+            this.militar.role = (user.role && user.role.trim() !== '') 
+              ? user.role.toUpperCase() 
+              : this.data.categoria || 'GRADUADO';
+          }
+        });
+      }
+      
+
+      onNoClick(): void {
+        this.dialogRef.close();
+      }
+
+      onSaveClick(): void {
+        const agendamentoData: Agendamento = {
+          data: this.data.data,
+          hora: this.data.hora,
+          diaSemana: this.data.diaSemana,
+          categoria: this.data.categoria
+        };
+        
+
+        this.agendamentoService.createAgendamento(agendamentoData).subscribe(
+          (response: Agendamento) => {
+            this.logger.log('Agendamento criado:', response);
+            this.errorMessage = "";
+            this.militar = response.militar || this.militar;
+            this.snackBar.open('Agendamento salvo com sucesso.', 'OK', { duration: 3000 });
+            this.dialogRef.close(response);
+          },
+          error => {
+            this.logger.error('Erro ao criar agendamento:', error);
+            const message = error.error?.message || 'Erro ao criar agendamento.';
+            this.errorMessage = message;
+            this.snackBar.open(message, 'OK', { duration: 5000 });
+          }
+        );
+      }
+
+      validateNumericInput(event: any): void {
+        const input = event.target as HTMLInputElement;
+        input.value = input.value.replace(/[^0-9]/g, '');
+      }
+    }
