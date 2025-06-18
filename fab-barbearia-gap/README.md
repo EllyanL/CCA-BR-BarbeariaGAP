@@ -1,65 +1,65 @@
-# Aplicação Web para Barbearia do Prédio do Ministério da Aeronáutica  
+# Barbearia GAP
 
-Este projeto é uma aplicação web desenvolvida para gerenciar agendamentos de corte de cabelo na barbearia do prédio do Ministério da Aeronáutica.  
+Aplicação web completa (Angular + Spring Boot) para gerenciamento de
+agendamentos de cortes de cabelo no prédio do Ministério da Aeronáutica.
 
-## 🚀 Como Executar  
+## Visão Geral
+- **Backend**: Spring Boot 3 com PostgreSQL. Usa Flyway para migrações e JWT
+  para autenticação.
+- **Frontend**: Angular 16 com Angular Material.
+- **Integrações**: autenticação via LDAP e consulta ao WebService CCABR.
+- Scripts de inicialização local e build de produção.
 
-### Ambiente de Desenvolvimento  
-Para iniciar o ambiente de desenvolvimento, execute o script abaixo:  
-```sh
-./start-dev.sh
-```  
-- O frontend será iniciado em **http://localhost:4200**  
-- O backend será iniciado em **http://localhost:8080**  
+## Estrutura do Projeto
+fab-barbearia-gap/
+├── backend/ # API Spring Boot
+├── frontend/ # Aplicação Angular
+├── docs/ # Notas e instruções extras
+├── start-dev.sh # Executa backend e frontend em modo dev
+└── build-prod.sh # Gera build Angular e inicia o backend
 
-### Ambiente de Produção  
-Para gerar o build de produção e iniciar a aplicação, utilize o seguinte comando:  
-```sh
-./build-prod.sh
-```  
-Esse script compilará o frontend do Angular e copiará os arquivos gerados para a pasta do backend:  
-```
-/backend/src/main/resources/static/
-```  
-Após isso, o backend será iniciado e servirá o frontend automaticamente.
 
-### Variáveis de Ambiente Necessárias
+## Como Executar
+### Ambiente de Desenvolvimento
+1. Configure as variáveis de ambiente (veja abaixo).
+2. Na raiz do projeto, execute:
+   ```bash
+   ./start-dev.sh
+   O script inicia o backend em http://localhost:8080 e o frontend em http://localhost:4200
 
-A aplicação lê diversas configurações a partir de variáveis de ambiente. Antes de iniciar o backend certifique‑se de definir as seguintes variáveis:
+### Ambiente de Produção
+1. Gere o build Angular e copie os arquivos para o backend:
+    ./build-prod.sh
+    Os arquivos são copiados para backend/src/main/resources/static/ e o backend é iniciado em seguida
 
-| Variável | Descrição |
-|----------|-----------|
-| `DB_URL` | URL de conexão JDBC do banco de dados PostgreSQL |
-| `DB_USERNAME` | Usuário do banco de dados |
-| `DB_PASSWORD` | Senha do banco de dados |
-| `JWT_SECRET` | Chave utilizada para assinar os tokens JWT |
-| `LDAP_BASE` | Base de pesquisa para o servidor LDAP |
-| `LDAP_URL` | URL do servidor LDAP |
-| `WEBSERVICE_API_URL` | URL base do WebService CCABR |
+## Variáveis de Ambiente
+Defina no sistema as seguintes variáveis antes de rodar o backend:
+
+| Variável              | Descrição                               |
+| --------------------- | --------------------------------------- |
+| `DB_URL`              | URL JDBC do banco PostgreSQL            |
+| `DB_USERNAME`         | Usuário do banco                        |
+| `DB_PASSWORD`         | Senha do banco                          |
+| `JWT_SECRET`          | Chave para assinar tokens JWT           |
+| `LDAP_BASE`           | Base de pesquisa do servidor LDAP       |
+| `LDAP_URL`            | URL do servidor LDAP                    |
+| `WEBSERVICE_API_URL`  | URL base do WebService CCABR            |
 | `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |
-| `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService |
+| `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   |
+| :codex-file-citation  |                                         |
 
----  
-📌 **Tecnologias Utilizadas**:  
-- **Frontend**: Angular  
-- **Backend**: Spring Boot  
-- **Banco de Dados**: PostgreSQL  
+Valores de exemplo podem ser vistos em application.properties
 
-### Executando Testes
+## Executando Testes do Frontend
+1. Instale as dependências:
+    cd frontend
+    npm install
 
-Para rodar os testes do Angular, instale as dependências antes de executar o comando:
-```sh
-cd frontend
-npm install
-```
-Se o comando `ng` não estiver disponível, instale o Angular CLI globalmente:
-```sh
-npm install -g @angular/cli
-```
-Após a instalação, rode:
-```sh
-npm test
-```
+2. Caso o comando ng não esteja disponível:
+    npm install -g @angular/cli
 
-#### Documentação
-Notas de desenvolvimento adicionais estão disponíveis na pasta `docs/`.
+3. Execute:
+    npm test
+
+## Documentação
+Informaçães detalhadas sobre regras de agendamento e desenvolvimento estão em docs/ANOTATIONS.md
