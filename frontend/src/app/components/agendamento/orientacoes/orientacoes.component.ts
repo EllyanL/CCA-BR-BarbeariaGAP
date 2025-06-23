@@ -1,0 +1,71 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-orientacoes',
+  template: `
+  <mat-card class="orientacoes-card">
+  <mat-card-header class="orientacoes-card__header">
+    <div mat-card-avatar class="orientacoes-card__header-icon">
+      <mat-icon>info</mat-icon>
+    </div>
+    <mat-card-title class="orientacoes-card__title"
+      >ORIENTAÇÕES DO GAP-BR</mat-card-title
+    >
+  </mat-card-header>
+  <mat-card-content class="orientacoes-card__content">
+    <mat-list class="orientacoes-card__list">
+      <mat-list-item class="orientacoes-card__list-item">
+        <mat-icon matListIcon>event</mat-icon>
+        Só é possível agendar para datas dentro da semana atual (Segunda à
+        Sexta).
+      </mat-list-item>
+      <mat-list-item class="orientacoes-card__list-item">
+        <mat-icon matListIcon>schedule</mat-icon>
+        Só é possível agendar a partir de 09:10 da Segunda.
+      </mat-list-item>
+      <mat-list-item class="orientacoes-card__list-item">
+        <mat-icon matListIcon>repeat</mat-icon>
+        Só é possível marcar uma vez a cada 15 dias.
+      </mat-list-item>
+      <mat-list-item class="orientacoes-card__list-item">
+        <mat-icon matListIcon>access_time</mat-icon>
+        A tolerância é de 10 minutos após o horário marcado.
+      </mat-list-item>
+      <mat-list-item class="orientacoes-card__list-item">
+        <mat-icon matListIcon>assignment</mat-icon>
+        O Atendimento será realizado conforme <b>marcação prévia</b>.
+      </mat-list-item>
+      <mat-list-item class="orientacoes-card__list-item">
+        <mat-icon matListIcon>cancel</mat-icon>
+        Só é possível desmarcar com antecedência mínima de 30min.
+      </mat-list-item>
+    </mat-list>
+  </mat-card-content>
+  <mat-dialog-actions align="end" class="orientacoes-card__actions">
+    <button mat-button [mat-dialog-close]="true" color="primary">Ciente</button>
+  </mat-dialog-actions>
+</mat-card>
+  `,
+  styles: [`
+    .orientacoes-card__header-icon {
+      background-color: #3f51b5;
+      padding: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .orientacoes-card__title{
+      margin-top: 10px;
+    }
+
+    .orientacoes-card__list-item {
+      margin-bottom:10px;
+    }
+
+    .orientacoes-card__header-icon mat-icon {
+      color: white;
+    }
+  `]
+})
+export class OrientacoesComponent { }

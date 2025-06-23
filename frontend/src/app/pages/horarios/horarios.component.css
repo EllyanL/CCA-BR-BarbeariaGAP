@@ -1,0 +1,331 @@
+/* === Container principal === */
+.horarios-container {
+  padding: 1.25rem; /* 20px */
+}
+
+/* === Cartão de horários === */
+.horarios-card {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-inline: 3rem; /* 48px */
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.horarios-card-content {
+  padding: 1.25rem; /* 20px */
+  width: 100%;
+  position: relative;
+}
+
+/* === Seção superior === */
+.top-section {
+  position: relative;
+}
+
+/* === Botões de retorno e logout === */
+.admin__button-container {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.admin__logout-button,
+.admin__return-button {
+  width: 40px;
+  height: 40px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin__logout-button:focus,
+.admin__return-button:focus {
+  outline: 2px solid #3f51b5;
+}
+
+.admin__logout-icon,
+.admin__return-icon {
+  vertical-align: middle;
+  font-size: 1.1rem;
+}
+
+/* === Cabeçalho e layout principal === */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.home-button {
+  margin-right: 10px;
+}
+
+.category-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* === Seções internas === */
+.form-section {
+  flex: 1 1 300px;
+  min-width: 0;
+}
+
+.legenda-section {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* === Ações de horário === */
+.horario-actions {
+  display: flex;
+  gap: 0.625rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.horario-field {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* === Formulário === */
+.form-adicionar-horario {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* === Tabela de horários === */
+.horarios {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  overflow-x: auto;
+}
+
+.horarios-header th {
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #2a4d76;
+  border: 0.2px solid #11599c;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.horarios-header-dia {
+  text-align: center;
+  background-color: #2c4e7a;
+  color: white;
+}
+
+.horarios-body td {
+  text-align: center;
+  padding: 0.75rem;
+  border: 1px dotted #2a4d76;
+}
+
+/* === Colunas e ícones === */
+.horarios-coluna-dia {
+  padding: 0.3125rem !important;
+}
+
+mat-icon {
+  font-size: 1.125rem;
+}
+
+/* === Legenda === */
+.legenda {
+  margin: 0;
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.circulo {
+  width: 20px;
+  height: 20px;
+  border-radius: 20%;
+  margin: 5px;
+}
+
+.circulo.warn {
+  background-color: #f44336; /* Indisponível */
+}
+
+.circulo.primary {
+  background-color: #3f51b5; /* Disponível */
+}
+
+.circulo.accent {
+  background-color: #ffab40; /* Agendado */
+}
+
+/* === Categoria Info === */
+.categoria-info {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* === Botões internos === */
+.horarios-card .botao-hora,
+.horarios-card .botao-hora-disponivel,
+.horarios-card .botao-hora-indisponivel,
+.horarios-card .botao-hora-adicionar,
+.horarios-card .botao-hora-agendado {
+  width: 100%;
+  max-width: 150px;
+  margin: 0 auto;
+  display: block;
+}
+
+.botao-hora-disponivel {
+  background-color: #3f51b5 !important; /* Cor do Angular Material primary */
+  color: white !important;
+}
+
+.botao-hora-adicionar {
+  background-color: green !important; /* Cor do Angular Material primary */
+  color: white !important;
+}
+
+.botao-hora-indisponivel {
+  background-color: #f44336 !important; /* Cor do Angular Material warn */
+  color: white !important;
+}
+
+.botao-hora-agendado {
+  background-color: #ffab40 !important; /* Cor do Angular Material accent */
+  color: white !important;
+  cursor: not-allowed;
+}
+
+/* === Botão de Agendamento === */
+.horarios-botao-container mat-icon-button {
+  width: 40px;
+  height: 40px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  margin-left: 5px;
+}
+
+.horarios-botao-container mat-icon-button:hover {
+  background-color: #d0d0d0;
+}
+
+/* === Cabeçalho geral === */
+.header-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-container span {
+  font-weight: bold;
+}
+
+/* === Responsividade === */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin__button-container {
+    flex-direction: column;
+    top: auto;
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .horarios-card {
+    margin-inline: 1rem;
+  }
+
+  .form-section,
+  .legenda-section {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .horario-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .horario-field {
+    flex: 0 1 200px;
+    max-width: 250px;
+    width: 100%;
+  }
+
+  .horarios-botao-container mat-icon-button {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+.header-content-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 2rem; /* espaçamento entre os elementos */
+  flex-wrap: wrap; /* para responsividade em telas menores */
+  margin-top: 1rem;
+}
+
+.horario-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legenda {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.circulo {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+}
+
+.primary {
+  background-color: #3f51b5;
+}
+
+.warn {
+  background-color: #f44336;
+}
+
+.accent {
+  background-color: #ffab40;
+}

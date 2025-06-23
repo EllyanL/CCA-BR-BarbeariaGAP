@@ -1,0 +1,40 @@
+/* You can add global styles to this file, and also import other style files */
+html,
+body {
+  background-image: url("assets/images/background8.jpg");
+}
+
+.mat-typography {
+  font-family: "Source Sans 3", sans-serif;
+}
+
+/* Modifica o tamanho do texto dos snackbars */
+.mat-mdc-snack-bar-container .mdc-snackbar__label {
+  font-size: 18px !important;
+}
+
+/* Modifica a cor e peso da fonte do botão de fechar dos snackbars */
+.mat-mdc-snack-bar-container .mdc-button__label {
+  color: #4e739e;
+  font-weight: 800;
+}
+
+/* Estilizando a barra de rolagem em navegadores WebKit (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  width: 10px;
+  background-color: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #2a4d76;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
