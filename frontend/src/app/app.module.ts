@@ -34,6 +34,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { NgModule } from '@angular/core';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
+import { CpfMaskDirective } from './directives/cpf-mask.directive';
 import { NotAuthorizedComponent } from './pages/not-authorized/not-authorized.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { OficiaisComponent } from './pages/oficiais/oficiais.component';
@@ -62,6 +63,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     AdminComponent,
     HorariosComponent,
     DialogoDesmarcarComponent,
+    CpfMaskDirective,
   ],
   imports: [
     BrowserModule,

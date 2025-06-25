@@ -44,9 +44,11 @@ export class LoginComponent {
       return;
     }
   
+    const sanitizedCpf = this.cpf.replace(/\D/g, '');
+
     this.isLoading = true;
-  
-    this.authService.login(this.cpf, this.senha, this.rememberMe).subscribe({
+
+    this.authService.login(sanitizedCpf, this.senha, this.rememberMe).subscribe({
       next: (response: LoginResponse) => {
         this.isLoading = false;
 
