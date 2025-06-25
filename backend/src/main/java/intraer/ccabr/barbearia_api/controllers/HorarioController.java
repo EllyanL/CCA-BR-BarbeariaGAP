@@ -102,10 +102,10 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
+                    .body(Map.of("mensagem", "Dados inválidos para indisponibilizar horário."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor: " + e.getMessage()));
+                    .body(Map.of("mensagem", "Erro interno no servidor."));
         }
     }
     @PostMapping("/disponibilizar")
@@ -126,10 +126,10 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
+                    .body(Map.of("mensagem", "Dados inválidos para disponibilizar horário."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro ao disponibilizar horário: " + e.getMessage()));
+                    .body(Map.of("mensagem", "Erro ao disponibilizar horário."));
         }
     }
     @PostMapping("/indisponibilizar/tudo/{dia}")
@@ -140,10 +140,10 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
+                    .body(Map.of("mensagem", "Dados inválidos para indisponibilizar horários."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno: " + e.getMessage()));
+                    .body(Map.of("mensagem", "Erro interno no servidor."));
         }
     }
     @PostMapping("/disponibilizar/tudo/{dia}")
@@ -154,10 +154,10 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
+                    .body(Map.of("mensagem", "Dados inválidos para disponibilizar horários."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno: " + e.getMessage()));
+                    .body(Map.of("mensagem", "Erro interno no servidor."));
         }
     }
     @GetMapping("/categoria/{categoria}")
