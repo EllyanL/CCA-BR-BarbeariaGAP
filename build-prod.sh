@@ -4,7 +4,9 @@ set -e
 
 # Build frontend
 cd frontend
-npm install
+if [ ! -d node_modules ]; then
+  npm ci
+fi
 npx ng build --configuration production
 cd ..
 
