@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap } from 'rxjs/operators';
 
 import { Agendamento } from '../models/agendamento';
@@ -74,28 +74,6 @@ export class HorariosService {
     );
   }
 
-  carregarHorariosDaSemanaPorPeriodo(categoria: string, inicio: string, fim: string): Observable<HorariosPorDia> {
-    const params = new HttpParams().set('inicio', inicio).set('fim', fim);
-    return this.http.get<HorariosPorDia>(`${this.apiUrl}/categoria/${categoria}`, { params }).pipe(
-      map((data: HorariosPorDia) => {
-        const resultado: HorariosPorDia = {};
-        Object.entries(data).forEach(([dia, horarios]) => {
-          if (Array.isArray(horarios)) {
-            resultado[dia] = horarios.map((h: any) => ({
-              horario: h.horario,
-              status: h.status?.toUpperCase() || 'INDISPONIVEL',
-              usuarioId: h.usuarioId
-            }));
-          }
-        });
-        return resultado;
-      }),
-      catchError((error) => {
-        this.logger.error('❌ Erro ao carregar horários da semana:', error);
-        return throwError(() => error);
-      })
-    );
-  }
 
   getHorariosBase(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/base`).pipe(

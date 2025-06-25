@@ -20,7 +20,7 @@ describe('HorariosComponent', () => {
   let authService: jasmine.SpyObj<AuthService>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'carregarHorariosDaSemanaPorPeriodo', 'getHorariosBase']);
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase']);
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
 
