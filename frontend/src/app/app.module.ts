@@ -29,6 +29,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Importação do módulo do spinner
 import { MatSelectModule } from '@angular/material/select';
@@ -87,6 +88,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     MatSnackBarModule,
     MatDialogModule,
     MatListModule,
+    MatSidenavModule,
     MatBadgeModule,
     MatSelectModule,
     MatCheckboxModule,
