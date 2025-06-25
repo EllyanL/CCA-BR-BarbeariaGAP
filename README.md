@@ -46,7 +46,6 @@ Defina no sistema as seguintes variáveis antes de rodar o backend:
 | `WEBSERVICE_API_URL`  | URL base do WebService CCABR            |
 | `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |
 | `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   |
-| :codex-file-citation  |                                         |
 
 Valores de exemplo podem ser vistos em application.properties
 
