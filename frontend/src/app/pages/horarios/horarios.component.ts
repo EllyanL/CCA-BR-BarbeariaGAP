@@ -73,7 +73,11 @@ import { LoggingService } from 'src/app/services/logging.service';
         next: (res) => {
           this.timeOffsetMs = res.timestamp - Date.now();
           if (Math.abs(this.timeOffsetMs) > 60 * 1000) {
-            this.snackBar.open('Atenção: horário do dispositivo diferente do servidor.', 'Ciente', { duration: 5000 });
+            this.snackBar.open(
+              'Horário do dispositivo diferente do servidor. Ajuste a data e hora do aparelho para evitar erros.',
+              'Ciente',
+              { duration: 5000 }
+            );
           }
           this.initAfterTime();
         },
@@ -123,9 +127,17 @@ import { LoggingService } from 'src/app/services/logging.service';
       if (status === 'DISPONIVEL') {
         this.agendarHorario(dia, horario); // Usuário comum tenta agendar
       } else if (status === 'INDISPONIVEL') {
-        this.snackBar.open('Este horário está indisponível.', 'Ciente', { duration: 3000 });
+        this.snackBar.open(
+          'Horário indisponível; provavelmente já reservado ou bloqueado. Escolha outro.',
+          'Ciente',
+          { duration: 3000 }
+        );
       } else if (status === 'AGENDADO') {
-        this.snackBar.open('Horário já agendado.', 'Ciente', { duration: 3000 });
+        this.snackBar.open(
+          'Você já possui agendamento neste horário. Desmarque o atual para escolher outro.',
+          'Ciente',
+          { duration: 3000 }
+        );
       }
     }
     
@@ -139,9 +151,13 @@ import { LoggingService } from 'src/app/services/logging.service';
           },
           error: (error: any) => {
             this.logger.error('Erro ao carregar horários da semana:', error);
-            this.snackBar.open('Erro ao carregar horários da semana.', 'Ciente', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              'Não foi possível carregar os horários desta semana. Verifique a conexão e tente novamente.',
+              'Ciente',
+              {
+                duration: 3000,
+              }
+            );
           },
         });
     }
@@ -154,9 +170,13 @@ import { LoggingService } from 'src/app/services/logging.service';
         },
         (error: any) => {
           this.logger.error('Erro ao carregar os horários base:', error);
-          this.snackBar.open('Erro ao carregar os horários base.', 'Ciente', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            'Não foi possível carregar os horários padrão. Recarregue a página.',
+            'Ciente',
+            {
+              duration: 3000,
+            }
+          );
         }
       );
     }
@@ -195,7 +215,7 @@ import { LoggingService } from 'src/app/services/logging.service';
               this.ordenarHorarios();
               this.carregarHorariosDaSemana();
               this.snackBar.open(
-                'Horário base adicionado: ' + horarioSalvo.horario,
+                'Horário base ' + horarioSalvo.horario + ' cadastrado com sucesso.',
                 'Ciente',
                 { duration: 3000 }
               );
@@ -205,7 +225,7 @@ import { LoggingService } from 'src/app/services/logging.service';
             error: (error: any) => {
               this.logger.error('Erro ao adicionar horário:', error);
               this.snackBar.open(
-                error.message || 'Erro ao adicionar horário.',
+                'Não foi possível adicionar o horário. Verifique se já existe e tente novamente.',
                 'Ciente',
                 { duration: 5000 }
               );
@@ -213,7 +233,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           });
       } else {
         this.snackBar.open(
-          'Por favor, selecione um horário válido da lista (ex.: 08:15).',
+          'Selecione um horário válido da lista (ex.: 08:15) antes de confirmar.',
           'Ciente',
           { duration: 3000 }
         );
@@ -260,9 +280,13 @@ import { LoggingService } from 'src/app/services/logging.service';
     
               this.ordenarHorarios();
               this.horariosService.atualizarHorarios(this.horariosPorDia);
-              this.snackBar.open(`Horário ${horario} removido de ${dia}`, 'Ciente', { duration: 3000 });
+              this.snackBar.open(
+                `Horário ${horario} removido do dia ${dia}.`,
+                'Ciente',
+                { duration: 3000 }
+              );
             } else {
-              this.snackBar.open('Horário não encontrado.', 'Ciente', { duration: 3000 });
+              this.snackBar.open('Horário não encontrado para remoção.', 'Ciente', { duration: 3000 });
             }
     
             this.horarioPersonalizado = '';
@@ -271,7 +295,11 @@ import { LoggingService } from 'src/app/services/logging.service';
           },
           error: (error: any) => {
             this.logger.error('Erro ao remover horário:', error);
-            this.snackBar.open(error.message || 'Erro ao remover horário.', 'Ciente', { duration: 5000 });
+            this.snackBar.open(
+              'Não foi possível remover o horário. Tente novamente.',
+              'Ciente',
+              { duration: 5000 }
+            );
           }
         });
       }
@@ -295,7 +323,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       const isAdmin = usuario?.role?.toUpperCase() === 'ADMIN';
       if (!isAdmin) {
         this.snackBar.open(
-          'Apenas administradores podem disponibilizar horários.',
+          'Somente administradores podem disponibilizar horários. Solicite acesso ao administrador.',
           'Ciente',
           { duration: 3000 }
         );
@@ -311,7 +339,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           },
           error: (error) => {
             this.snackBar.open(
-              error.message || 'Erro ao disponibilizar horário.',
+              'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.',
               'Ciente',
               { duration: 5000 }
             );
@@ -334,7 +362,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           error: (error) => {
             this.logger.error('Erro ao indisponibilizar horário:', error);
             this.snackBar.open(
-              error.message || 'Erro ao indisponibilizar horário.',
+              'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.',
               'Ciente',
               { duration: 5000 }
             );
@@ -358,19 +386,23 @@ import { LoggingService } from 'src/app/services/logging.service';
             this.ordenarHorarios();
           }
     
-          this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: 3000 });
+          this.snackBar.open(`Horário ${horario} adicionado ao dia ${dia}.`, 'Ciente', { duration: 3000 });
           this.horariosService.atualizarHorarios(this.horariosPorDia);
         },
         error: (error) => {
           this.logger.error('Erro ao adicionar horário individual:', error);
-          this.snackBar.open(error.message || 'Erro ao adicionar horário.', 'Ciente', { duration: 5000 });
+          this.snackBar.open(
+            'Falha ao adicionar horário. Verifique os dados e tente novamente.',
+            'Ciente',
+            { duration: 5000 }
+          );
         }
       });
     } 
     
     removerHorarioBase(): void {
       if (!this.diaSelecionado || !this.horarioPersonalizado) {
-        this.snackBar.open('Selecione o dia e horário para remover.', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: 3000 });
         return;
       }
     
@@ -382,7 +414,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           },
           error: (err) => {
             this.logger.error('Erro ao remover horário:', err);
-            this.snackBar.open('Erro ao remover horário.', 'Ciente', { duration: 3000 });
+            this.snackBar.open('Falha ao remover o horário. Tente novamente.', 'Ciente', { duration: 3000 });
           }
         });
     }
@@ -445,14 +477,14 @@ import { LoggingService } from 'src/app/services/logging.service';
             // Atualize os horários do componente com a resposta
             this.carregarHorariosDaSemana();
             this.snackBar.open(
-              `Dia ${dia} indisponibilizado com sucesso`,
+              `Dia ${dia} marcado como indisponível`,
               'Ciente',
               { duration: 3000 }
             );
           },
           error: (error) => {
             this.snackBar.open(
-              `Erro ao indisponibilizar: ${error.message}`,
+              'Falha ao indisponibilizar o dia. Tente novamente.',
               'Ciente',
               { duration: 3000 }
             );
@@ -480,7 +512,7 @@ import { LoggingService } from 'src/app/services/logging.service';
             );
             this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.snackBar.open(
-              `Dia ${dia} disponibilizado para ${this.categoriaSelecionada}`,
+              `Dia ${dia} liberado para ${this.categoriaSelecionada}`,
               'Ciente',
               { duration: 3000 }
             );
@@ -488,7 +520,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           },
           error: (error) => {
             this.snackBar.open(
-              'Erro ao disponibilizar dia: ' + error.message,
+              'Falha ao disponibilizar o dia. Verifique a conexão e tente novamente.',
               'Ciente',
               { duration: 5000 }
             );
@@ -525,9 +557,13 @@ import { LoggingService } from 'src/app/services/logging.service';
         },
         error: (error) => {
           this.logger.error('Erro ao carregar agendamentos:', error);
-          this.snackBar.open('Erro ao carregar agendamentos.', 'Ciente', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            'Não foi possível carregar seus agendamentos. Atualize a página.',
+            'Ciente',
+            {
+              duration: 3000,
+            }
+          );
         }
       });
     }
@@ -543,7 +579,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       const militarAutenticado = this.authService.getUsuarioAutenticado();
       if (!militarAutenticado) {
         this.snackBar.open(
-          'Erro: Dados do usuário não encontrados. Faça login novamente.',
+          'Não foi possível localizar seus dados. Faça login novamente.',
           'Ciente',
           { duration: 5000 }
         );
@@ -569,7 +605,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     
       const usuario = this.authService.getUsuarioAutenticado();
       if (!usuario) {
-        this.snackBar.open('Erro: Dados do usuário não encontrados.', 'Ciente', { duration: 5000 });
+        this.snackBar.open('Não foi possível encontrar seus dados de usuário. Faça login novamente.', 'Ciente', { duration: 5000 });
         this.authService.logout();
         this.router.navigate(['/auth/login']);
         return;
@@ -611,8 +647,11 @@ import { LoggingService } from 'src/app/services/logging.service';
         },
         error: (err) => {
           this.logger.error('Erro ao agendar:', err);
-          const msg = err?.error?.message || 'Erro ao agendar horário.';
-          this.snackBar.open(msg, 'Ciente', { duration: 5000 });
+          this.snackBar.open(
+            'Não foi possível realizar o agendamento. Tente novamente.',
+            'Ciente',
+            { duration: 5000 }
+          );
         }
       });
     }
@@ -666,7 +705,7 @@ import { LoggingService } from 'src/app/services/logging.service';
         },
         error: (error) => {
           this.logger.error('Erro ao desmarcar agendamento:', error);
-          this.snackBar.open('Erro ao desmarcar agendamento.', 'Ciente', { duration: 5000 });
+          this.snackBar.open('Não foi possível desmarcar o agendamento. Tente novamente.', 'Ciente', { duration: 5000 });
         }
       });
     }
