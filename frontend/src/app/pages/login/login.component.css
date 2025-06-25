@@ -16,7 +16,7 @@
 }
 
 .image-overlay {
-  background-color: rgba(42, 77, 118, 0.7);
+  background-color: rgba(33, 150, 243, 0.7);
   padding: 2rem;
   border-radius: 8px;
   text-align: center;
@@ -50,16 +50,16 @@ mat-form-field {
 .login-button {
   width: 100%;
   margin-top: 1em;
-  background-color: #2a4d76;
+  background-color: #2196f3;
   color: #ffffff;
 }
 
 .login-button:hover {
-  background-color: royalblue;
+  background-color: #1976d2;
 }
 
 h1, h2 {
-  color: #2a4d76;
+  color: #2196f3;
 }
 
 .loading-spinner {

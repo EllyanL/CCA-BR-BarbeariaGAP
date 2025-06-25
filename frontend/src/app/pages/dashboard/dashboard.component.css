@@ -1,11 +1,11 @@
 .dashboard-container {
   padding: 20px;
-  color: #eceff1;
+  color: #333333;
 }
 
 .dashboard-title {
   margin-bottom: 1rem;
-  color: #90caf9;
+  color: #1976d2;
 }
 
 .dashboard-table {
@@ -21,8 +21,8 @@
 
 .dashboard-card {
   flex: 1 1 200px;
-  background: #37474f;
-  color: #eceff1;
+  background: #ffffff;
+  color: #333333;
 }
 
 .badge-placeholder {
