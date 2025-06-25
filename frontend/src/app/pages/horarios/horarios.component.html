@@ -57,6 +57,10 @@
                 [disabled]="!horarioValido || !horarioPersonalizado">
                 Remover
               </button>
+              <button mat-raised-button color="accent" (click)="adicionarHorarioDia()"
+                [disabled]="!horarioValido || !horarioPersonalizado">
+                Disponibilizar horário
+              </button>
             </div>
           </div>
 

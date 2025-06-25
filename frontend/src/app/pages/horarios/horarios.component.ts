@@ -256,50 +256,21 @@ import { LoggingService } from 'src/app/services/logging.service';
     adicionarHorarioDia(): void {
       if (this.horarioValido && this.horarioPersonalizado) {
         const horario = this.horarioPersonalizado;
-        const dia = this.diaSelecionado; // Certifique-se que esse valor está sendo capturado corretamente
+        const dia = this.diaSelecionado;
         const categoria = this.categoriaSelecionada;
-    
-        this.horariosService.removerHorarioBase(horario, dia, categoria).subscribe({
-          next: (sucesso: boolean) => {
-            if (sucesso) {
-              // Atualiza localmente o horário removido
-              if (this.horariosPorDia[dia]) {
-                this.horariosPorDia[dia] = this.horariosPorDia[dia].filter(h => h.horario !== horario);
-              }
-    
-              // Verifica se o horário ainda existe em outros dias
-              const aindaExiste = Object.keys(this.horariosPorDia).some(outroDia =>
-                this.horariosPorDia[outroDia].some(h => h.horario === horario)
-              );
-    
-              if (!aindaExiste) {
-                // Remove da lista base, pois sumiu de todos os dias
-                const index = this.horariosBaseSemana.indexOf(horario);
-                if (index !== -1) this.horariosBaseSemana.splice(index, 1);
-              }
-    
-              this.ordenarHorarios();
-              this.horariosService.atualizarHorarios(this.horariosPorDia);
-              this.snackBar.open(
-                `Horário ${horario} removido do dia ${dia}.`,
-                'Ciente',
-                { duration: 3000 }
-              );
-            } else {
-              this.snackBar.open('Horário não encontrado para remoção.', 'Ciente', { duration: 3000 });
-            }
-    
+
+        this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
+          next: () => {
+            this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: 3000 });
+            this.carregarHorariosDaSemana();
+            this.carregarHorariosBase();
             this.horarioPersonalizado = '';
             this.horarioValido = false;
             this.cdr.detectChanges();
           },
-          error: (error: any) => {
-            this.logger.error('Erro ao remover horário:', error);
-            this.snackBar.open(
-              'Não foi possível remover o horário. Tente novamente.',
-              'Ciente',
-              { duration: 5000 }
-            );
+          error: (err) => {
+            this.logger.error('Erro ao adicionar horário no dia:', err);
+            this.snackBar.open(err.message || 'Erro ao adicionar horário.', 'Ciente', { duration: 5000 });
           }
         });
       }
