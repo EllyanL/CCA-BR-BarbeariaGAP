@@ -49,6 +49,8 @@ import { LoggingService } from 'src/app/services/logging.service';
     categoriaSelecionada: string = 'GRADUADO';
     cpfUsuario: string = '';
     timeOffsetMs: number = 0;
+    dataInicioSemana: Date | null = null;
+    dataFimSemana: Date | null = null;
     private userDataSubscription?: Subscription;
 
     constructor(
@@ -681,15 +683,49 @@ import { LoggingService } from 'src/app/services/logging.service';
       });
     }
     
-    converterParaDataISO(diaSemanaComData: string): string {
-      const partes = diaSemanaComData.split(' - ');
-      if (partes.length < 2) return '';
-      const [_, dataStr] = partes;
-      const [dia, mes] = dataStr.split('/').map(Number);
-      const anoAtual = new Date().getFullYear();
-      const data = new Date(anoAtual, mes - 1, dia);
-      return data.toISOString().split('T')[0];
+  converterParaDataISO(diaSemanaComData: string): string {
+    const partes = diaSemanaComData.split(' - ');
+    if (partes.length < 2) return '';
+    const [_, dataStr] = partes;
+    const [dia, mes] = dataStr.split('/').map(Number);
+    const anoAtual = new Date().getFullYear();
+    const data = new Date(anoAtual, mes - 1, dia);
+    return data.toISOString().split('T')[0];
+  }
+
+  private formatarDataISO(date: Date): string {
+    return date.toISOString().split('T')[0];
+  }
+
+  onDateRangeChange(): void {
+    if (this.dataInicioSemana && this.dataFimSemana) {
+      this.buscarHorariosSemanaSelecionada();
     }
+  }
+
+  buscarHorariosSemanaSelecionada(): void {
+    if (!this.dataInicioSemana || !this.dataFimSemana) {
+      return;
+    }
+    const inicio = this.formatarDataISO(this.dataInicioSemana);
+    const fim = this.formatarDataISO(this.dataFimSemana);
+    this.horariosService
+      .carregarHorariosDaSemanaPorPeriodo(this.categoriaSelecionada, inicio, fim)
+      .subscribe({
+        next: (horarios: HorariosPorDia) => {
+          this.horariosPorDia = horarios;
+          this.cdr.detectChanges();
+        },
+        error: (error: any) => {
+          this.logger.error('Erro ao carregar horários da semana:', error);
+          this.snackBar.open(
+            'Não foi possível carregar os horários desta semana.',
+            'Ciente',
+            { duration: 3000 }
+          );
+        },
+      });
+  }
 
   abrirModalAgendamento(agendamento: Agendamento) {
     const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
