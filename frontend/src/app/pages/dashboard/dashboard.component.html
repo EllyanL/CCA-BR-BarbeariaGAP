@@ -1,0 +1,38 @@
+<div class="dashboard-container">
+  <h1 class="dashboard-title">Dashboard</h1>
+
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 dashboard-table">
+    <ng-container matColumnDef="position">
+      <th mat-header-cell *matHeaderCellDef>No.</th>
+      <td mat-cell *matCellDef="let element">{{ element.position }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Nome</th>
+      <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="weight">
+      <th mat-header-cell *matHeaderCellDef>Peso</th>
+      <td mat-cell *matCellDef="let element">{{ element.weight }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="symbol">
+      <th mat-header-cell *matHeaderCellDef>Símbolo</th>
+      <td mat-cell *matCellDef="let element">{{ element.symbol }}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <div class="dashboard-cards">
+    <mat-card class="dashboard-card" *ngFor="let card of cards">
+      <mat-card-title>{{ card.title }}</mat-card-title>
+      <mat-card-content>
+        {{ card.content }}
+        <span matBadge="{{ card.badge }}" matBadgeColor="accent" class="badge-placeholder"></span>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

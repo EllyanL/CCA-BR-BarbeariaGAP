@@ -68,10 +68,8 @@ export class LoginComponent {
   }
 
   private redirectUser(response: LoginResponse): void {
-    const usuario = this.authService.getUsuarioAutenticado();
     const role = response.role?.toUpperCase() || '';
-    const postoGrad = response.postoGrad || ''; // Usado para determinar a rota, se necessário
-    const om = response.om || ''; // Para validação de organização militar
+    const om = response.om || '';
 
     // Validação da Organização Militar
     if (!this.isAuthorizedOM(om)) {
@@ -79,25 +77,11 @@ export class LoginComponent {
       return;
     }
 
-    let redirectUrl = '/not-authorized';
-    if (role === 'ADMIN') {
-      redirectUrl = '/admin';
-    } else {
-      // Se role não for ADMIN, usar postoGrad para determinar a rota
-      redirectUrl = this.determineRoute(postoGrad);
-    }
-
+    const redirectUrl = role === 'ADMIN' ? '/admin' : '/dashboard';
     this.logger.log('Redirecionando para:', redirectUrl);
     this.router.navigate([redirectUrl]);
   }
 
-  private determineRoute(postoGrad: string): string {
-    if (this.postos.includes(postoGrad)) {
-      return '/oficiais';
-    } else {
-      return '/graduados';
-    }
-  }
 
   private isAuthorizedOM(om: string): boolean {
     return this.omsMinisterio.includes(om.toUpperCase().trim());
