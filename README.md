@@ -38,6 +38,7 @@ Defina no sistema as seguintes variáveis antes de rodar o backend:
 | Variável              | Descrição                               |
 | --------------------- | --------------------------------------- |
 | `DB_URL`              | URL JDBC do banco PostgreSQL            |
+| `DB_DRIVER_CLASS`     | Classe do driver JDBC (opcional)        |
 | `DB_USERNAME`         | Usuário do banco                        |
 | `DB_PASSWORD`         | Senha do banco                          |
 | `JWT_SECRET`          | Chave para assinar tokens JWT           |
