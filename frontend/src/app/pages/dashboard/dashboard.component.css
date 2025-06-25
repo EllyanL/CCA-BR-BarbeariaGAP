@@ -1,0 +1,30 @@
+.dashboard-container {
+  padding: 20px;
+  color: #eceff1;
+}
+
+.dashboard-title {
+  margin-bottom: 1rem;
+  color: #90caf9;
+}
+
+.dashboard-table {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.dashboard-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.dashboard-card {
+  flex: 1 1 200px;
+  background: #37474f;
+  color: #eceff1;
+}
+
+.badge-placeholder {
+  margin-left: 8px;
+}
