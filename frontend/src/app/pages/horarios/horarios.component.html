@@ -28,6 +28,19 @@
           <span>Só é possível marcar uma vez a cada 15 dias.</span>
         </div>
 
+        <!-- Seletor de semana -->
+        <div class="week-picker">
+          <mat-form-field appearance="fill">
+            <mat-label>Semana</mat-label>
+            <mat-date-range-input [rangePicker]="picker" (dateChange)="onDateRangeChange()">
+              <input matStartDate placeholder="Início" [(ngModel)]="dataInicioSemana">
+              <input matEndDate placeholder="Fim" [(ngModel)]="dataFimSemana">
+            </mat-date-range-input>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+          </mat-form-field>
+        </div>
+
       <div class="top-section">
         <div class="header-content-horizontal">
           <!-- Input + botões -->
