@@ -349,3 +349,21 @@ mat-icon {
   color: #90caf9;
   margin: 0 0 1rem 0;
 }
+
+/* === Painel de Informações === */
+.info-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #3f51b5;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.info-panel mat-icon {
+  color: white;
+  font-size: 1rem;
+}
