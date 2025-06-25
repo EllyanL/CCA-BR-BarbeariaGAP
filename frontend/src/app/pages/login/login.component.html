@@ -1,0 +1,31 @@
+<div class="login-logo">
+  <img src="assets/images/gladio-3d-fab.png" alt="Gládio Alado" />
+</div>
+<div class="login-container" [@slide]>
+  <div class="login-form">
+    <h1><b>LOGIN ÚNICO</b></h1>
+    <form (ngSubmit)="onLogin()">
+      <mat-form-field appearance="fill">
+        <mat-label>CPF</mat-label>
+        <input matInput type="text" id="cpf" name="cpf" [(ngModel)]="cpf" required maxlength="11" pattern="[0-9]*" />
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Senha</mat-label>
+        <input matInput [(ngModel)]="senha" [type]="isPasswordVisible ? 'text' : 'password'" id="senha" name="senha" required />
+        <div mat-icon-button matSuffix (click)="togglePasswordVisibility()" [attr.aria-label]="isPasswordVisible ? 'Ocultar senha' : 'Mostrar senha'" style="padding: 10; min-width: 0; height: 30px;">
+          <mat-icon>{{ isPasswordVisible ? 'visibility' : 'visibility_off' }}</mat-icon>
+        </div>
+      </mat-form-field>
+      <mat-checkbox [(ngModel)]="rememberMe" name="rememberMe" color="primary">Lembrar acesso</mat-checkbox>
+      <button mat-raised-button class="mb-2" type="submit" color="primary">ENTRAR</button>
+
+      <div class="loading-spinner" *ngIf="isLoading">
+        <mat-spinner [diameter]="100" [strokeWidth]="15" color="primary"></mat-spinner>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>
