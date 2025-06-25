@@ -5,7 +5,7 @@ set -e
 # Start backend
 (
   cd backend
-  ./mvnw spring-boot:run
+  SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
 ) &
 backend_pid=$!
 

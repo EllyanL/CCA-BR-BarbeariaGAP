@@ -26,11 +26,13 @@ fab-barbearia-gap/
    ```bash
    ./start-dev.sh
    O script inicia o backend em http://localhost:8080 e o frontend em http://localhost:4200
+   (o perfil `dev` é definido automaticamente)
 
 ### Ambiente de Produção
 1. Gere o build Angular e copie os arquivos para o backend:
     ./build-prod.sh
     Os arquivos são copiados para backend/src/main/resources/static/ e o backend é iniciado em seguida
+    (o perfil `prod` é definido automaticamente)
 
 ## Variáveis de Ambiente
 Defina no sistema as seguintes variáveis antes de rodar o backend:
@@ -48,7 +50,7 @@ Defina no sistema as seguintes variáveis antes de rodar o backend:
 | `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |
 | `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   |
 
-Valores de exemplo podem ser vistos em application.properties
+Valores de exemplo podem ser vistos em `backend/src/main/resources/application-dev.properties`
 
 ## Executando Testes do Frontend
 1. Instale as dependências:
