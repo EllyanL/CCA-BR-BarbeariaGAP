@@ -9,7 +9,6 @@ import {
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UserService } from 'src/app/services/user.service';
@@ -49,8 +48,6 @@ import { LoggingService } from 'src/app/services/logging.service';
     categoriaSelecionada: string = 'GRADUADO';
     cpfUsuario: string = '';
     timeOffsetMs: number = 0;
-    dataInicioSemana: Date | null = null;
-    dataFimSemana: Date | null = null;
     private userDataSubscription?: Subscription;
 
     constructor(
@@ -693,39 +690,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     return data.toISOString().split('T')[0];
   }
 
-  private formatarDataISO(date: Date): string {
-    return date.toISOString().split('T')[0];
-  }
 
-  onDateRangeChange(): void {
-    if (this.dataInicioSemana && this.dataFimSemana) {
-      this.buscarHorariosSemanaSelecionada();
-    }
-  }
-
-  buscarHorariosSemanaSelecionada(): void {
-    if (!this.dataInicioSemana || !this.dataFimSemana) {
-      return;
-    }
-    const inicio = this.formatarDataISO(this.dataInicioSemana);
-    const fim = this.formatarDataISO(this.dataFimSemana);
-    this.horariosService
-      .carregarHorariosDaSemanaPorPeriodo(this.categoriaSelecionada, inicio, fim)
-      .subscribe({
-        next: (horarios: HorariosPorDia) => {
-          this.horariosPorDia = horarios;
-          this.cdr.detectChanges();
-        },
-        error: (error: any) => {
-          this.logger.error('Erro ao carregar horários da semana:', error);
-          this.snackBar.open(
-            'Não foi possível carregar os horários desta semana.',
-            'Ciente',
-            { duration: 3000 }
-          );
-        },
-      });
-  }
 
   abrirModalAgendamento(agendamento: Agendamento) {
     const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
