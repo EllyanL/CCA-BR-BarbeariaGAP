@@ -1,6 +1,7 @@
 /* === Container principal === */
 .horarios-container {
   padding: 1.25rem; /* 20px */
+  height: 100%;
 }
 
 /* === Cartão de horários === */
@@ -11,7 +12,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin-inline: 3rem; /* 48px */
   align-items: center;
-  background-color: #fff;
+  background-color: #424242;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -328,4 +329,21 @@ mat-icon {
 
 .accent {
   background-color: #ffab40;
+}
+
+/* === Sidenav === */
+.sidenav {
+  width: 200px;
+  background-color: #37474f;
+  color: #eceff1;
+}
+
+.sidenav a {
+  color: #eceff1;
+}
+
+/* === Page Header === */
+.page-header {
+  color: #90caf9;
+  margin: 0 0 1rem 0;
 }

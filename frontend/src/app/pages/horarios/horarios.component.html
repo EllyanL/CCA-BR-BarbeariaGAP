@@ -1,18 +1,26 @@
-<div class="horarios-container">
-  <mat-card class="horarios-card">
-    <mat-card-content class="horarios-card-content">
-      <!-- Cabeçalho: categoria à esquerda, botões à direita -->
-      <div class="header-section">
-        <span class="category-title">{{ categoriaSelecionada }}</span>
-        <div class="admin__button-container">
-          <button mat-mini-fab color="primary" class="admin__return-button" (click)="goToHome()" title="Início">
-            <img src="assets/images/home.png" alt="Home" class="admin__return-icon" width="30" height="30" />
-          </button>
-          <button mat-mini-fab color="secondary" class="admin__logout-button" (click)="logout()" title="Sair">
-            <img src="assets/images/logout.png" alt="Logout" class="admin__logout-icon" width="30" height="30" />
-          </button>
+<mat-sidenav-container class="horarios-container">
+  <mat-sidenav mode="side" opened class="sidenav">
+    <mat-nav-list>
+      <a mat-list-item routerLink="/admin">Dashboard</a>
+      <a mat-list-item (click)="goToHome()">Início</a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-card class="horarios-card">
+      <mat-card-content class="horarios-card-content">
+        <!-- Cabeçalho: categoria à esquerda, botões à direita -->
+        <div class="header-section">
+          <h1 class="page-header">Horários - GRADUADOS</h1>
+          <div class="admin__button-container">
+            <button mat-mini-fab color="primary" class="admin__return-button" (click)="goToHome()" title="Início">
+              <img src="assets/images/home.png" alt="Home" class="admin__return-icon" width="30" height="30" />
+            </button>
+            <button mat-mini-fab color="secondary" class="admin__logout-button" (click)="logout()" title="Sair">
+              <img src="assets/images/logout.png" alt="Logout" class="admin__logout-icon" width="30" height="30" />
+            </button>
+          </div>
         </div>
-      </div>
 
       <div class="top-section">
         <div class="header-content-horizontal">
@@ -155,4 +163,5 @@
       </table>
     </mat-card-content>
   </mat-card>
-</div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
