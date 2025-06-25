@@ -210,13 +210,15 @@ mat-icon {
   color: white !important;
 }
 
+
 .botao-hora-indisponivel {
-  background-color: #f44336 !important; /* Cor do Angular Material warn */
-  color: white !important;
+  background-color: #e0e0e0 !important;
+  color: #666 !important;
+  cursor: not-allowed;
 }
 
 .botao-hora-agendado {
-  background-color: #ffab40 !important; /* Cor do Angular Material accent */
+  background-color: #616161 !important;
   color: white !important;
   cursor: not-allowed;
 }

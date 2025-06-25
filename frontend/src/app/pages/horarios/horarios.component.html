@@ -106,16 +106,16 @@
                     <b>{{ horario }}</b>
                   </button>
 
-                  <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button color="warn"
-                          (click)="disponibilizarHorario(dia, horario, categoriaSelecionada)">
-                    <b>{{ horario }}</b>
+                  <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button disabled>
+                          <b>{{ horario }}</b>
                   </button>
 
                   <ng-container *ngSwitchCase="'AGENDADO'">
                     <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
-                      <button (click)="abrirModalAgendamento(agendamento)" mat-raised-button color="accent">
-                        AGENDADO
-                      </button>
+                        <button (click)="abrirModalAgendamento(agendamento)" mat-raised-button class="botao-hora-agendado">
+                          <mat-icon>lock</mat-icon>
+                          AGENDADO
+                        </button>
                     </ng-container>
                   </ng-container>
 
@@ -132,9 +132,9 @@
               <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
                 <button mat-raised-button
                         class="botao-hora-agendado"
-                        color="accent"
                         [disabled]="!isAgendamentoDoMilitarLogado(agendamento) || !isAgendamentoDesmarcavel(agendamento)"
                         (click)="handleClick(agendamento)">
+                  <mat-icon>lock</mat-icon>
                   Agendado
                 </button>
               </ng-container>
