@@ -6,7 +6,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   import { UserService } from 'src/app/services/user.service';
   import { AgendamentoService } from 'src/app/services/agendamento.service'; // Adicione o serviço
   import { Agendamento } from 'src/app/models/agendamento'; // Adicione a interface/modelo
-  import { LoggingService } from 'src/app/services/logging.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 
     @Component({
       selector: 'app-dialogo-agendamento',
@@ -160,7 +161,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         private userService: UserService,
         private agendamentoService: AgendamentoService,
         private logger: LoggingService,
-        private snackBar: MatSnackBar
+        private snackBar: MatSnackBar,
+        private errorMessages: ErrorMessagesService
       ) {}
 
       ngOnInit(): void {
@@ -216,7 +218,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           },
           error => {
             this.logger.error('Erro ao criar agendamento:', error);
-            const message = error.error?.message || 'Erro ao criar agendamento.';
+            const message = error.error?.message || this.errorMessages.AGENDAMENTO_CREATE_ERROR;
             this.errorMessage = message;
             this.snackBar.open(message, 'OK', { duration: 5000 });
           }

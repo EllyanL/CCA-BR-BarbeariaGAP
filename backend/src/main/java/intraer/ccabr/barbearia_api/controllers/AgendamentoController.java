@@ -123,7 +123,7 @@ public class AgendamentoController {
             agendamentoService.marcarHorarioComoAgendado(agendamento);
             return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return buildResponse(e.getMessage(), HttpStatus.CONFLICT);
+            return buildResponse("Dados inválidos para agendamento.", HttpStatus.CONFLICT);
         }
     }
 
@@ -218,7 +218,8 @@ public class AgendamentoController {
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Dados inválidos para atualização do agendamento.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar agendamento.");
         }

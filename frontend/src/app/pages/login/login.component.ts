@@ -2,6 +2,7 @@ import { AuthService } from 'src/app/services/auth.service';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 import { slide } from 'src/app/components/layout/header/header.component';
 
 // Interface para a resposta do login
@@ -136,12 +137,13 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private logger: LoggingService
+    private logger: LoggingService,
+    private errorMessages: ErrorMessagesService
   ) {}
 
   onLogin(): void {
     if (!this.cpf || !this.senha) {
-      this.errorMessage = 'Por favor, preencha CPF e Senha.';
+      this.errorMessage = this.errorMessages.LOGIN_EMPTY_FIELDS;
       return;
     }
   
@@ -155,12 +157,12 @@ export class LoginComponent {
         if (response.token) {
           this.redirectUser(response);
         } else {
-          this.errorMessage = 'Erro de autenticação. Tente novamente.';
+          this.errorMessage = this.errorMessages.LOGIN_AUTH_ERROR;
         }
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err.message || 'Erro ao tentar fazer login.';
+        this.errorMessage = err.message || this.errorMessages.LOGIN_ATTEMPT_ERROR;
         this.logger.error('Erro ao tentar fazer login:', err);
       }
     });
@@ -203,7 +205,7 @@ export class LoginComponent {
   }
 
   private denyAccess(): void {
-    this.errorMessage = 'Acesso negado. Sua Organização Militar não está autorizada a realizar login no sistema.';
+    this.errorMessage = this.errorMessages.ACCESS_DENIED_OM;
     this.authService.logout();
   }
 
