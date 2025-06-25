@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.services.MilitarService;
@@ -20,6 +22,7 @@ import intraer.ccabr.barbearia_api.services.MilitarService;
 @RequestMapping("/api/militares")
 public class MilitarController {
     private final MilitarService militarService;
+    private static final Logger logger = LoggerFactory.getLogger(MilitarController.class);
 
     public MilitarController(MilitarService militarService) {
         this.militarService = militarService;
@@ -27,12 +30,14 @@ public class MilitarController {
 
     // Método CREATE - Salva um militar.
     @PostMapping
-    public ResponseEntity<Militar> save(@RequestBody Militar militar) {
+    public ResponseEntity<?> save(@RequestBody Militar militar) {
         try {
             Militar savedMilitar = militarService.save(militar);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedMilitar);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Erro ao salvar militar", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno no servidor, tente novamente");
         }
     }
 

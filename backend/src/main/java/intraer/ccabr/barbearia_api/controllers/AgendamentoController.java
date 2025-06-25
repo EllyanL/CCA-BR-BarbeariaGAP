@@ -221,7 +221,9 @@ public class AgendamentoController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("Dados inválidos para atualização do agendamento.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao atualizar agendamento.");
+            logger.error("Erro ao atualizar agendamento", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno no servidor, tente novamente");
         }
     }
 
@@ -272,8 +274,9 @@ public class AgendamentoController {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body("Erro: O agendamento está associado a outro registro.");
             } catch (Exception e) {
+                logger.error("Erro ao excluir agendamento", e);
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Erro interno no servidor. Por favor, tente novamente mais tarde.");
+                        .body("Erro interno no servidor, tente novamente");
             }
         }
 
@@ -282,7 +285,7 @@ public class AgendamentoController {
 
     @PostMapping("/check-em-lote")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Map<String, Map<String, Agendamento>>> checkEmLote(
+    public ResponseEntity<?> checkEmLote(
             @RequestParam("data") String data,
             @RequestParam("categoria") String categoria,
             @RequestBody List<Map<String, Object>> horariosPorDia) {
@@ -293,7 +296,9 @@ public class AgendamentoController {
         } catch (DateTimeParseException e) {
             return ResponseEntity.badRequest().body(null);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            logger.error("Erro ao verificar agendamentos em lote", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno no servidor, tente novamente");
         }
     }
 

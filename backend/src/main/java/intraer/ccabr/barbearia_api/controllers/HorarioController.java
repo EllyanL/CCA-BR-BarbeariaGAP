@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class HorarioController {
     private final HorarioService horarioService;
     private final HorarioRepository horarioRepository;
+    private static final Logger logger = LoggerFactory.getLogger(HorarioController.class);
 
     public HorarioController(HorarioService horarioService, HorarioRepository horarioRepository) {
         this.horarioService = horarioService;
@@ -104,8 +107,9 @@ public class HorarioController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("mensagem", "Dados inválidos para indisponibilizar horário."));
         } catch (Exception e) {
+            logger.error("Erro ao indisponibilizar horário", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor."));
+                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
         }
     }
     @PostMapping("/disponibilizar")
@@ -128,8 +132,9 @@ public class HorarioController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("mensagem", "Dados inválidos para disponibilizar horário."));
         } catch (Exception e) {
+            logger.error("Erro ao disponibilizar horário", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro ao disponibilizar horário."));
+                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
         }
     }
     @PostMapping("/indisponibilizar/tudo/{dia}")
@@ -142,8 +147,9 @@ public class HorarioController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("mensagem", "Dados inválidos para indisponibilizar horários."));
         } catch (Exception e) {
+            logger.error("Erro ao indisponibilizar horários", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor."));
+                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
         }
     }
     @PostMapping("/disponibilizar/tudo/{dia}")
@@ -156,8 +162,9 @@ public class HorarioController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("mensagem", "Dados inválidos para disponibilizar horários."));
         } catch (Exception e) {
+            logger.error("Erro ao disponibilizar horários", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor."));
+                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
         }
     }
     @GetMapping("/categoria/{categoria}")
