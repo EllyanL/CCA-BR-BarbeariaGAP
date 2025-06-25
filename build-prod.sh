@@ -17,4 +17,4 @@ cp -r frontend/dist/barbearia-front/* "$static_dir"/
 
 # Start backend
 cd backend
-./mvnw spring-boot:run
+SPRING_PROFILES_ACTIVE=prod ./mvnw spring-boot:run
