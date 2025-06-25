@@ -76,33 +76,33 @@ export const rotateToggle = trigger('rotateToggle', [
       display: flex;
       flex-direction: column;
       align-items: center;
-      background-color: #2a4d76;
-      color: #ffffff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      background-color: #ffffff;
+      color: #1976d2;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .header-card__title {
       font-size: 1.8rem;
       text-align: center;
-      color: #f0f0f0;
+      color: #1976d2;
     }
 
     .header-card__welcome {
       margin: 0;
-      color: #f0f0f0;
+      color: #1976d2;
     }
 
     .header-card__nome {
-      color: #c9b347;
+      color: #1976d2;
     }
 
     .header-card__logout-button {
-      background-color: #c9b347;
+      background-color: #2196f3;
       color: #ffffff;
     }
 
     .header-card__logout-button:hover {
-      background-color: #2a4d76;
+      background-color: #1976d2;
     }
 
     .button-toggle {

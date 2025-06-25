@@ -2,7 +2,7 @@
 /* You can add global styles to this file, and also import other style files */
 html,
 body {
-  background-image: url("assets/images/background8.jpg");
+  background-color: #ffffff;
 }
 
 .mat-typography {
@@ -27,11 +27,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #2a4d76;
+  background-color: #2196f3;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #555;
+  background-color: #1976d2;
 }
 
 ::-webkit-scrollbar-track {

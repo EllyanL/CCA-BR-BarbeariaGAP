@@ -8,7 +8,8 @@
   /* Container principal */
   .admin-container {
     display: flex;
-    color:#ffffff;
+    color: #333333;
+    background-color: #ffffff;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -43,12 +44,12 @@
   }
 
   .admin__logout-button {
-    background-color: #2a4d76;
+    background-color: #2196f3;
     color: #ffffff;
   }
 
   .admin__logout-button:hover {
-    background-color: #c9b347;
+    background-color: #1976d2;
   }
 
 
