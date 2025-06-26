@@ -50,6 +50,10 @@ Defina no sistema as seguintes variáveis antes de rodar o backend:
 | `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |
 | `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   |
 
+As variáveis `DB_PASSWORD` e `WEBSERVICE_PASSWORD` devem ser definidas
+no ambiente para que o backend consiga acessar o banco de dados e o
+WebService externo com segurança.
+
 Valores de exemplo podem ser vistos em `backend/src/main/resources/application-dev.properties`
 
 ## Executando Testes do Frontend
