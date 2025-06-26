@@ -39,3 +39,8 @@ body {
 }
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.page-container {
+  height: calc(100vh - 2.3rem); /* account for footer height */
+  width: 100%;
+}
