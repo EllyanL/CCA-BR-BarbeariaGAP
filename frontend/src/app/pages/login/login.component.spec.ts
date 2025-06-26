@@ -67,4 +67,34 @@ describe('LoginComponent', () => {
     component.togglePasswordVisibility();
     expect(component.isPasswordVisible).toBeFalse();
   });
+
+  it('redirects OFICIAL users to /oficiais', () => {
+    authService.login.and.returnValue(of({ token: 't', role: 'OFICIAL', om: 'CCA-BR' }));
+    component.cpf = '1';
+    component.senha = 's';
+
+    component.onLogin();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/oficiais']);
+  });
+
+  it('redirects GRADUADO users to /graduados', () => {
+    authService.login.and.returnValue(of({ token: 't', role: 'GRADUADO', om: 'CCA-BR' }));
+    component.cpf = '2';
+    component.senha = 's';
+
+    component.onLogin();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/graduados']);
+  });
+
+  it('redirects ADMIN users to /admin', () => {
+    authService.login.and.returnValue(of({ token: 't', role: 'ADMIN', om: 'CCA-BR' }));
+    component.cpf = '3';
+    component.senha = 's';
+
+    component.onLogin();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/admin']);
+  });
 });
