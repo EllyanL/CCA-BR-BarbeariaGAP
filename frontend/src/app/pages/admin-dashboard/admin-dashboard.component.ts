@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { DashboardService, DashboardStats } from 'src/app/services/dashboard.service';
+import { DashboardService, DashboardStats, WeeklyCount } from 'src/app/services/dashboard.service';
 
 import { Agendamento } from 'src/app/models/agendamento';
 import { AuthService } from 'src/app/services/auth.service';
@@ -15,9 +15,12 @@ import { Router } from '@angular/router';
 export class AdminDashboardComponent implements OnInit, AfterViewInit {
   stats?: DashboardStats;
   recent: Agendamento[] = [];
+  weekly: WeeklyCount[] = [];
   displayedColumns = ['data', 'hora', 'militar', 'categoria', 'actions'];
   @ViewChild('categoryChart') categoryChart?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
   chart?: Chart;
+  weeklyChartInstance?: Chart;
 
   constructor(
     private dashboardService: DashboardService,
@@ -29,10 +32,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.loadStats();
     this.loadRecent();
+    this.loadWeekly();
   }
 
   ngAfterViewInit(): void {
     this.renderCategoryChart();
+    this.renderWeeklyChart();
   }
 
   loadStats(): void {
@@ -82,6 +87,44 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         datasets: [
           {
             data: values
+          }
+        ]
+      },
+      options: {
+        responsive: true
+      }
+    });
+  }
+
+  loadWeekly(): void {
+    this.dashboardService.getWeekly().subscribe({
+      next: data => {
+        this.weekly = data;
+        this.renderWeeklyChart();
+      },
+      error: err => this.logger.error('Erro ao carregar dados semanais', err)
+    });
+  }
+
+  private renderWeeklyChart(): void {
+    if (!this.weeklyChart || this.weekly.length === 0) {
+      return;
+    }
+    const labels = this.weekly.map(w => w.date);
+    const values = this.weekly.map(w => w.count);
+    if (this.weeklyChartInstance) {
+      this.weeklyChartInstance.destroy();
+    }
+    this.weeklyChartInstance = new Chart(this.weeklyChart.nativeElement, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Agendamentos',
+            data: values,
+            fill: false,
+            borderColor: '#3f51b5'
           }
         ]
       },

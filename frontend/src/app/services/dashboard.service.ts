@@ -12,6 +12,11 @@ export interface DashboardStats {
   ocupacaoAtual: number;
 }
 
+export interface WeeklyCount {
+  date: string;
+  count: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private readonly apiUrl = `${environment.apiUrl}/dashboard`;
@@ -31,6 +36,15 @@ export class DashboardService {
     return this.http.get<Agendamento[]>(`${this.apiUrl}/recent`).pipe(
       catchError(err => {
         this.logger.error('Erro ao obter agendamentos recentes', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  getWeekly(): Observable<WeeklyCount[]> {
+    return this.http.get<WeeklyCount[]>(`${this.apiUrl}/stats/weekly`).pipe(
+      catchError(err => {
+        this.logger.error('Erro ao obter dados semanais', err);
         return throwError(() => err);
       })
     );

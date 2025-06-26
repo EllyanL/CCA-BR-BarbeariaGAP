@@ -2,6 +2,7 @@ package intraer.ccabr.barbearia_api.controllers;
 
 import intraer.ccabr.barbearia_api.dtos.AgendamentoDTO;
 import intraer.ccabr.barbearia_api.dtos.DashboardStatsDTO;
+import intraer.ccabr.barbearia_api.dtos.WeeklyCountDTO;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
@@ -54,6 +55,16 @@ public class DashboardController {
     public List<AgendamentoDTO> getRecentAgendamentos() {
         List<Agendamento> recentes = agendamentoRepository.findTop5ByOrderByDataDescHoraDesc();
         return recentes.stream().map(AgendamentoDTO::new).toList();
+    }
+
+    @GetMapping("/stats/weekly")
+    public List<WeeklyCountDTO> getWeeklyStats() {
+        LocalDate today = LocalDate.now();
+        LocalDate start = today.minusDays(6);
+        List<Object[]> results = agendamentoRepository.countByDataSince(start);
+        return results.stream()
+                .map(arr -> new WeeklyCountDTO((LocalDate) arr[0], (Long) arr[1]))
+                .toList();
     }
 
     private String mapDiaSemana(DayOfWeek day) {
