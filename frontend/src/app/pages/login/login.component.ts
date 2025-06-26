@@ -78,7 +78,9 @@ export class LoginComponent {
     }
 
     let redirectUrl = '/dashboard';
-    if (role === 'OFICIAL') {
+    if (role === 'ADMIN') {
+      redirectUrl = '/admin/dashboard';
+    } else if (role === 'OFICIAL') {
       redirectUrl = '/oficiais';
     } else if (role === 'GRADUADO') {
       redirectUrl = '/graduados';
