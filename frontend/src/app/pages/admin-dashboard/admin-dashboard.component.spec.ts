@@ -23,7 +23,8 @@ describe('AdminDashboardComponent', () => {
               distribuicaoPorCategoria: {},
               ocupacaoAtual: 0
             }),
-            getRecent: () => of([])
+            getRecent: () => of([]),
+            getWeekly: () => of([])
           }
         },
         { provide: LoggingService, useValue: { error: () => {}, log: () => {}, warn: () => {} } },
