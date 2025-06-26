@@ -40,7 +40,7 @@ export const rotateToggle = trigger('rotateToggle', [
          
         <button
           mat-mini-fab
-          color="secondary"
+          color="primary"
           class="header-card__logout-button"
           (click)="logout()"
           title="Sair"
