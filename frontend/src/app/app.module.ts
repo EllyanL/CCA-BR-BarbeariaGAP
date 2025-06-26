@@ -31,6 +31,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Importação do módulo do spinner
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -92,6 +93,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     MatDialogModule,
     MatListModule,
     MatSidenavModule,
+    MatToolbarModule,
     MatBadgeModule,
     MatSelectModule,
     MatCheckboxModule,
