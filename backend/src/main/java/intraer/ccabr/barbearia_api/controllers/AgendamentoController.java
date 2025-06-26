@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import intraer.ccabr.barbearia_api.dtos.AgendamentoDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
@@ -61,8 +60,7 @@ public class AgendamentoController {
         AgendamentoService agendamentoService,
         AgendamentoRepository agendamentoRepository,
         MilitarRepository militarRepository,
-        HorarioRepository horarioRepository,
-        ObjectMapper objectMapper
+        HorarioRepository horarioRepository
     ) {
         this.agendamentoService = agendamentoService;
         this.agendamentoRepository = agendamentoRepository;
