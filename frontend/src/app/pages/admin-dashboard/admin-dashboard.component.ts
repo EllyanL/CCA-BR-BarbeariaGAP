@@ -2,12 +2,12 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angula
 import { DashboardService, DashboardStats, WeeklyCount } from 'src/app/services/dashboard.service';
 
 import { Agendamento } from 'src/app/models/agendamento';
-import { AuthService } from 'src/app/services/auth.service';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { Chart } from 'chart.js/auto';
 import { LoggingService } from 'src/app/services/logging.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 
 @Component({
@@ -120,19 +120,27 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   }
 
   applyFilters(): void {
-    this.dataSource.filterPredicate = (ag: Agendamento, filter: string) => {
+    this.dataSource.filterPredicate = (ag: Agendamento, filter: string): boolean => {
       const f = JSON.parse(filter);
+  
       const matchesDate = f.date ? ag.data === f.date : true;
-      const matchesCategory = f.category ? ag.categoria?.toLowerCase().includes(f.category.toLowerCase()) : true;
-      const matchesMilitar = f.militar ? ag.militar?.nomeCompleto?.toLowerCase().includes(f.militar.toLowerCase()) : true;
+      const matchesCategory = f.category
+        ? (ag.categoria || '').toLowerCase().includes(f.category.toLowerCase())
+        : true;
+      const matchesMilitar = f.militar
+        ? (ag.militar?.nomeCompleto || '').toLowerCase().includes(f.militar.toLowerCase())
+        : true;
+  
       return matchesDate && matchesCategory && matchesMilitar;
     };
+  
     this.dataSource.filter = JSON.stringify({
       date: this.filterDate,
       category: this.filterCategory,
       militar: this.filterMilitar
     });
   }
+  
 
   deleteAgendamento(a: Agendamento): void {
     if (!a.id) { return; }
