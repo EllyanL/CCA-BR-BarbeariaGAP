@@ -26,11 +26,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   filterMilitar = '';
   weekly: WeeklyCount[] = [];
   displayedColumns = ['data', 'hora', 'militar', 'categoria', 'actions'];
-  @ViewChild('categoryChart') categoryChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
-  chart?: Chart;
   weeklyChartInstance?: Chart;
 
   constructor(
@@ -49,7 +47,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.renderCategoryChart();
     this.renderWeeklyChart();
     if (this.paginator) {
       this.dataSource.paginator = this.paginator;
@@ -63,7 +60,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     this.dashboardService.getStats().subscribe({
       next: data => {
         this.stats = data;
-        this.renderCategoryChart();
       },
       error: err => this.logger.error('Erro ao carregar estatísticas', err)
     });
@@ -94,34 +90,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     this.authService.logout();
   }
 
-  public objectKeys(obj?: any): string[] {
-    return obj ? Object.keys(obj) : [];
-  }
-
-  private renderCategoryChart(): void {
-    if (!this.categoryChart || !this.stats?.distribuicaoPorCategoria) {
-      return;
-    }
-    const labels = Object.keys(this.stats.distribuicaoPorCategoria);
-    const values = Object.values(this.stats.distribuicaoPorCategoria);
-    if (this.chart) {
-      this.chart.destroy();
-    }
-    this.chart = new Chart(this.categoryChart.nativeElement, {
-      type: 'pie',
-      data: {
-        labels,
-        datasets: [
-          {
-            data: values
-          }
-        ]
-      },
-      options: {
-        responsive: true
-      }
-    });
-  }
 
   loadWeekly(): void {
     this.dashboardService.getWeekly().subscribe({

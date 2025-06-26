@@ -42,23 +42,6 @@
       </mat-card>
       <mat-card>
         <mat-card-header>
-          <mat-icon>pie_chart</mat-icon>
-          <mat-card-title>Distribuição por Categoria</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <canvas
-            *ngIf="objectKeys(stats?.distribuicaoPorCategoria).length > 0"
-            #categoryChart
-          ></canvas>
-          <p
-            *ngIf="objectKeys(stats?.distribuicaoPorCategoria).length === 0"
-          >
-            Sem dados
-          </p>
-        </mat-card-content>
-      </mat-card>
-      <mat-card>
-        <mat-card-header>
           <mat-icon>calendar_today</mat-icon>
           <mat-card-title>Últimos 7 dias</mat-card-title>
         </mat-card-header>
@@ -111,7 +94,6 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Ações</th>
         <td mat-cell *matCellDef="let a">
-          <button mat-icon-button color="primary"><mat-icon>edit</mat-icon></button>
           <button mat-icon-button color="warn" (click)="deleteAgendamento(a)"><mat-icon>delete</mat-icon></button>
         </td>
       </ng-container>
