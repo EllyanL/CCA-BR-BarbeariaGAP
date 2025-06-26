@@ -3,7 +3,6 @@ import { MAT_DATE_LOCALE, MatNativeDateModule } from '@angular/material/core';
 
 import { AdminComponent } from './pages/admin/admin.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
-import { AgendarCorteComponent } from './pages/agendar-corte/agendar-corte.component';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
@@ -74,7 +73,6 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     CpfMaskDirective,
     DashboardComponent,
     AdminDashboardComponent,
-    AgendarCorteComponent,
     SidebarComponent,
   ],
   imports: [
