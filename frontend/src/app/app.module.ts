@@ -21,6 +21,7 @@ import { FooterComponent } from './components/layout/footer/footer.component';
 import { FormsModule } from '@angular/forms';
 import { GraduadosComponent } from './pages/graduados/graduados.component';
 import { HeaderComponent } from './components/layout/header/header.component';
+import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
 import { HorariosComponent } from './pages/horarios/horarios.component';
 import { LoginComponent } from './pages/login/login.component';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -74,6 +75,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     DashboardComponent,
     AdminDashboardComponent,
     AgendarCorteComponent,
+    SidebarComponent,
   ],
   imports: [
     BrowserModule,

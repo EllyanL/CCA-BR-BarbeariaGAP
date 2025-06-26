@@ -1,0 +1,29 @@
+.sidebar-nav {
+  height: 100%;
+  width: 200px;
+  background-color: #263238;
+  color: #ffffff;
+  padding-top: 1rem;
+}
+
+.sidebar-nav a,
+.sidebar-nav button {
+  color: #ffffff;
+  width: 100%;
+  text-align: left;
+}
+
+.sidebar-nav a.active-link {
+  background-color: #37474f;
+}
+
+.sidebar-logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.sidebar-logo img {
+  width: 80px;
+  height: auto;
+}

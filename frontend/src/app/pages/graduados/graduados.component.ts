@@ -6,20 +6,29 @@ import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
   selector: 'app-graduados',
-  template: `<div class="graduados-page-content">
-    <app-header
-      class="graduados-page-content__header"
-      [titleHeader]="titleHeader"
-      [ramal]="ramal"
-    ></app-header>
+  template: `
+    <mat-sidenav-container class="page-container">
+      <mat-sidenav mode="side" opened>
+        <app-sidebar></app-sidebar>
+      </mat-sidenav>
+      <mat-sidenav-content>
+        <div class="graduados-page-content">
+          <app-header
+            class="graduados-page-content__header"
+            [titleHeader]="titleHeader"
+            [ramal]="ramal"
+          ></app-header>
 
-    <app-tabela-semanal
-      class="graduados-page-content__tabela-semanal"
-      [opcoesPostoGrad]="opcoesGraduacoes"
-      [categoria]="categoria"
-      [horariosPorDia]="horariosPorDia"
-    ></app-tabela-semanal>
-  </div>`,
+          <app-tabela-semanal
+            class="graduados-page-content__tabela-semanal"
+            [opcoesPostoGrad]="opcoesGraduacoes"
+            [categoria]="categoria"
+            [horariosPorDia]="horariosPorDia"
+          ></app-tabela-semanal>
+        </div>
+      </mat-sidenav-content>
+    </mat-sidenav-container>
+  `,
 })
 export class GraduadosComponent implements OnInit {
   titleHeader = 'GRADUADOS';

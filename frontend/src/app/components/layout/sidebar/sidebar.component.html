@@ -1,0 +1,9 @@
+<mat-nav-list class="sidebar-nav">
+  <div class="sidebar-logo">
+    <img src="assets/images/logo-gapbr.png" alt="Logo do GAP-BR" />
+  </div>
+  <a mat-list-item (click)="navigate('/agendar')">Agendar corte</a>
+  <a mat-list-item (click)="navigate('/dashboard')">Meus agendamentos</a>
+  <button mat-list-item (click)="openRegras()">Regras</button>
+  <button mat-list-item (click)="logout()">Logout</button>
+</mat-nav-list>
