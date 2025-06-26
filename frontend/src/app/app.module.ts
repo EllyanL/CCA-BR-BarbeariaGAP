@@ -15,6 +15,7 @@ import { DialogoDesmarcarComponent } from './components/admin/dialogo-desmarcar/
 import { DialogoLogoutComponent } from './components/agendamento/dialogo-logout/dialogo-logout.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { AgendarCorteComponent } from './pages/agendar-corte/agendar-corte.component';
 import { FooterComponent } from './components/layout/footer/footer.component';
 import { FormsModule } from '@angular/forms';
 import { GraduadosComponent } from './pages/graduados/graduados.component';
@@ -72,6 +73,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     CpfMaskDirective,
     DashboardComponent,
     AdminDashboardComponent,
+    AgendarCorteComponent,
   ],
   imports: [
     BrowserModule,

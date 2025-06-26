@@ -13,6 +13,7 @@ import { HorariosComponent } from './pages/horarios/horarios.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { UserGuard } from './guards/user.guard';
+import { AgendarCorteComponent } from './pages/agendar-corte/agendar-corte.component';
 
   const routes: Routes = [
     { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
@@ -23,6 +24,7 @@ import { UserGuard } from './guards/user.guard';
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
     { path: 'admin/dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard Admin' }, canActivate: [AdminGuard] },
     { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' }, canActivate: [UserGuard] },
+    { path: 'agendar', component: AgendarCorteComponent, data: { title: 'Agendar Corte' }, canActivate: [UserGuard] },
     { path: 'not-authorized', component: NotAuthorizedComponent, data: { title: 'Acesso não autorizado' } },
     { path: '**', component: NotFoundComponent, data: { title: 'Página não encontrada' } }
   ];
