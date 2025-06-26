@@ -94,6 +94,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     this.authService.logout();
   }
 
+  public objectKeys(obj?: any): string[] {
+    return obj ? Object.keys(obj) : [];
+  }
+
   private renderCategoryChart(): void {
     if (!this.categoryChart || !this.stats?.distribuicaoPorCategoria) {
       return;
