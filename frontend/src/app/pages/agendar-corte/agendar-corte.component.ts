@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { HorariosPorDia, HorariosService } from '../../services/horarios.service';
+
 import { Agendamento } from '../../models/agendamento';
-import { HorariosService, HorariosPorDia } from '../../services/horarios.service';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 
@@ -43,7 +44,12 @@ export class AgendarCorteComponent implements OnInit {
   carregarHorarios(): void {
     const dia = this.dias[this.selectedDayIndex].key;
     this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe(res => {
-      this.horarios = res[dia] || [];
+      const horariosDia = res[dia] || [];
+      this.horarios = horariosDia.map(h => ({
+        hora: h.horario,
+        status: h.status,
+        usuarioId: h.usuarioId
+      }));
     });
   }
 

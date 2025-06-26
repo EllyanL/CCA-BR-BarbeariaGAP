@@ -1,21 +1,22 @@
-import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { OficiaisComponent } from './pages/oficiais/oficiais.component';
-import { GraduadosComponent } from './pages/graduados/graduados.component';
-import { LoginComponent } from './pages/login/login.component';
-import { NotFoundComponent } from './pages/not-found/not-found.component';
-import { AdminGuard } from './guards/admin.guard';
-import { OficialGuard } from './guards/oficial.guard';
-import { GraduadoGuard } from './guards/graduado.guard';
-import { NotAuthorizedComponent } from './pages/not-authorized/not-authorized.component';
-import { AdminComponent } from './pages/admin/admin.component';
-import { HorariosComponent } from './pages/horarios/horarios.component';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
-import { UserGuard } from './guards/user.guard';
-import { AgendarCorteComponent } from './pages/agendar-corte/agendar-corte.component';
 
-  const routes: Routes = [
+import { AdminComponent } from './pages/admin/admin.component';
+import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { AdminGuard } from './guards/admin.guard';
+import { AgendarCorteComponent } from './pages/agendar-corte/agendar-corte.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { GraduadoGuard } from './guards/graduado.guard';
+import { GraduadosComponent } from './pages/graduados/graduados.component';
+import { HorariosComponent } from './pages/horarios/horarios.component';
+import { LoginComponent } from './pages/login/login.component';
+import { NgModule } from '@angular/core';
+import { NotAuthorizedComponent } from './pages/not-authorized/not-authorized.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
+import { OficiaisComponent } from './pages/oficiais/oficiais.component';
+import { OficialGuard } from './guards/oficial.guard';
+import { UserGuard } from './guards/user.guard';
+
+const routes: Routes = [
     { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
     { path: 'auth/login', component: LoginComponent, data: { title: 'Login' } },
     { path: 'oficiais', component: OficiaisComponent, data: { title: 'Oficiais' }, canActivate: [OficialGuard] },
