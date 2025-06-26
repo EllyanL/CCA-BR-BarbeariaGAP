@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
+import { DashboardService } from '../../services/dashboard.service';
+import { LoggingService } from '../../services/logging.service';
+import { of } from 'rxjs';
 
 describe('AdminDashboardComponent', () => {
   let component: AdminDashboardComponent;
@@ -7,7 +10,22 @@ describe('AdminDashboardComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [AdminDashboardComponent]
+      declarations: [AdminDashboardComponent],
+      providers: [
+        {
+          provide: DashboardService,
+          useValue: {
+            getStats: () => of({
+              agendamentosHoje: 0,
+              totalUsuarios: 0,
+              distribuicaoPorCategoria: {},
+              ocupacaoAtual: 0
+            }),
+            getRecent: () => of([])
+          }
+        },
+        { provide: LoggingService, useValue: { error: () => {}, log: () => {}, warn: () => {} } }
+      ]
     });
     fixture = TestBed.createComponent(AdminDashboardComponent);
     component = fixture.componentInstance;
