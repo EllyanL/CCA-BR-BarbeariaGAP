@@ -1,6 +1,10 @@
 <mat-sidenav-container class="dashboard-container">
   <mat-sidenav mode="side" opened class="dashboard-sidenav">
-    <button mat-button routerLink="/admin">Voltar</button>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/admin/horarios" [queryParams]="{ categoria: 'OFICIAL' }">Horários - Oficiais</a>
+      <a mat-list-item routerLink="/admin/horarios" [queryParams]="{ categoria: 'GRADUADO' }">Horários - Graduados</a>
+      <a mat-list-item (click)="logout()">Logout</a>
+    </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar color="primary" class="dashboard-header">
@@ -20,6 +24,12 @@
         <mat-card-title>Ocupação Atual</mat-card-title>
         <mat-card-content>
           <mat-progress-bar mode="determinate" [value]="stats?.ocupacaoAtual || 0"></mat-progress-bar>
+        </mat-card-content>
+      </mat-card>
+      <mat-card>
+        <mat-card-title>Distribuição por Categoria</mat-card-title>
+        <mat-card-content>
+          <canvas #categoryChart></canvas>
         </mat-card-content>
       </mat-card>
       <mat-card>

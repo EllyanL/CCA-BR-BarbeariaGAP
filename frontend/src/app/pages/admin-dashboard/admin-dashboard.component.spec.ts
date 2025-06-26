@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard.component';
 import { DashboardService } from '../../services/dashboard.service';
 import { LoggingService } from '../../services/logging.service';
+import { AuthService } from '../../services/auth.service';
+import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
 describe('AdminDashboardComponent', () => {
@@ -24,7 +26,9 @@ describe('AdminDashboardComponent', () => {
             getRecent: () => of([])
           }
         },
-        { provide: LoggingService, useValue: { error: () => {}, log: () => {}, warn: () => {} } }
+        { provide: LoggingService, useValue: { error: () => {}, log: () => {}, warn: () => {} } },
+        { provide: AuthService, useValue: { logout: () => {} } },
+        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } }
       ]
     });
     fixture = TestBed.createComponent(AdminDashboardComponent);

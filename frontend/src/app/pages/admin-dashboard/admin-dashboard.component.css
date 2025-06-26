@@ -19,3 +19,14 @@
 .create-button {
   margin: 1rem;
 }
+
+/* Sidebar navigation */
+.dashboard-sidenav {
+  width: 200px;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+.dashboard-sidenav a {
+  color: #333333;
+}

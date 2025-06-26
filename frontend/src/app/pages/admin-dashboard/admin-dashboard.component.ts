@@ -1,8 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { Chart } from 'chart.js/auto';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DashboardService, DashboardStats } from 'src/app/services/dashboard.service';
-import { LoggingService } from 'src/app/services/logging.service';
+
 import { Agendamento } from 'src/app/models/agendamento';
+import { AuthService } from 'src/app/services/auth.service';
+import { Chart } from 'chart.js/auto';
+import { LoggingService } from 'src/app/services/logging.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -16,7 +19,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   @ViewChild('categoryChart') categoryChart?: ElementRef<HTMLCanvasElement>;
   chart?: Chart;
 
-  constructor(private dashboardService: DashboardService, private logger: LoggingService) {}
+  constructor(
+    private dashboardService: DashboardService,
+    private logger: LoggingService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadStats();
@@ -42,6 +50,20 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       next: data => (this.recent = data),
       error: err => this.logger.error('Erro ao carregar recentes', err)
     });
+  }
+
+  gerenciarHorariosOficial(): void {
+    this.router.navigate(['/admin/horarios'], { queryParams: { categoria: 'OFICIAL' } })
+      .catch(err => this.logger.error('Erro na navegação:', err));
+  }
+
+  gerenciarHorariosGraduado(): void {
+    this.router.navigate(['/admin/horarios'], { queryParams: { categoria: 'GRADUADO' } })
+      .catch(err => this.logger.error('Erro na navegação:', err));
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 
   private renderCategoryChart(): void {
