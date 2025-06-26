@@ -14,6 +14,7 @@ import { DialogoDetalhesAgendamentoComponent } from './components/agendamento/di
 import { DialogoDesmarcarComponent } from './components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { DialogoLogoutComponent } from './components/agendamento/dialogo-logout/dialogo-logout.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { FooterComponent } from './components/layout/footer/footer.component';
 import { FormsModule } from '@angular/forms';
 import { GraduadosComponent } from './pages/graduados/graduados.component';
@@ -32,6 +33,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Importação do módulo do spinner
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
@@ -68,6 +70,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     DialogoDesmarcarComponent,
     CpfMaskDirective,
     DashboardComponent,
+    AdminDashboardComponent,
   ],
   imports: [
     BrowserModule,
@@ -94,6 +97,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     MatCheckboxModule,
     MatDatepickerModule,
     MatProgressSpinnerModule,
+    MatProgressBarModule,
     MatNativeDateModule,
     NgxMaterialTimepickerModule,
   ],

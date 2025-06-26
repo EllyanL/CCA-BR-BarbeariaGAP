@@ -75,4 +75,12 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
                             @Param("hora") LocalTime hora,
                             @Param("diaSemana") String diaSemana,
                             @Param("categoria") String categoria);
+
+    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.data = :data")
+    long countByData(@Param("data") LocalDate data);
+
+    @Query("SELECT a.categoria, COUNT(a) FROM Agendamento a WHERE a.data = :data GROUP BY a.categoria")
+    List<Object[]> countByCategoria(@Param("data") LocalDate data);
+
+    List<Agendamento> findTop5ByOrderByDataDescHoraDesc();
 }
