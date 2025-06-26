@@ -13,8 +13,8 @@ export interface DashboardStats {
 }
 
 export interface WeeklyCount {
-  date: string;
-  count: number;
+  data: string;
+  total: number;
 }
 
 @Injectable({ providedIn: 'root' })

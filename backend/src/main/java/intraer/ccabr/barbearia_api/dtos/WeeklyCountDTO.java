@@ -8,6 +8,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class WeeklyCountDTO {
-    private LocalDate date;
-    private long count;
+    private LocalDate data;
+    private long total;
 }
