@@ -5,6 +5,8 @@ import { LoggingService } from '../../services/logging.service';
 import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
+import { AgendamentoService } from '../../services/agendamento.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('AdminDashboardComponent', () => {
   let component: AdminDashboardComponent;
@@ -29,7 +31,9 @@ describe('AdminDashboardComponent', () => {
         },
         { provide: LoggingService, useValue: { error: () => {}, log: () => {}, warn: () => {} } },
         { provide: AuthService, useValue: { logout: () => {} } },
-        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } }
+        { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
+        { provide: AgendamentoService, useValue: { deleteAgendamento: () => of({}) } },
+        { provide: MatSnackBar, useValue: { open: () => {} } }
       ]
     });
     fixture = TestBed.createComponent(AdminDashboardComponent);

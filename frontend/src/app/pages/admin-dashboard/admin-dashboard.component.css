@@ -26,6 +26,12 @@
   width: 100%;
   margin: 1rem 0;
 }
+.filters {
+  display: flex;
+  gap: 1rem;
+  padding: 0 1rem;
+  flex-wrap: wrap;
+}
 .create-button {
   margin: 1rem;
 }
