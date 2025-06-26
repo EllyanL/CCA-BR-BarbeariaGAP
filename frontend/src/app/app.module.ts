@@ -40,6 +40,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 import { NgModule } from '@angular/core';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { NotAuthorizedComponent } from './pages/not-authorized/not-authorized.component';
@@ -86,6 +88,8 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     ReactiveFormsModule,
 
     MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
     MatButtonModule,
     MatCardModule,
     MatFormFieldModule,
