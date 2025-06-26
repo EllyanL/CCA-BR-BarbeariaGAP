@@ -1,0 +1,21 @@
+.dashboard-container {
+  height: 100vh;
+}
+.dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+}
+.dashboard-table {
+  width: 100%;
+  margin: 1rem 0;
+}
+.create-button {
+  margin: 1rem;
+}

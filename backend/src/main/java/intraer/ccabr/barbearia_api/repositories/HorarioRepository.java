@@ -23,6 +23,8 @@ public interface HorarioRepository extends JpaRepository<Horario, Long> {
 
     List<Horario> findByCategoria(String categoria);
 
+    long countByDia(String dia);
+
     @Transactional
     @Modifying
     @Query("DELETE FROM Horario h WHERE h.dia = :dia AND h.horario IN :horarios AND h.categoria = :categoria")

@@ -28,4 +28,9 @@ export class AdminComponent {
     this.logger.log('Navegando para horários - Oficial');
     this.router.navigate(['/admin/horarios'], { queryParams: { categoria: 'OFICIAL' } }).catch(err => this.logger.error('Erro na navegação:', err));
   }
+
+  abrirDashboard() {
+    this.logger.log('Navegando para dashboard admin');
+    this.router.navigate(['/admin/dashboard']).catch(err => this.logger.error('Erro na navegação:', err));
+  }
 }
