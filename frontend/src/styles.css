@@ -2,11 +2,13 @@
 /* You can add global styles to this file, and also import other style files */
 html,
 body {
-  background-color: #ffffff;
+  background-color: #0D47A1;
+  color: #ffffff;
+  font-family: Roboto, Montserrat, sans-serif;
 }
 
 .mat-typography {
-  font-family: "Source Sans 3", sans-serif;
+  font-family: Roboto, Montserrat, sans-serif;
 }
 
 /* Modifica o tamanho do texto dos snackbars */
@@ -38,7 +40,7 @@ body {
   background-color: #f1f1f1;
 }
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body { margin: 0; font-family: Roboto, Montserrat, sans-serif; }
 
 .page-container {
   height: calc(100vh - 2.3rem); /* account for footer height */
