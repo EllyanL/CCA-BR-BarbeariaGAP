@@ -2,7 +2,6 @@
   <mat-sidenav mode="side" opened class="dashboard-sidenav">
     <mat-nav-list>
       <a mat-list-item routerLink="/admin/dashboard">Dashboard</a>
-      <a mat-list-item routerLink="/admin/agendamentos">Agendamentos</a>
       <a mat-list-item routerLink="/admin/horarios" [queryParams]="{ categoria: 'GRADUADO' }">Horários - Graduados</a>
       <a mat-list-item routerLink="/admin/horarios" [queryParams]="{ categoria: 'OFICIAL' }">Horários - Oficiais</a>
       <a mat-list-item routerLink="/admin/usuarios">Usuários</a>

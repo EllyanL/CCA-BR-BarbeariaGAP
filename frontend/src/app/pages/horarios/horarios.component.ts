@@ -117,7 +117,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       this.router.navigate(['/auth/login']);
     }
     goToHome(): void {
-      this.router.navigate(['/admin']);
+      this.router.navigate(['/admin/dashboard']);
     }
 
 //---------------⏰ Gerenciamento de Horários---------------
