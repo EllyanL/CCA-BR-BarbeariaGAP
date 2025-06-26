@@ -95,6 +95,6 @@ describe('LoginComponent', () => {
 
     component.onLogin();
 
-    expect(router.navigate).toHaveBeenCalledWith(['/dashboard']);
+    expect(router.navigate).toHaveBeenCalledOnceWith(['/dashboard']);
   });
 });
