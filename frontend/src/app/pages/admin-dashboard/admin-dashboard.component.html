@@ -45,7 +45,15 @@
           <mat-card-title>Distribuição por Categoria</mat-card-title>
         </mat-card-header>
         <mat-card-content>
-          <canvas #categoryChart></canvas>
+          <canvas
+            *ngIf="Object.keys(stats?.distribuicaoPorCategoria || {}).length > 0"
+            #categoryChart
+          ></canvas>
+          <p
+            *ngIf="Object.keys(stats?.distribuicaoPorCategoria || {}).length === 0"
+          >
+            Sem dados
+          </p>
         </mat-card-content>
       </mat-card>
       <mat-card>
