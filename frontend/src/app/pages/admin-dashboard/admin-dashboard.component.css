@@ -1,14 +1,24 @@
 .dashboard-container {
   height: 100vh;
+  background-color: #0D47A1;
+  color: #ffffff;
+  font-family: Roboto, Montserrat, sans-serif;
+}
+.dashboard-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 .dashboard-header {
   position: sticky;
   top: 0;
   z-index: 10;
+  background-color: #0D47A1;
+  color: #ffffff;
 }
 .cards {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   padding: 1rem;
 }
@@ -22,11 +32,12 @@
 
 /* Sidebar navigation */
 .dashboard-sidenav {
-  width: 200px;
-  background-color: #ffffff;
-  color: #333333;
+  width: 220px;
+  background-color: #1A237E;
+  color: #ffffff;
 }
 
 .dashboard-sidenav a {
-  color: #333333;
+  color: #ffffff;
+  font-family: Roboto, Montserrat, sans-serif;
 }
