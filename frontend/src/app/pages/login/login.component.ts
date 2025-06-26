@@ -77,7 +77,14 @@ export class LoginComponent {
       return;
     }
 
-    const redirectUrl = role === 'ADMIN' ? '/admin' : '/dashboard';
+    let redirectUrl = '/dashboard';
+    if (role === 'ADMIN') {
+      redirectUrl = '/admin';
+    } else if (role === 'OFICIAL') {
+      redirectUrl = '/oficiais';
+    } else if (role === 'GRADUADO') {
+      redirectUrl = '/graduados';
+    }
     this.logger.log('Redirecionando para:', redirectUrl);
     this.router.navigate([redirectUrl]);
   }
