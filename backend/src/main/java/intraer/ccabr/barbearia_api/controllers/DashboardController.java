@@ -63,7 +63,11 @@ public class DashboardController {
         LocalDate start = today.minusDays(6);
         List<Object[]> results = agendamentoRepository.countByDataSince(start);
         return results.stream()
-                .map(arr -> new WeeklyCountDTO((LocalDate) arr[0], (Long) arr[1]))
+                .map(arr -> {
+                    LocalDate data = (LocalDate) arr[0];
+                    Long total = (Long) arr[1];
+                    return new WeeklyCountDTO(data, total);
+                })
                 .toList();
     }
 

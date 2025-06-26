@@ -153,8 +153,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     if (!this.weeklyChart || this.weekly.length === 0) {
       return;
     }
-    const labels = this.weekly.map(w => w.date);
-    const values = this.weekly.map(w => w.count);
+    const labels = this.weekly.map(w => w.data);
+    const values = this.weekly.map(w => w.total);
     if (this.weeklyChartInstance) {
       this.weeklyChartInstance.destroy();
     }
