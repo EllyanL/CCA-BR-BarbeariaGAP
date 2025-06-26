@@ -8,6 +8,8 @@ import { Chart } from 'chart.js/auto';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 
 @Component({
@@ -26,6 +28,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   displayedColumns = ['data', 'hora', 'militar', 'categoria', 'actions'];
   @ViewChild('categoryChart') categoryChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
+  @ViewChild(MatSort) sort?: MatSort;
   chart?: Chart;
   weeklyChartInstance?: Chart;
 
@@ -47,6 +51,12 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.renderCategoryChart();
     this.renderWeeklyChart();
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+    }
   }
 
   loadStats(): void {
@@ -139,6 +149,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       category: this.filterCategory,
       militar: this.filterMilitar
     });
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
   }
   
 
@@ -167,15 +180,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       this.weeklyChartInstance.destroy();
     }
     this.weeklyChartInstance = new Chart(this.weeklyChart.nativeElement, {
-      type: 'line',
+      type: 'bar',
       data: {
         labels,
         datasets: [
           {
             label: 'Agendamentos',
             data: values,
-            fill: false,
-            borderColor: '#3f51b5'
+            backgroundColor: '#3f51b5'
           }
         ]
       },

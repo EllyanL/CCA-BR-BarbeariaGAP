@@ -1,49 +1,81 @@
 .dashboard-container {
   height: 100vh;
-  background-color: #0D47A1;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
   font-family: Roboto, Montserrat, sans-serif;
 }
+
 .dashboard-main {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
+
 .dashboard-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: #0D47A1;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
+  border-bottom: 1px solid #ccc;
 }
+
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   padding: 1rem;
 }
+
+.cards mat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+}
+
+.cards mat-card mat-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .dashboard-table {
   width: 100%;
   margin: 1rem 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
+
 .filters {
   display: flex;
   gap: 1rem;
   padding: 0 1rem;
   flex-wrap: wrap;
 }
-.create-button {
-  margin: 1rem;
+
+@media (max-width: 767px) {
+  .dashboard-table {
+    overflow-x: auto;
+  }
 }
 
 /* Sidebar navigation */
 .dashboard-sidenav {
   width: 220px;
-  background-color: #1A237E;
-  color: #ffffff;
+  background-color: #ffffff;
+  color: #000000;
+  border-right: 1px solid #ccc;
 }
 
 .dashboard-sidenav a {
-  color: #ffffff;
+  color: #0D47A1;
+  background-color: #e3f2fd;
+  margin: 0.25rem 0.5rem;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  text-align: center;
   font-family: Roboto, Montserrat, sans-serif;
 }

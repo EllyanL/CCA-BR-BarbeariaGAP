@@ -16,27 +16,42 @@
 
     <div class="cards">
       <mat-card>
-        <mat-card-title>Agendamentos Hoje</mat-card-title>
+        <mat-card-header>
+          <mat-icon>event</mat-icon>
+          <mat-card-title>Agendamentos Hoje</mat-card-title>
+        </mat-card-header>
         <mat-card-content>{{ stats?.agendamentosHoje }}</mat-card-content>
       </mat-card>
       <mat-card>
-        <mat-card-title>Total Usuários</mat-card-title>
+        <mat-card-header>
+          <mat-icon>people</mat-icon>
+          <mat-card-title>Total Usuários</mat-card-title>
+        </mat-card-header>
         <mat-card-content>{{ stats?.totalUsuarios }}</mat-card-content>
       </mat-card>
       <mat-card>
-        <mat-card-title>Ocupação Atual</mat-card-title>
+        <mat-card-header>
+          <mat-icon>bar_chart</mat-icon>
+          <mat-card-title>Ocupação Atual</mat-card-title>
+        </mat-card-header>
         <mat-card-content>
           <mat-progress-bar mode="determinate" [value]="stats?.ocupacaoAtual || 0"></mat-progress-bar>
         </mat-card-content>
       </mat-card>
       <mat-card>
-        <mat-card-title>Distribuição por Categoria</mat-card-title>
+        <mat-card-header>
+          <mat-icon>pie_chart</mat-icon>
+          <mat-card-title>Distribuição por Categoria</mat-card-title>
+        </mat-card-header>
         <mat-card-content>
           <canvas #categoryChart></canvas>
         </mat-card-content>
       </mat-card>
       <mat-card>
-        <mat-card-title>Últimos 7 dias</mat-card-title>
+        <mat-card-header>
+          <mat-icon>calendar_today</mat-icon>
+          <mat-card-title>Últimos 7 dias</mat-card-title>
+        </mat-card-header>
         <mat-card-content>
           <canvas #weeklyChart></canvas>
         </mat-card-content>
@@ -66,21 +81,21 @@
       </mat-form-field>
     </div>
 
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 dashboard-table">
+    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 dashboard-table">
       <ng-container matColumnDef="data">
-        <th mat-header-cell *matHeaderCellDef>Data</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
         <td mat-cell *matCellDef="let a">{{ a.data }}</td>
       </ng-container>
       <ng-container matColumnDef="hora">
-        <th mat-header-cell *matHeaderCellDef>Hora</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
         <td mat-cell *matCellDef="let a">{{ a.hora }}</td>
       </ng-container>
       <ng-container matColumnDef="militar">
-        <th mat-header-cell *matHeaderCellDef>Militar</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Militar</th>
         <td mat-cell *matCellDef="let a">{{ a.militar?.nomeCompleto }}</td>
       </ng-container>
       <ng-container matColumnDef="categoria">
-        <th mat-header-cell *matHeaderCellDef>Categoria</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
         <td mat-cell *matCellDef="let a">{{ a.categoria }}</td>
       </ng-container>
       <ng-container matColumnDef="actions">
@@ -94,8 +109,6 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
 
-    <button mat-raised-button color="accent" class="create-button">
-      + Criar Agendamento Manual
-    </button>
+    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
   </mat-sidenav-content>
 </mat-sidenav-container>
