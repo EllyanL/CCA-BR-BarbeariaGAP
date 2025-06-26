@@ -88,13 +88,13 @@ describe('LoginComponent', () => {
     expect(router.navigate).toHaveBeenCalledWith(['/graduados']);
   });
 
-  it('redirects ADMIN users to /dashboard', () => {
+  it('redirects ADMIN users to /admin/dashboard', () => {
     authService.login.and.returnValue(of({ token: 't', role: 'ADMIN', om: 'CCA-BR' }));
     component.cpf = '3';
     component.senha = 's';
 
     component.onLogin();
 
-    expect(router.navigate).toHaveBeenCalledOnceWith(['/dashboard']);
+    expect(router.navigate).toHaveBeenCalledOnceWith(['/admin/dashboard']);
   });
 });
