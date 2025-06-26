@@ -2,7 +2,6 @@ package intraer.ccabr.barbearia_api.services;
 
 import intraer.ccabr.barbearia_api.dtos.*;
 import intraer.ccabr.barbearia_api.models.Militar;
-import intraer.ccabr.barbearia_api.infra.security.TokenService;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -35,13 +34,10 @@ public class LdapService {
 
     private final MilitarRepository militarRepository;
 
-    private final TokenService tokenService;
-
     private final AuthenticationService authenticationService;
 
-    public LdapService(MilitarRepository militarRepository, TokenService tokenService, AuthenticationService authenticationService) {
+    public LdapService(MilitarRepository militarRepository, AuthenticationService authenticationService) {
         this.militarRepository = militarRepository;
-        this.tokenService = tokenService;
         this.authenticationService = authenticationService;
     }
 
@@ -97,10 +93,10 @@ public class LdapService {
      * Autentica o usuário via LDAP usando as credenciais fornecidas.
      *
      * @param data Dados de autenticação (CPF e senha).
-     * @return ResponseEntity contendo um LoginResponseDTO com o token JWT se
-     *         a autenticação LDAP for bem-sucedida; retorna erro em caso de falha.
+     * @return {@code true} se a autenticação e o eventual registro no banco forem bem-sucedidos;
+     *         caso contrário, {@code false}.
      */
-    public ResponseEntity<LoginResponseDTO> authenticateLdap(AuthenticationDTO data) {
+    public boolean authenticateLdap(AuthenticationDTO data) {
         DirContext ctx = null;
         try {
             ctx = createLdapContext(data);
@@ -108,7 +104,7 @@ public class LdapService {
     
             if (ldapDataList.isEmpty()) {
                 logger.warn("❌ Nenhum usuário encontrado no LDAP para CPF: {}", data.cpf());
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                return false;
             }
     
             Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
@@ -131,7 +127,7 @@ public class LdapService {
                 Optional<Militar> registrado = authenticationService.registerNewUser(registerDTO);
                 if (registrado.isEmpty()) {
                     logger.error("❌ Erro ao registrar novo usuário no banco.");
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+                    return false;
                 }
     
                 militar = registrado.get();
@@ -142,15 +138,11 @@ public class LdapService {
                 logger.info("✅ Usuário já existente no banco. CPF: {}", militar.getCpf());
             }
     
-            // Geração do token
-            String token = tokenService.generateToken(militar);
-            logger.debug("🔐 Token gerado com sucesso: {}", token);
-    
-            return ResponseEntity.ok(new LoginResponseDTO(token));
-    
+            return true;
+
         } catch (NamingException e) {
             logger.error("❌ Erro LDAP ao autenticar CPF {}: {}", data.cpf(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return false;
     
         } finally {
             if (ctx != null) {
@@ -161,7 +153,7 @@ public class LdapService {
                 }
             }
         }
-    }    
+    }
 
     /**
      * Cria e configura um contexto LDAP para autenticação.

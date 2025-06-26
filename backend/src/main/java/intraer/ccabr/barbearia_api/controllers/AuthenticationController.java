@@ -119,8 +119,8 @@ public class AuthenticationController {
 
 
         // 🔐 Autenticação LDAP para os demais
-        ResponseEntity<LoginResponseDTO> ldapResponse = ldapService.authenticateLdap(data);
-        if (ldapResponse == null || !ldapResponse.getStatusCode().is2xxSuccessful()) {
+        boolean ldapSuccess = ldapService.authenticateLdap(data);
+        if (!ldapSuccess) {
             logger.warn("❌ Autenticação LDAP falhou.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
