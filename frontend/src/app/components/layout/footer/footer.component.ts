@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'app-footer',
   template: `<footer>
   <span class="footer__copyright">
-    © {{ ano }} Desenvolvido e mantido pelo Centro de Computação da Aeronáutica de Brasília - CCA-BR
+    © 2025 Desenvolvido e mantido pelo Centro de Computação da Aeronáutica de Brasília - CCA-BR
     <a href="https://www.ccabr.intraer/" target="_blank">
       <img src="assets/images/logo-ccabr.png" width="25px" alt="Logo do CCA-BR" />
     </a>
@@ -45,10 +45,4 @@ import { Component } from '@angular/core';
     }
   `]
 })
-export class FooterComponent {
-  ano: number;
-
-  constructor() {
-    this.ano = new Date().getFullYear();  // Pega o ano atual
-  }
-}
+export class FooterComponent {}
