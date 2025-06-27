@@ -1,0 +1,12 @@
+.usuarios-container {
+  height: 100%;
+}
+
+.usuarios-content {
+  padding: 1rem;
+}
+
+.usuarios-table {
+  width: 100%;
+  margin-bottom: 1rem;
+}
