@@ -10,7 +10,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { CapitalizePipe } from './pipes/capitalize.pipe';
 import { CpfMaskDirective } from './directives/cpf-mask.directive';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { DialogoAgendamentoComponent } from './components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoCancelamentoComponent } from './components/agendamento/dialogo-cancelamento/dialogo-cancelamento.component';
 import { DialogoDesmarcarComponent } from './components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
@@ -75,7 +74,6 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     HorariosComponent,
     DialogoDesmarcarComponent,
     CpfMaskDirective,
-    DashboardComponent,
     AdminDashboardComponent,
     SidebarComponent,
     UsuariosComponent,
