@@ -47,6 +47,7 @@ import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { NotAuthorizedComponent } from './pages/not-authorized/not-authorized.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { OficiaisComponent } from './pages/oficiais/oficiais.component';
+import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { OrientacoesComponent } from './components/agendamento/orientacoes/orientacoes.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -76,6 +77,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     DashboardComponent,
     AdminDashboardComponent,
     SidebarComponent,
+    UsuariosComponent,
   ],
   imports: [
     BrowserModule,

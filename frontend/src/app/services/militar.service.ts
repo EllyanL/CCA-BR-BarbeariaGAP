@@ -24,4 +24,13 @@ export class MilitarService {
       })
     );
   }
+
+  getMilitares(): Observable<Militar[]> {
+    return this.http.get<Militar[]>(this.apiUrl).pipe(
+      catchError(error => {
+        this.logger.error('Erro ao buscar militares: ', error);
+        throw error;
+      })
+    );
+  }
 }
