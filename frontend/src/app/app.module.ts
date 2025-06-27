@@ -21,6 +21,7 @@ import { FormsModule } from '@angular/forms';
 import { GraduadosComponent } from './pages/graduados/graduados.component';
 import { HeaderComponent } from './components/layout/header/header.component';
 import { SidebarComponent } from './components/layout/sidebar/sidebar.component';
+import { AdminNavbarComponent } from './components/admin-navbar/admin-navbar.component';
 import { HorariosComponent } from './pages/horarios/horarios.component';
 import { LoginComponent } from './pages/login/login.component';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -78,6 +79,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     AdminDashboardComponent,
     SidebarComponent,
     UsuariosComponent,
+    AdminNavbarComponent,
   ],
   imports: [
     BrowserModule,
@@ -115,6 +117,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
   ],
+  exports: [AdminNavbarComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

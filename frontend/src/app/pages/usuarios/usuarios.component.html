@@ -1,18 +1,4 @@
-<mat-sidenav-container class="usuarios-container">
-  <mat-sidenav mode="side" opened class="dashboard-sidenav">
-    <mat-nav-list>
-      <a mat-list-item routerLink="/admin/dashboard">Dashboard</a>
-      <a mat-list-item routerLink="/admin/horarios" [queryParams]="{ categoria: 'GRADUADO' }">Horários - Graduados</a>
-      <a mat-list-item routerLink="/admin/horarios" [queryParams]="{ categoria: 'OFICIAL' }">Horários - Oficiais</a>
-      <a mat-list-item routerLink="/admin/usuarios">Usuários</a>
-      <a mat-list-item (click)="logout()">Logout</a>
-    </mat-nav-list>
-  </mat-sidenav>
-  <mat-sidenav-content class="usuarios-content">
-    <mat-toolbar color="primary" class="dashboard-header">
-      <img src="assets/images/logo-gapbr.png" alt="Logo GAP" class="navbar-logo" />
-      Painel Administrativo – Barbearia Militar
-    </mat-toolbar>
+<app-admin-navbar [containerClass]="'usuarios-container'" [contentClass]="'usuarios-content'">
     <h1>Usuários</h1>
 
     <input (input)="applyFilter($event)" placeholder="Filtrar" />
@@ -44,5 +30,4 @@
     </table>
 
     <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+</app-admin-navbar>
