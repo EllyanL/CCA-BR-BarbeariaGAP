@@ -11,34 +11,6 @@
   margin-bottom: 1rem;
 }
 
-/* Copiados do admin dashboard para manter consistência visual */
-.dashboard-sidenav {
-  width: 220px;
-  background-color: #ffffff;
-  color: #000000;
-  border-right: 1px solid #ccc;
-}
 
-.dashboard-sidenav a {
-  color: #0D47A1;
-  background-color: #e3f2fd;
-  margin: 0.25rem 0.5rem;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  text-align: center;
-  font-family: Roboto, Montserrat, sans-serif;
-}
 
-.dashboard-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: #ffffff;
-  color: #000000;
-  border-bottom: 1px solid #ccc;
-}
 
-.navbar-logo {
-  height: 40px;
-  margin-right: 8px;
-}

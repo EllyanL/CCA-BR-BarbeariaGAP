@@ -333,19 +333,6 @@ mat-icon {
   background-color: #ffab40;
 }
 
-/* === Sidenav === */
-.sidenav {
-  width: 200px;
-  background-color: #ffffff;
-  color: #333333;
-}
-
-.sidenav a {
-  color: #333333;
-}
-
-/* === Page Header === */
-.page-header {
   color: #1976d2;
   margin: 0 0 1rem 0;
 }
