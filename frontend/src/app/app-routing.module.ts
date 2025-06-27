@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './pages/admin/admin.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
 import { AdminGuard } from './guards/admin.guard';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { GraduadoGuard } from './guards/graduado.guard';
 import { GraduadosComponent } from './pages/graduados/graduados.component';
 import { HorariosComponent } from './pages/horarios/horarios.component';
@@ -25,7 +24,6 @@ const routes: Routes = [
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
     { path: 'admin/dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard Admin' }, canActivate: [AdminGuard] },
     { path: 'admin/usuarios', component: UsuariosComponent, data: { title: 'Usuários' }, canActivate: [AdminGuard] },
-    { path: 'dashboard', component: DashboardComponent, data: { title: 'Dashboard' }, canActivate: [UserGuard] },
     { path: 'not-authorized', component: NotAuthorizedComponent, data: { title: 'Acesso não autorizado' } },
     { path: '**', component: NotFoundComponent, data: { title: 'Página não encontrada' } }
   ];
