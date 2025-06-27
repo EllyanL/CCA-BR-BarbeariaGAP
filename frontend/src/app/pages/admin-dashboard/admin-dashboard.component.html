@@ -52,24 +52,23 @@
 
     <div class="filters">
       <mat-form-field appearance="fill">
-        <mat-label>Data</mat-label>
-        <input matInput [matDatepicker]="datePicker" [(ngModel)]="filterDate" (dateChange)="applyFilters()">
-        <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-        <mat-datepicker #datePicker></mat-datepicker>
+        <mat-label>Saram</mat-label>
+        <input matInput [(ngModel)]="filterSaram" (input)="applyFilters()" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Categoria</mat-label>
-        <mat-select [(ngModel)]="filterCategory" (selectionChange)="applyFilters()">
-          <mat-option value="">Todas</mat-option>
-          <mat-option value="GRADUADO">Graduado</mat-option>
-          <mat-option value="OFICIAL">Oficial</mat-option>
-        </mat-select>
+        <mat-label>Nome</mat-label>
+        <input matInput [(ngModel)]="filterNome" (input)="applyFilters()" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
-        <mat-label>Militar</mat-label>
-        <input matInput placeholder="Nome do Militar" [(ngModel)]="filterMilitar" (input)="applyFilters()" />
+        <mat-label>Posto/Grad</mat-label>
+        <input matInput [(ngModel)]="filterPostoGrad" (input)="applyFilters()" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput [(ngModel)]="filterEmail" (input)="applyFilters()" />
       </mat-form-field>
     </div>
 

@@ -21,9 +21,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   stats?: DashboardStats;
   recent: Agendamento[] = [];
   dataSource = new MatTableDataSource<Agendamento>([]);
-  filterDate: string | null = null;
-  filterCategory = '';
-  filterMilitar = '';
+  filterSaram = '';
+  filterNome = '';
+  filterPostoGrad = '';
+  filterEmail = '';
   weekly: WeeklyCount[] = [];
   displayedColumns = ['data', 'hora', 'militar', 'categoria', 'actions'];
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
@@ -104,22 +105,28 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   applyFilters(): void {
     this.dataSource.filterPredicate = (ag: Agendamento, filter: string): boolean => {
       const f = JSON.parse(filter);
-  
-      const matchesDate = f.date ? ag.data === f.date : true;
-      const matchesCategory = f.category
-        ? (ag.categoria || '').toLowerCase().includes(f.category.toLowerCase())
+
+      const matchesSaram = f.saram
+        ? (ag.militar?.saram || '').toLowerCase().includes(f.saram.toLowerCase())
         : true;
-      const matchesMilitar = f.militar
-        ? (ag.militar?.nomeCompleto || '').toLowerCase().includes(f.militar.toLowerCase())
+      const matchesNome = f.nome
+        ? (ag.militar?.nomeCompleto || '').toLowerCase().includes(f.nome.toLowerCase())
         : true;
-  
-      return matchesDate && matchesCategory && matchesMilitar;
+      const matchesPostoGrad = f.postoGrad
+        ? (ag.militar?.postoGrad || '').toLowerCase().includes(f.postoGrad.toLowerCase())
+        : true;
+      const matchesEmail = f.email
+        ? (ag.militar?.email || '').toLowerCase().includes(f.email.toLowerCase())
+        : true;
+
+      return matchesSaram && matchesNome && matchesPostoGrad && matchesEmail;
     };
-  
+
     this.dataSource.filter = JSON.stringify({
-      date: this.filterDate,
-      category: this.filterCategory,
-      militar: this.filterMilitar
+      saram: this.filterSaram,
+      nome: this.filterNome,
+      postoGrad: this.filterPostoGrad,
+      email: this.filterEmail
     });
     if (this.paginator) {
       this.paginator.firstPage();
