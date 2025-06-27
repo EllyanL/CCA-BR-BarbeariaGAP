@@ -573,7 +573,15 @@ import { LoggingService } from 'src/app/services/logging.service';
         this.router.navigate(['/auth/login']);
         return;
       }
-    
+
+      const dataIso = this.converterParaDataISO(dia);
+      const agendamentoDate = new Date(`${dataIso}T${horario}`);
+      const agora = new Date(Date.now() + this.timeOffsetMs);
+      if (agendamentoDate.getTime() < agora.getTime()) {
+        this.snackBar.open('Não é possível agendar horários passados.', 'Ciente', { duration: 3000 });
+        return;
+      }
+
       const agendamento: Agendamento = {
         data: this.converterParaDataISO(dia),
         hora: horario,

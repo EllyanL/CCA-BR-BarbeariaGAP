@@ -18,6 +18,7 @@ describe('HorariosComponent', () => {
   let horariosService: jasmine.SpyObj<HorariosService>;
   let agendamentoService: jasmine.SpyObj<AgendamentoService>;
   let authService: jasmine.SpyObj<AuthService>;
+  let snack: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(() => {
     horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase']);
@@ -27,7 +28,7 @@ describe('HorariosComponent', () => {
     const userService = { userData$: of([{ cpf: '123' }]) } as Partial<UserService>;
     const route = { queryParams: of({}) } as Partial<ActivatedRoute>;
     const dialog = { open: () => {} } as unknown as MatDialog;
-    const snack = { open: () => {} } as unknown as MatSnackBar;
+    snack = jasmine.createSpyObj('MatSnackBar', ['open']);
     const router = { navigate: jasmine.createSpy('navigate') } as Partial<Router>;
 
     TestBed.configureTestingModule({
@@ -170,5 +171,16 @@ describe('HorariosComponent', () => {
 
     const resultado = component.isAgendamentoDesmarcavel(agendamento);
     expect(resultado).toBeFalse();
+  });
+
+  it('agendarHorario não chama serviço para datas passadas', () => {
+    authService.isAuthenticated.and.returnValue(true);
+    authService.getUsuarioAutenticado.and.returnValue({ cpf: '123' } as Militar);
+    spyOn(snack, 'open');
+    const past = new Date(Date.now() - 60 * 60 * 1000);
+    const dia = `segunda - ${past.getDate().toString().padStart(2, '0')}/${(past.getMonth()+1).toString().padStart(2, '0')}`;
+    component.agendarHorario(dia, '08:00');
+    expect(agendamentoService.createAgendamento).not.toHaveBeenCalled();
+    expect(snack.open).toHaveBeenCalled();
   });
 });
