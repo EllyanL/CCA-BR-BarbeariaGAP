@@ -267,6 +267,11 @@ public class AgendamentoService {
         if (LocalDateTime.now().isBefore(inicioDaSemana)) {
             throw new IllegalArgumentException("Agendamentos só são permitidos a partir de segunda às 09:10.");
         }
+
+        // bloqueia agendamentos em datas/horas já passadas
+        if (!podeAgendarDataHora(agendamento.getData(), agendamento.getHora())) {
+            throw new IllegalArgumentException("Não é possível agendar horários passados.");
+        }
     
         
         
