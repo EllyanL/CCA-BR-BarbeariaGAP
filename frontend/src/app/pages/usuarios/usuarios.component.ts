@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { LoggingService } from '../../services/logging.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -18,7 +19,11 @@ export class UsuariosComponent implements OnInit {
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
 
-  constructor(private militarService: MilitarService, private logger: LoggingService) {}
+  constructor(
+    private militarService: MilitarService,
+    private logger: LoggingService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.militarService.getMilitares().subscribe({
@@ -51,5 +56,9 @@ export class UsuariosComponent implements OnInit {
     if (this.paginator) {
       this.paginator.firstPage();
     }
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }
