@@ -489,7 +489,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   private desabilitarBotoesPorHorario(): boolean {
-    const now = new Date();
+    const now = new Date(Date.now() + this.timeOffsetMs);
     const dayOfWeek = now.getDay();
     const hours = now.getHours();
     const minutes = now.getMinutes();
