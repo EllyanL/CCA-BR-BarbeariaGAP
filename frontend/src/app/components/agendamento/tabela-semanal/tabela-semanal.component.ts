@@ -1,6 +1,6 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service';
-import { Observable, of, Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { catchError, delay, map, tap } from 'rxjs/operators';
 
@@ -10,14 +10,14 @@ import { DialogoAgendamentoComponent } from '../dialogo-agendamento/dialogo-agen
 import { DialogoCancelamentoComponent } from '../dialogo-cancelamento/dialogo-cancelamento.component';
 import { DialogoDetalhesAgendamentoComponent } from '../dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
 import { Horario } from 'src/app/models/horario';
+import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Militar } from 'src/app/models/militar';
 import { MilitarService } from 'src/app/services/militar.service';
 import { Router } from '@angular/router';
-import { UserService } from 'src/app/services/user.service';
 import { ServerTimeService } from 'src/app/services/server-time.service';
-import { LoggingService } from 'src/app/services/logging.service';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -497,7 +497,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     const startHour = 9;
     const startMinute = 10;
     const endDay = 5; // 5 = Sexta-feira
-    const endHour = 9;
+    const endHour = 18;
     const endMinute = 10;
 
     if (dayOfWeek > startDay && dayOfWeek < endDay) {
@@ -512,7 +512,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    this.feedbackMessageTitle = 'Só é possível agendar entre 9h10 da Segunda e 9h10 de Sexta. Aguarde!';
+    this.feedbackMessageTitle = 'Só é possível agendar entre 9h10 da Segunda e 18h10 de Sexta. Aguarde!';
     return true;
   }
 
