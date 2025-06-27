@@ -5,6 +5,8 @@
   <mat-sidenav-content class="usuarios-content">
     <h1>Usuários</h1>
 
+    <input (input)="applyFilter($event)" placeholder="Filtrar" />
+
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 usuarios-table">
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
