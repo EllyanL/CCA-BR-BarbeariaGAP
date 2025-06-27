@@ -21,7 +21,7 @@ import { Component } from '@angular/core';
       </mat-list-item>
       <mat-list-item class="orientacoes-card__list-item">
         <mat-icon matListIcon>schedule</mat-icon>
-        Só é possível agendar a partir de 09:10 da Segunda.
+        Os agendamentos estão disponíveis diariamente das 09:10 às 18:00.
       </mat-list-item>
       <mat-list-item class="orientacoes-card__list-item">
         <mat-icon matListIcon>repeat</mat-icon>
