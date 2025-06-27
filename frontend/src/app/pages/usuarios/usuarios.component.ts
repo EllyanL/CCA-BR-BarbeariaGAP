@@ -14,6 +14,7 @@ import { LoggingService } from '../../services/logging.service';
 export class UsuariosComponent implements OnInit {
   displayedColumns: string[] = ['id', 'nomeCompleto', 'postoGrad', 'categoria', 'email'];
   dataSource = new MatTableDataSource<Militar>([]);
+  filterValue = '';
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
 
@@ -23,6 +24,15 @@ export class UsuariosComponent implements OnInit {
     this.militarService.getMilitares().subscribe({
       next: militares => {
         this.dataSource.data = militares;
+        this.dataSource.filterPredicate = (m: Militar, filter: string): boolean => {
+          const f = filter.trim().toLowerCase();
+          return (
+            (m.nomeCompleto || '').toLowerCase().includes(f) ||
+            (m.postoGrad || '').toLowerCase().includes(f) ||
+            (m.categoria || '').toLowerCase().includes(f) ||
+            (m.email || '').toLowerCase().includes(f)
+          );
+        };
         if (this.paginator) {
           this.dataSource.paginator = this.paginator;
         }
@@ -32,5 +42,14 @@ export class UsuariosComponent implements OnInit {
       },
       error: err => this.logger.error('Erro ao buscar militares:', err)
     });
+  }
+
+  applyFilter(event: Event): void {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.filterValue = filterValue.trim().toLowerCase();
+    this.dataSource.filter = this.filterValue;
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
   }
 }
