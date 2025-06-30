@@ -138,7 +138,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
           this.cpfMilitarLogado = userData[0].cpf;
           this.saramMilitarLogado = userData[0].saram;
           this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
-          this.usuarioCarregado = true;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
           this.loadAllData();
@@ -321,8 +320,16 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
         this.agendamentos = [];
         return of([]);
       })
-    ).subscribe(() => {
-      this.saveAgendamentos();
+    ).subscribe({
+      next: () => {
+        this.saveAgendamentos();
+      },
+      error: () => {
+        this.usuarioCarregado = true;
+      },
+      complete: () => {
+        this.usuarioCarregado = true;
+      }
     });
   }
 
