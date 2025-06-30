@@ -74,16 +74,10 @@ public class AgendamentoService {
     }
 
     public boolean podeAgendar15Dias(String saram) {
-        LocalDate hoje = LocalDate.now();
-        LocalDate quinzeDiasAtras = hoje.minusDays(15);
-    
-        Optional<Agendamento> ultimoAgendamentoOpt = agendamentoRepository.findUltimoAgendamentoBySaram(saram);
-    
-        if (ultimoAgendamentoOpt.isPresent()) {
-            Agendamento ultimoAgendamento = ultimoAgendamentoOpt.get();
-            return ultimoAgendamento.getData().isBefore(quinzeDiasAtras);
-        }
-        return true;
+        LocalDate limite = LocalDate.now().minusDays(15);
+        boolean existe = agendamentoRepository
+                .existsByMilitarSaramAndDataGreaterThanEqual(saram, limite);
+        return !existe;
     }
 
     public boolean podeAgendarDataHora(LocalDate data, LocalTime hora) {
