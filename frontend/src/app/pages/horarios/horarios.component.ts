@@ -693,7 +693,8 @@ import { LoggingService } from 'src/app/services/logging.service';
     }
 
     isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
-      return agendamento.militar?.saram === this.saramUsuario;
+      const saram = agendamento.usuarioSaram || agendamento.militar?.saram;
+      return saram === this.saramUsuario;
     }
     
     

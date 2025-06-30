@@ -17,6 +17,7 @@ public class AgendamentoDTO {
     private String diaSemana;
     private String categoria;
     private UserDTO militar;
+    private String usuarioSaram;
     private Long timestamp;
 
     public AgendamentoDTO(Agendamento agendamento) {
@@ -47,6 +48,7 @@ public class AgendamentoDTO {
             this.militar.setSecao(m.getSecao());
             this.militar.setRamal(m.getRamal());
             this.militar.setRole(m.getRole().toString());
+            this.usuarioSaram = m.getSaram();
         }
     }
 }
