@@ -42,6 +42,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     horarioValido: boolean = false;
     categoriaSelecionada: string = 'GRADUADO';
     cpfUsuario: string = '';
+    saramUsuario: string = '';
     timeOffsetMs: number = 0;
     private userDataSubscription?: Subscription;
     private horariosSub?: Subscription;
@@ -90,6 +91,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       ).subscribe(userData => {
         if (userData && userData.length > 0) {
           this.cpfUsuario = userData[0].cpf;
+          this.saramUsuario = userData[0].saram;
           this.militarLogado = userData[0].nomeDeGuerra;
           this.omMilitar = userData[0].om;
           this.carregarAgendamentos();
@@ -691,8 +693,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     }
 
     isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
-      const usuario = this.authService.getUsuarioAutenticado();
-      return agendamento.militar?.cpf === usuario?.cpf;
+      return agendamento.militar?.saram === this.saramUsuario;
     }
     
     
