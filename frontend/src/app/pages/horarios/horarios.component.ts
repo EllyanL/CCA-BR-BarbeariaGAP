@@ -307,6 +307,8 @@ import { LoggingService } from 'src/app/services/logging.service';
           next: (response: any) => {
             this.atualizarHorarioLocal(dia, horario, true);
             this.snackBar.open(response.mensagem, 'Ciente', { duration: 3000 });
+            this.carregarHorariosDaSemana();
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
           },
           error: (error) => {
             this.snackBar.open(
