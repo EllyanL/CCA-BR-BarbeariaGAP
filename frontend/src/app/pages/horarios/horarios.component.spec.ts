@@ -21,7 +21,7 @@ describe('HorariosComponent', () => {
   let snack: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase']);
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios'], { horariosPorDia$: of({}) });
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
 

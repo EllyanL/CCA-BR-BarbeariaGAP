@@ -43,6 +43,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     cpfUsuario: string = '';
     timeOffsetMs: number = 0;
     private userDataSubscription?: Subscription;
+    private horariosSub?: Subscription;
 
     constructor(
       private horariosService: HorariosService,
@@ -98,7 +99,14 @@ import { LoggingService } from 'src/app/services/logging.service';
               this.categoriaSelecionada = categoria;
             }
             this.carregarHorariosBase();
-            this.carregarHorariosDaSemana();
+            this.horariosService.startPollingHorarios(this.categoriaSelecionada);
+            this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
+              next: h => {
+                this.horariosPorDia = h;
+                this.cdr.detectChanges();
+              },
+              error: err => this.logger.error('Erro ao atualizar horários:', err)
+            });
           });
         } else {
           this.logger.warn('🔐 Dados do usuário ainda não disponíveis.');
@@ -722,6 +730,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 
     ngOnDestroy(): void {
       this.userDataSubscription?.unsubscribe();
+      this.horariosSub?.unsubscribe();
+      this.horariosService.stopPollingHorarios();
     }
 
   }
