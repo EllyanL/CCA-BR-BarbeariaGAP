@@ -142,12 +142,13 @@ import { LoggingService } from 'src/app/services/logging.service';
       }
     }
     
-    carregarHorariosDaSemana(): void { 
+    carregarHorariosDaSemana(): void {
       this.horariosService
         .carregarHorariosDaSemana(this.categoriaSelecionada)
         .subscribe({
           next: (horarios: HorariosPorDia) => {
             this.horariosPorDia = horarios;
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.cdr.detectChanges();
           },
           error: (error: any) => {
@@ -211,9 +212,20 @@ import { LoggingService } from 'src/app/services/logging.service';
           )
           .subscribe({
             next: (horarioSalvo: any) => {
-              this.horariosBaseSemana.push(horarioSalvo.horario);
-              this.ordenarHorarios();
+              if (!this.horariosBaseSemana.includes(horarioSalvo.horario)) {
+                this.horariosBaseSemana.push(horarioSalvo.horario);
+                this.ordenarHorarios();
+              }
+
+              const dia = this.diaSelecionado;
+              const listaDia = this.horariosPorDia[dia] || [];
+              if (!listaDia.some(h => h.horario === horarioSalvo.horario)) {
+                listaDia.push({ horario: horarioSalvo.horario, status: 'DISPONIVEL' });
+                this.horariosPorDia[dia] = listaDia;
+              }
+
               this.carregarHorariosDaSemana();
+              this.horariosService.atualizarHorarios(this.horariosPorDia);
               this.snackBar.open(
                 'Horário base ' + horarioSalvo.horario + ' cadastrado com sucesso.',
                 'Ciente',
@@ -262,7 +274,15 @@ import { LoggingService } from 'src/app/services/logging.service';
         this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
           next: () => {
             this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: 3000 });
+
+            const listaDia = this.horariosPorDia[dia] || [];
+            if (!listaDia.some(h => h.horario === horario)) {
+              listaDia.push({ horario, status: 'DISPONIVEL' });
+              this.horariosPorDia[dia] = listaDia;
+            }
+
             this.carregarHorariosDaSemana();
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.carregarHorariosBase();
             this.horarioPersonalizado = '';
             this.horarioValido = false;
@@ -330,7 +350,16 @@ import { LoggingService } from 'src/app/services/logging.service';
         .subscribe({
           next: (response: any) => {
             this.snackBar.open(response.mensagem, 'Ciente', { duration: 3000 });
+
+            const listaDia = this.horariosPorDia[dia] || [];
+            const idx = listaDia.findIndex(h => h.horario === horario);
+            if (idx !== -1) {
+              listaDia[idx].status = 'INDISPONIVEL';
+              this.horariosPorDia[dia] = listaDia;
+            }
+
             this.carregarHorariosDaSemana(); // ✅ recarrega os dados atualizados
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
           },
           error: (error) => {
             this.logger.error('Erro ao indisponibilizar horário:', error);
@@ -350,8 +379,10 @@ import { LoggingService } from 'src/app/services/logging.service';
           if (!this.horariosPorDia[dia]) {
             this.horariosPorDia[dia] = [];
           }
-    
-          this.horariosPorDia[dia].push({ horario, status: 'DISPONIVEL' });
+
+          if (!this.horariosPorDia[dia].some(h => h.horario === horario)) {
+            this.horariosPorDia[dia].push({ horario, status: 'DISPONIVEL' });
+          }
     
           // Garante que ele exista na base da semana
           if (!this.horariosBaseSemana.includes(horario)) {
@@ -360,6 +391,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           }
     
           this.snackBar.open(`Horário ${horario} adicionado ao dia ${dia}.`, 'Ciente', { duration: 3000 });
+          this.carregarHorariosDaSemana();
           this.horariosService.atualizarHorarios(this.horariosPorDia);
         },
         error: (error) => {
@@ -383,7 +415,15 @@ import { LoggingService } from 'src/app/services/logging.service';
         .subscribe({
           next: () => {
             this.snackBar.open('Horário removido com sucesso.', 'Ciente', { duration: 3000 });
+
+            this.horariosBaseSemana = this.horariosBaseSemana.filter(h => h !== this.horarioPersonalizado);
+            if (this.horariosPorDia[this.diaSelecionado]) {
+              this.horariosPorDia[this.diaSelecionado] = this.horariosPorDia[this.diaSelecionado]
+                .filter(h => h.horario !== this.horarioPersonalizado);
+            }
+
             this.carregarHorariosDaSemana(); // atualiza a tabela
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
           },
           error: (err) => {
             this.logger.error('Erro ao remover horário:', err);
