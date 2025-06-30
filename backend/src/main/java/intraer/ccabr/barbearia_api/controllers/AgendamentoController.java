@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.services.AgendamentoService;
+import intraer.ccabr.barbearia_api.services.HorarioService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -56,16 +57,20 @@ public class AgendamentoController {
 
     private final HorarioRepository horarioRepository;
 
+    private final HorarioService horarioService;
+
     public AgendamentoController(
         AgendamentoService agendamentoService,
         AgendamentoRepository agendamentoRepository,
         MilitarRepository militarRepository,
-        HorarioRepository horarioRepository
+        HorarioRepository horarioRepository,
+        HorarioService horarioService
     ) {
         this.agendamentoService = agendamentoService;
         this.agendamentoRepository = agendamentoRepository;
         this.militarRepository = militarRepository;
         this.horarioRepository = horarioRepository;
+        this.horarioService = horarioService;
     }
 
     @PostMapping
@@ -265,8 +270,11 @@ public class AgendamentoController {
             }
 
             try {
-                agendamentoService.marcarHorarioComoDisponivel(agendamento);
                 agendamentoService.delete(id);
+                horarioService.disponibilizarHorario(
+                        agendamento.getDiaSemana(),
+                        agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        agendamento.getCategoria());
                 return ResponseEntity.noContent().build();
             } catch (DataIntegrityViolationException e) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
