@@ -48,7 +48,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   @Input() categoria: string = '';
   @Input() opcoesPostoGrad: string[] = [];
   @Input() horariosPorDia: { [key: string]: { horario: string, status: string, usuarioId?: number }[] } = {};
-  usuarioAtual: any; 
   oficiais: Militar[] = [];
   graduados: Militar[] = [];
   militarLogado: string = '';
