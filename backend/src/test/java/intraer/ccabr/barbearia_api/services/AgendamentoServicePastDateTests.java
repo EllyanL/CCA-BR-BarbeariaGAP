@@ -38,7 +38,7 @@ class AgendamentoServicePastDateTests {
         ag.setCategoria("GRADUADO");
         ag.setMilitar(m);
 
-        when(repo.existsByMilitarSaramAndDataGreaterThanEqual(eq("123"), any())).thenReturn(false);
+        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
