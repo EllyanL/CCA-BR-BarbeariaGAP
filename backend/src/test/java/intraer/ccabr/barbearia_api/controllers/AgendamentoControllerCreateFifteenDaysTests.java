@@ -81,6 +81,8 @@ class AgendamentoControllerCreateFifteenDaysTests {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/agendamentos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-                .andExpect(MockMvcResultMatchers.status().isConflict());
+                .andExpect(MockMvcResultMatchers.status().isConflict())
+                .andExpect(MockMvcResultMatchers.content().string(
+                        "Você só pode marcar um corte a cada 15 dias."));
     }
 }

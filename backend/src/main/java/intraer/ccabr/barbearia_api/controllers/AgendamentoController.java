@@ -126,6 +126,9 @@ public class AgendamentoController {
             agendamentoService.marcarHorarioComoAgendado(agendamento);
             return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
+            if (e.getMessage() != null && e.getMessage().contains("15 dias")) {
+                return buildResponse("Você só pode marcar um corte a cada 15 dias.", HttpStatus.CONFLICT);
+            }
             return buildResponse("Dados inválidos para agendamento.", HttpStatus.CONFLICT);
         }
     }
