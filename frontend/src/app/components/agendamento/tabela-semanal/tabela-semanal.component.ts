@@ -124,23 +124,28 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   private initAfterTime(): void {
-    this.userDataSubscription = this.userService.userData$.pipe(
-      delay(100)
-    ).subscribe(userData => {
-      if (userData && userData.length > 0 && userData[0].cpf) {
-        this.militarLogado = userData[0].nomeDeGuerra;
-        this.omMilitar = userData[0].om;
-        this.cpfMilitarLogado = userData[0].cpf;
-        this.saramMilitarLogado = userData[0].saram;
-        this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
-        this.usuarioCarregado = true;
-        this.loadAgendamentosFromStorage();
-        this.logger.log('🔐 userData carregado. Chamando loadAllData()');
-        this.loadAllData();
-      } else {
-        this.logger.warn('🔐 userData não carregado. Não foi possível chamar loadAllData().');
-      }
-    });
+    this.userDataSubscription = this.userService.userData$
+      .pipe(delay(100))
+      .subscribe(userData => {
+        if (
+          userData &&
+          userData.length > 0 &&
+          userData[0].saram &&
+          !this.usuarioCarregado
+        ) {
+          this.militarLogado = userData[0].nomeDeGuerra;
+          this.omMilitar = userData[0].om;
+          this.cpfMilitarLogado = userData[0].cpf;
+          this.saramMilitarLogado = userData[0].saram;
+          this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
+          this.usuarioCarregado = true;
+          this.loadAgendamentosFromStorage();
+          this.logger.log('🔐 userData carregado. Chamando loadAllData()');
+          this.loadAllData();
+        } else if (!userData || userData.length === 0) {
+          this.logger.warn('🔐 userData não carregado. Aguardando...');
+        }
+      });
   }
 
   private loadAllData() {  //Chama todos os load*() necessários.
@@ -424,8 +429,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
 
 
 
-  isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean { //Verifica se o agendamento pertence ao usuário logado.
+  isMeuAgendamento(agendamento: Agendamento): boolean {
     return agendamento.militar?.saram === this.saramMilitarLogado;
+  }
+
+  isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
+    return this.isMeuAgendamento(agendamento);
   }
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {
