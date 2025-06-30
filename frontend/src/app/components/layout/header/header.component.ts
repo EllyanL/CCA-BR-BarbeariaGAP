@@ -29,7 +29,7 @@ export const rotateToggle = trigger('rotateToggle', [
         Bem-vindo, <span class="header-card__nome">{{ nomeHeader }}</span>
       </h2>
       <mat-card-title class="header-card__title">
-        BARBEARIA - {{ titleHeader }} - RAMAL {{ ramal }}
+        BARBEARIA - {{ titleHeader }}
         <img
           src="assets/images/logo-gapbr.png"
           alt="Logo do GAP-BR"
@@ -123,7 +123,6 @@ export const rotateToggle = trigger('rotateToggle', [
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Input() titleHeader: string = '';
-  @Input() ramal: string = '';
   nomeHeader: string = '';
 
   private userDataSubscription?: Subscription;

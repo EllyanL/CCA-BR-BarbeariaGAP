@@ -18,8 +18,8 @@ import { UserGuard } from './guards/user.guard';
 const routes: Routes = [
     { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
     { path: 'auth/login', component: LoginComponent, data: { title: 'Login' } },
-    { path: 'oficiais', component: OficiaisComponent, data: { title: 'Oficiais' }, canActivate: [OficialGuard] },
-    { path: 'graduados', component: GraduadosComponent, data: { title: 'Graduados' }, canActivate: [GraduadoGuard] },
+    { path: 'oficiais', component: OficiaisComponent, data: { title: 'BARBEARIA - OFICIAIS' }, canActivate: [OficialGuard] },
+    { path: 'graduados', component: GraduadosComponent, data: { title: 'BARBEARIA - GRADUADOS' }, canActivate: [GraduadoGuard] },
     { path: 'admin', component: AdminComponent, data: { title: 'Admin' }, canActivate: [AdminGuard] },
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
     { path: 'admin/dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard Admin' }, canActivate: [AdminGuard] },
