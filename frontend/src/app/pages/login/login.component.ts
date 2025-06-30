@@ -1,17 +1,9 @@
-import { AuthService } from 'src/app/services/auth.service';
+import { AuthService, LoginResponse } from 'src/app/services/auth.service';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 import { slide } from 'src/app/components/layout/header/header.component';
-
-// Interface para a resposta do login
-export interface LoginResponse {
-  token: string;
-  role: string;
-  postoGrad?: string; // Adicionado para usar na lógica de redirecionamento
-  om?: string; // Adicionado para validação de organização militar
-}
 
 @Component({
   selector: 'app-login',
