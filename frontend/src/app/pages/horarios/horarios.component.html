@@ -110,7 +110,8 @@
                     <b>{{ horario }}</b>
                   </button>
 
-                  <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button disabled>
+                  <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button
+                          (click)="disponibilizarHorario(dia, horario, categoriaSelecionada)">
                           <b>{{ horario }}</b>
                   </button>
 

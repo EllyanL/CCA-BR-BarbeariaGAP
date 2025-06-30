@@ -212,9 +212,8 @@ mat-icon {
 
 
 .botao-hora-indisponivel {
-  background-color: #e0e0e0 !important;
-  color: #666 !important;
-  cursor: not-allowed;
+  background-color: #f44336 !important;
+  color: white !important;
 }
 
 .botao-hora-agendado {
