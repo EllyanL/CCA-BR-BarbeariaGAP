@@ -52,19 +52,19 @@
                 </div>
 
                 <!-- Agendado por outro usuário -->
-                <div *ngSwitchCase="'visualizar'" class="tabela-botao-container">
+                <div *ngSwitchCase="'ocupado'" class="tabela-botao-container">
                   <button
-                    class="tabela-botao botao-agendado"
-                    (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
-                    [attr.title]="getTextTooltip(getAgendamentoParaDiaHora(dia, hora))"
+                    class="tabela-botao botao-agendado-outro"
+                    disabled
+                    title="Horário já agendado por outro usuário"
                   >
                     {{ status.texto.toUpperCase() }}
                   </button>
                 </div>
 
-                <!-- Indisponível ou agendado por outro usuário -->
+                <!-- Indisponível -->
                 <div *ngSwitchDefault class="tabela-horario-indisponivel" [attr.title]="feedbackMessageTitle || 'Este horário não está disponível nesta semana'">
-                  <button mat-raised-button [disabled]="desabilitarTodosOsBotoes() || isAgendamentoDeOutroUsuario(dia, hora.trim())" class="tabela-botao-indisponivel">
+                  <button mat-raised-button disabled class="tabela-botao-indisponivel">
                     {{ status.texto }}
                   </button>
                 </div>

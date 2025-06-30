@@ -104,7 +104,7 @@ describe('TabelaSemanalComponent', () => {
       }];
 
       const status = component.getHorarioStatus('segunda', '08:00');
-      expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
+      expect(status).toEqual({ cor: 'basic', texto: 'Agendado', acao: 'ocupado' });
     });
 
     it('retorna status indisponível quando horário não existe', () => {
@@ -154,6 +154,31 @@ describe('TabelaSemanalComponent', () => {
 
     botao = fixture.debugElement.query(By.css('button.botao-agendado'));
     expect(botao.nativeElement.textContent.trim().toUpperCase()).toBe('AGENDADO');
+
+    component.agendamentos = [{
+      id: 1,
+      data: '',
+      hora: '08:00',
+      diaSemana: 'segunda',
+      categoria: '',
+      militar: {
+        saram: '',
+        cpf: '999',
+        nomeCompleto: '',
+        postoGrad: '',
+        nomeDeGuerra: '',
+        email: '',
+        om: '',
+        categoria: '',
+        secao: '',
+        ramal: ''
+      }
+    }];
+
+    fixture.detectChanges();
+
+    botao = fixture.debugElement.query(By.css('button.botao-agendado-outro'));
+    expect(botao.nativeElement.disabled).toBeTrue();
   });
 
   it('nao abre dialogo se horario for em menos de 15 minutos', () => {

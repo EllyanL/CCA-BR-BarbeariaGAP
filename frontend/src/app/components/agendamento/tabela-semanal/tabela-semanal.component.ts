@@ -466,7 +466,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
       if (this.isAgendamentoDoMilitarLogado(agendamento)) {
         return { cor: "accent", texto: "Agendado", acao: "cancelar" };
       }
-      return { cor: "accent", texto: "Agendado", acao: "visualizar" };
+      return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
 
     const diaSemanaFormatado = dia.split(" - ")[0].trim().toLowerCase();
@@ -477,7 +477,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     }
 
     if (statusHorario === "AGENDADO") {
-      return { cor: "accent", texto: "Agendado", acao: "visualizar" };
+      return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
 
     return { cor: "disabled", texto: "Indisponível", acao: "nenhuma" };
