@@ -25,7 +25,7 @@ describe('HorariosComponent', () => {
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
 
-    const userService = { userData$: of([{ cpf: '123' }]) } as Partial<UserService>;
+    const userService = { userData$: of([{ cpf: '123', saram: '1' }]) } as Partial<UserService>;
     const route = { queryParams: of({}) } as Partial<ActivatedRoute>;
     const dialog = { open: () => {} } as unknown as MatDialog;
     snack = jasmine.createSpyObj('MatSnackBar', ['open']);
@@ -53,6 +53,7 @@ describe('HorariosComponent', () => {
   });
 
   it('carregarAgendamentos seguido de carregarHorariosDaSemana marca horarios reservados como AGENDADO', () => {
+    component.saramUsuario = '1';
     const agendamentos: Agendamento[] = [
       {
         hora: '08:00',
@@ -104,6 +105,7 @@ describe('HorariosComponent', () => {
   });
 
   it('carregarAgendamentos ignora registros passados e mantém AGENDADO apenas para futuros', () => {
+    component.saramUsuario = '1';
     const now = Date.now();
     const pastTimestamp = now - 60 * 60 * 1000; // uma hora atrás
     const futureTimestamp = now + 60 * 60 * 1000; // uma hora a frente
@@ -175,7 +177,7 @@ describe('HorariosComponent', () => {
 
   it('agendarHorario não chama serviço para datas passadas', () => {
     authService.isAuthenticated.and.returnValue(true);
-    authService.getUsuarioAutenticado.and.returnValue({ cpf: '123' } as Militar);
+    authService.getUsuarioAutenticado.and.returnValue({ cpf: '123', saram: '1' } as Militar);
     spyOn(snack, 'open');
     const past = new Date(Date.now() - 60 * 60 * 1000);
     const dia = `segunda - ${past.getDate().toString().padStart(2, '0')}/${(past.getMonth()+1).toString().padStart(2, '0')}`;

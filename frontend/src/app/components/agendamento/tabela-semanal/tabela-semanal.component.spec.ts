@@ -56,7 +56,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('retorna status agendado do usuário', () => {
-      component.cpfMilitarLogado = '123';
+      component.saramMilitarLogado = '123';
       component.agendamentos = [{
         id: 1,
         data: '',
@@ -64,7 +64,7 @@ describe('TabelaSemanalComponent', () => {
         diaSemana: 'segunda',
         categoria: '',
         militar: {
-          saram: '',
+          saram: '123',
           cpf: '123',
           nomeCompleto: '',
           postoGrad: '',
@@ -82,7 +82,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('retorna status agendado por outro usuário', () => {
-      component.cpfMilitarLogado = '123';
+      component.saramMilitarLogado = '123';
       component.agendamentos = [{
         id: 1,
         data: '',
@@ -90,7 +90,7 @@ describe('TabelaSemanalComponent', () => {
         diaSemana: 'segunda',
         categoria: '',
         militar: {
-          saram: '',
+          saram: '999',
           cpf: '999',
           nomeCompleto: '',
           postoGrad: '',
@@ -129,7 +129,7 @@ describe('TabelaSemanalComponent', () => {
     let botao = fixture.debugElement.query(By.css('button.tabela-botao-disponivel'));
     expect(botao.attributes['ng-reflect-color']).toBe('primary');
 
-    component.cpfMilitarLogado = '123';
+    component.saramMilitarLogado = '123';
     component.agendamentos = [{
       id: 1,
       data: '',
@@ -137,7 +137,7 @@ describe('TabelaSemanalComponent', () => {
       diaSemana: 'segunda',
       categoria: '',
       militar: {
-        saram: '',
+        saram: '123',
         cpf: '123',
         nomeCompleto: '',
         postoGrad: '',
@@ -162,7 +162,7 @@ describe('TabelaSemanalComponent', () => {
       diaSemana: 'segunda',
       categoria: '',
       militar: {
-        saram: '',
+        saram: '999',
         cpf: '999',
         nomeCompleto: '',
         postoGrad: '',
