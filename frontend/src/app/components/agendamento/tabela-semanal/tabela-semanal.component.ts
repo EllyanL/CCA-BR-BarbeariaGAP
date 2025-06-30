@@ -66,6 +66,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
   private userDataSubscription?: Subscription;
+  private horariosSub?: Subscription;
   private storageKey: string = '';
 
   constructor(
@@ -144,21 +145,18 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     } else if (this.isCurrentRoute('/oficiais')) {
       this.categoria = 'OFICIAL';
     }
-    this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
-      next: (horarios) => {
+    this.horariosService.startPollingHorarios(this.categoria);
+    this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
+      next: horarios => {
         this.horariosPorDia = horarios;
-  
         const todosHorarios = new Set<string>();
         Object.values(this.horariosPorDia).forEach(lista => {
           lista.forEach(h => todosHorarios.add(h.horario));
         });
         this.horariosBaseSemana = Array.from(todosHorarios).sort();
-  
-        this.logger.log('Horários recebidos:', this.horariosPorDia);
+        this.logger.log('Horários atualizados:', this.horariosPorDia);
       },
-      error: (err) => {
-        this.logger.error('Erro ao carregar horários da semana:', err);
-      }
+      error: err => this.logger.error('Erro ao atualizar horários:', err)
     });
   
     this.desabilitarTodosOsBotoes();
@@ -600,6 +598,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.userDataSubscription?.unsubscribe();
+    this.horariosSub?.unsubscribe();
+    this.horariosService.stopPollingHorarios();
   }
 
 }

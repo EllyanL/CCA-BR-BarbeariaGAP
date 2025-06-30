@@ -1,7 +1,7 @@
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, throwError, interval } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, switchMap, startWith } from 'rxjs/operators';
 
 import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
@@ -43,6 +43,7 @@ export class HorariosService {
     sexta: []
   });
   horariosPorDia$ = this.horariosPorDiaSource.asObservable();
+  private pollingSub?: Subscription;
 
   constructor(
     private http: HttpClient,
@@ -125,6 +126,24 @@ export class HorariosService {
 
   atualizarHorarios(novosHorarios: HorariosPorDia) {
     this.horariosPorDiaSource.next(novosHorarios);
+  }
+
+  startPollingHorarios(categoria: string, intervalMs: number = 30000): void {
+    this.stopPollingHorarios();
+    this.pollingSub = interval(intervalMs)
+      .pipe(
+        startWith(0),
+        switchMap(() => this.carregarHorariosDaSemana(categoria))
+      )
+      .subscribe({
+        next: horarios => this.atualizarHorarios(horarios),
+        error: err => this.logger.error('Erro no polling de horários:', err)
+      });
+  }
+
+  stopPollingHorarios(): void {
+    this.pollingSub?.unsubscribe();
+    this.pollingSub = undefined;
   }
 
   disponibilizarHorario(horario: string, dia: string, categoria: string): Observable<any> {
