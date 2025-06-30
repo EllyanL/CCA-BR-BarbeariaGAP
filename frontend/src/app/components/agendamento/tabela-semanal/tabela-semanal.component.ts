@@ -71,6 +71,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
   private storageKey: string = '';
+  private previousStorageKey: string = '';
 
   constructor(
     private router: Router,
@@ -94,6 +95,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Carrega do sessionStorage os agendamentos associados ao usuário atual.
+  // A chave é definida em initAfterTime() e dados de chaves antigas são
+  // limpos quando um novo usuário faz login.
   private loadAgendamentosFromStorage(): void {
     if (this.storageKey) {
       const data = sessionStorage.getItem(this.storageKey);
@@ -134,16 +138,26 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
           userData[0].saram &&
           !this.usuarioCarregado
         ) {
+          const newKey = `agendamentos-${userData[0].cpf}`;
+          if (this.storageKey && this.storageKey !== newKey) {
+            sessionStorage.removeItem(this.storageKey);
+            this.agendamentos = [];
+          }
           this.militarLogado = userData[0].nomeDeGuerra;
           this.omMilitar = userData[0].om;
           this.cpfMilitarLogado = userData[0].cpf;
           this.saramMilitarLogado = userData[0].saram;
           this.idMilitarLogado = userData[0].id;
-          this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
+          this.previousStorageKey = this.storageKey;
+          this.storageKey = newKey;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
           this.loadAllData();
         } else if (!userData || userData.length === 0) {
+          if (this.storageKey) {
+            sessionStorage.removeItem(this.storageKey);
+            this.agendamentos = [];
+          }
           this.logger.warn('🔐 userData não carregado. Aguardando...');
         }
       });
