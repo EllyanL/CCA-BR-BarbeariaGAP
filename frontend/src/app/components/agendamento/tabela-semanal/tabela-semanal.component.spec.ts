@@ -56,7 +56,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('retorna status agendado do usuário', () => {
-      component.saramMilitarLogado = '123';
+      component.idMilitarLogado = 1;
       component.agendamentos = [{
         id: 1,
         data: '',
@@ -64,6 +64,7 @@ describe('TabelaSemanalComponent', () => {
         diaSemana: 'segunda',
         categoria: '',
         militar: {
+          id: 1,
           saram: '123',
           cpf: '123',
           nomeCompleto: '',
@@ -82,7 +83,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('retorna status agendado por outro usuário', () => {
-      component.saramMilitarLogado = '123';
+      component.idMilitarLogado = 1;
       component.agendamentos = [{
         id: 1,
         data: '',
@@ -90,6 +91,7 @@ describe('TabelaSemanalComponent', () => {
         diaSemana: 'segunda',
         categoria: '',
         militar: {
+          id: 2,
           saram: '999',
           cpf: '999',
           nomeCompleto: '',
@@ -115,6 +117,21 @@ describe('TabelaSemanalComponent', () => {
       const status = component.getHorarioStatus('segunda', '08:00');
       expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
     });
+
+    it('detecta agendamento do usuário via usuarioId', () => {
+      component.idMilitarLogado = 5;
+      component.horariosPorDia = {
+        segunda: [{ horario: '08:00', status: 'AGENDADO', usuarioId: 5 }]
+      } as any;
+      const agendamento = {
+        hora: '08:00',
+        diaSemana: 'segunda',
+        categoria: '',
+        militar: null
+      } as any;
+      const result = component.isAgendamentoDoMilitarLogado(agendamento);
+      expect(result).toBeTrue();
+    });
   });
 
   it('atualiza cor do botão conforme status', () => {
@@ -129,7 +146,7 @@ describe('TabelaSemanalComponent', () => {
     let botao = fixture.debugElement.query(By.css('button.tabela-botao-disponivel'));
     expect(botao.attributes['ng-reflect-color']).toBe('primary');
 
-    component.saramMilitarLogado = '123';
+    component.idMilitarLogado = 1;
     component.agendamentos = [{
       id: 1,
       data: '',
@@ -137,6 +154,7 @@ describe('TabelaSemanalComponent', () => {
       diaSemana: 'segunda',
       categoria: '',
       militar: {
+        id: 1,
         saram: '123',
         cpf: '123',
         nomeCompleto: '',
@@ -162,6 +180,7 @@ describe('TabelaSemanalComponent', () => {
       diaSemana: 'segunda',
       categoria: '',
       militar: {
+        id: 2,
         saram: '999',
         cpf: '999',
         nomeCompleto: '',

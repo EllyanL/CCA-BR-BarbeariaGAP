@@ -13,6 +13,8 @@ import lombok.*;
 @ToString
 public class UserDTO {
 
+    private Long id; // Identificador do militar
+
     private String saram; // Número SARAM do militar
     private String nomeCompleto; // Nome completo do militar
     private String postoGrad; // Posto ou graduação do militar
@@ -36,7 +38,8 @@ public class UserDTO {
      * @param om A organização militar (OM).
      * @param cpf O CPF do militar.     
      */
-    public UserDTO(String saram, String nomeCompleto, String postoGrad, String nomeDeGuerra, String email, String om, String cpf) {
+    public UserDTO(Long id, String saram, String nomeCompleto, String postoGrad, String nomeDeGuerra, String email, String om, String cpf) {
+        this.id = id;
         this.saram = saram;
         this.nomeCompleto = nomeCompleto;
         this.postoGrad = postoGrad;

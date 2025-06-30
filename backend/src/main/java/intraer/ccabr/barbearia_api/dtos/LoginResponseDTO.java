@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginResponseDTO {
+    private Long id;
     private String token;
     private String role;
     private String postoGrad;
@@ -80,8 +81,9 @@ public class LoginResponseDTO {
      * @param secao A seção do militar.
      * @param ramal O ramal do militar.
      */
-    public LoginResponseDTO(String token, String role, String postoGrad, String om, String nomeDeGuerra,
+    public LoginResponseDTO(Long id, String token, String role, String postoGrad, String om, String nomeDeGuerra,
                             String saram, String nomeCompleto, String email, String secao, String ramal) {
+        this.id = id;
         this.token = token;
         this.role = role;
         this.postoGrad = postoGrad;

@@ -55,6 +55,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   omMilitar: string = '';
   cpfMilitarLogado: string = '';
   saramMilitarLogado: string = '';
+  idMilitarLogado?: number;
   postos: string[] = ['AP', '2T', '1T', 'CP', 'MJ', 'TC', 'CL', 'BG', 'MB', 'TB'];
   graduacoes = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 
@@ -137,6 +138,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
           this.omMilitar = userData[0].om;
           this.cpfMilitarLogado = userData[0].cpf;
           this.saramMilitarLogado = userData[0].saram;
+          this.idMilitarLogado = userData[0].id;
           this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
@@ -441,7 +443,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
-    return this.isMeuAgendamento(agendamento);
+    const byMilitar = agendamento.militar?.id === this.idMilitarLogado;
+    const dia = agendamento.diaSemana.toLowerCase();
+    const index = this.horariosPorDia[dia]?.findIndex(h => h.horario === agendamento.hora.slice(0,5));
+    const byHorario = index !== undefined && index > -1 &&
+      this.horariosPorDia[dia][index].usuarioId === this.idMilitarLogado;
+    return !!(byMilitar || byHorario);
   }
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {

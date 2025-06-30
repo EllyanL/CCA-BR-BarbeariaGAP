@@ -1,4 +1,5 @@
 export interface UserData {
+  id?: number;
   saram: string;
   nomeCompleto: string;
   postoGrad: string;

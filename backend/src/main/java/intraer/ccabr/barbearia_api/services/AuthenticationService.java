@@ -122,6 +122,7 @@ public class AuthenticationService {
 
             // Mapeia os dados do usuário para o DTO
             UserDTO userDTO = new UserDTO(
+                    user.getId(),
                     user.getSaram(),
                     user.getNomeCompleto(),
                     user.getPostoGrad(),

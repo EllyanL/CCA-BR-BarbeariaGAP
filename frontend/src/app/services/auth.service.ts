@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { jwtDecode } from 'jwt-decode';
 
 export interface LoginResponse {
+  id?: number;
   token: string;
   role: string; // Garantir que role venha do backend como GRADUADO ou OFICIAL
   postoGrad?: string;
@@ -57,6 +58,7 @@ export class AuthService {
         this.logger.log('Resposta do login:', response);
         this.saveToken(response.token, rememberMe);
         const userData: UserData = {
+          id: response.id,
           postoGrad: response.postoGrad || 'Desconhecido',
           nomeDeGuerra: response.nomeDeGuerra || 'Desconhecido',
           role: response.role || 'GRADUADO', // Garantir que role seja válido

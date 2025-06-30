@@ -104,6 +104,7 @@ public class AuthenticationController {
             logger.info("🔐 Token gerado para ADMIN local");
 
             return ResponseEntity.ok(new LoginResponseDTO(
+                admin.getId(),
                 token,
                 admin.getRole().name(),
                 admin.getPostoGrad(),
@@ -186,6 +187,7 @@ public class AuthenticationController {
         logger.info("🔐 Token gerado para CPF: {}", militar.getCpf());
 
         return ResponseEntity.ok(new LoginResponseDTO(
+            militar.getId(),
             token,
             militar.getRole().name(),
             militar.getPostoGrad(),
@@ -250,6 +252,7 @@ public class AuthenticationController {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário com CPF " + cpf + " não encontrado."));
 
         UserDTO dto = new UserDTO(
+                militar.getId(),
                 militar.getSaram(),
                 militar.getNomeCompleto(),
                 militar.getPostoGrad(),
