@@ -11,6 +11,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
+import { HorariosService } from 'src/app/services/horarios.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -38,7 +39,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     private authService: AuthService,
     private router: Router,
     private agendamentoService: AgendamentoService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private horariosService: HorariosService
   ) {}
 
   ngOnInit(): void {
@@ -144,6 +146,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
         this.recent = this.recent.filter(r => r.id !== a.id);
         this.dataSource.data = this.recent;
         this.applyFilters();
+        this.horariosService.disponibilizarHorario(a.hora.slice(0,5), a.diaSemana, a.categoria)
+          .subscribe({
+            next: () => {
+              this.horariosService.carregarHorariosDaSemana(a.categoria).subscribe({
+                next: horarios => this.horariosService.atualizarHorarios(horarios),
+                error: err => this.logger.error('Erro ao atualizar horários', err)
+              });
+            },
+            error: err => this.logger.error('Erro ao disponibilizar horário', err)
+          });
       },
       error: err => this.logger.error('Erro ao excluir agendamento', err)
     });
