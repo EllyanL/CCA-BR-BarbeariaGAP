@@ -54,6 +54,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   militarLogado: string = '';
   omMilitar: string = '';
   cpfMilitarLogado: string = '';
+  saramMilitarLogado: string = '';
   postos: string[] = ['AP', '2T', '1T', 'CP', 'MJ', 'TC', 'CL', 'BG', 'MB', 'TB'];
   graduacoes = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 
@@ -65,6 +66,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   horariosBaseSemana: string[] = [];
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
+  usuarioCarregado = false;
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
   private storageKey: string = '';
@@ -125,11 +127,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     this.userDataSubscription = this.userService.userData$.pipe(
       delay(100)
     ).subscribe(userData => {
-      if (userData && userData.length > 0) {
+      if (userData && userData.length > 0 && userData[0].cpf) {
         this.militarLogado = userData[0].nomeDeGuerra;
         this.omMilitar = userData[0].om;
         this.cpfMilitarLogado = userData[0].cpf;
+        this.saramMilitarLogado = userData[0].saram;
         this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
+        this.usuarioCarregado = true;
         this.loadAgendamentosFromStorage();
         this.logger.log('🔐 userData carregado. Chamando loadAllData()');
         this.loadAllData();
@@ -228,7 +232,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   desmarcarAgendamento(agendamento: Agendamento) { //	Chama service para deletar agendamento.
-    if (!agendamento.militar || agendamento.militar?.cpf !== this.cpfMilitarLogado) {
+    if (!agendamento.militar || agendamento.militar?.saram !== this.saramMilitarLogado) {
       this.snackBar.open('Você não tem permissão para cancelar este agendamento.', 'Ciente', { duration: 3000 });
       return;
     }
@@ -421,7 +425,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
 
 
   isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean { //Verifica se o agendamento pertence ao usuário logado.
-    return agendamento.militar?.cpf === this.cpfMilitarLogado;
+    return agendamento.militar?.saram === this.saramMilitarLogado;
   }
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {
