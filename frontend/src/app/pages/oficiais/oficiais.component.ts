@@ -16,7 +16,6 @@ import { LoggingService } from 'src/app/services/logging.service';
           <app-header
             class="oficiais-page-content__header"
             [titleHeader]="titleHeader"
-            [ramal]="ramal"
           ></app-header>
 
           <app-tabela-semanal
@@ -32,7 +31,6 @@ import { LoggingService } from 'src/app/services/logging.service';
 })
 export class OficiaisComponent implements OnInit {
   titleHeader = 'OFICIAIS';
-  ramal = '2692';
   // Categoria precisa estar em maiúsculo para corresponder ao backend
   categoria = 'OFICIAL';
   opcoesPostoGrad: string[] = ['ASP', '2TEN', '1TEN', 'CAP', 'MAJ', 'TC', 'CEL'];

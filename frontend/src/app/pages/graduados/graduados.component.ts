@@ -16,7 +16,6 @@ import { LoggingService } from 'src/app/services/logging.service';
           <app-header
             class="graduados-page-content__header"
             [titleHeader]="titleHeader"
-            [ramal]="ramal"
           ></app-header>
 
           <app-tabela-semanal
@@ -32,7 +31,6 @@ import { LoggingService } from 'src/app/services/logging.service';
 })
 export class GraduadosComponent implements OnInit {
   titleHeader = 'GRADUADOS';
-  ramal = '2691';
   categoria = 'GRADUADO';  // cuidado: estava como 'graduado'
   opcoesGraduacoes: string[] = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 

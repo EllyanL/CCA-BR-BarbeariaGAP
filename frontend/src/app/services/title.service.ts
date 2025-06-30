@@ -18,7 +18,7 @@ export class TitleService {
         return route.snapshot.data['title'] || 'Barbearia';
       })
     ).subscribe((title: string) => {
-      this.title.setTitle(`${title} | Barbearia`);
+      this.title.setTitle(title);
     });
   }
 }
