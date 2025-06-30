@@ -34,6 +34,7 @@ public class AgendamentoDTO {
         Militar m = agendamento.getMilitar();
         if (m != null) {
             this.militar = new UserDTO(
+                m.getId(),
                 m.getSaram(),
                 m.getNomeCompleto(),
                 m.getPostoGrad(),
