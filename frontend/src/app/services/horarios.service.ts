@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, Subscription, throwError, interval } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, throwError, interval, forkJoin } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap, switchMap, startWith } from 'rxjs/operators';
@@ -156,6 +156,15 @@ export class HorariosService {
     const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
     return this.http.post(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
+  }
+
+  alterarDisponibilidadeEmDias(horario: string, dias: string[], categoria: string, disponibilizar: boolean): Observable<any[]> {
+    const requests = dias.map(d =>
+      disponibilizar
+        ? this.disponibilizarHorario(horario, d, categoria)
+        : this.indisponibilizarHorario(horario, d, categoria)
+    );
+    return forkJoin(requests);
   }
 
   indisponibilizarTodosHorarios(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {

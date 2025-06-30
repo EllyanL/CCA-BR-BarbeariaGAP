@@ -28,6 +28,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     militarLogado: string = '';
     omMilitar: string = '';
     diasDaSemana: string[] = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
+    diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
     diaSelecionado: string = 'segunda';
     horariosPorDia: { [key: string]: { horario: string; status: string }[] } = {
@@ -321,16 +322,18 @@ import { LoggingService } from 'src/app/services/logging.service';
         return;
       }
 
+      const diasAlvo = dia === 'todos' || this.diaSelecionado === 'todos' ? this.diasDaSemana : [dia];
+
       this.horariosService
-        .disponibilizarHorario(horario, dia, categoria)
+        .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
         .subscribe({
-          next: (response: any) => {
-            this.atualizarHorarioLocal(dia, horario, true);
-            this.snackBar.open(response.mensagem, 'Ciente', { duration: 3000 });
+          next: () => {
+            diasAlvo.forEach(d => this.atualizarHorarioLocal(d, horario, true));
             this.carregarHorariosDaSemana();
             this.horariosService.atualizarHorarios(this.horariosPorDia);
+            this.snackBar.open('Horário disponibilizado', 'Ciente', { duration: 3000 });
           },
-          error: (error) => {
+          error: () => {
             this.snackBar.open(
               'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.',
               'Ciente',
@@ -345,21 +348,23 @@ import { LoggingService } from 'src/app/services/logging.service';
       horario: string,
       categoria: string
     ): void {
+      const diasAlvo = dia === 'todos' || this.diaSelecionado === 'todos' ? this.diasDaSemana : [dia];
+
       this.horariosService
-        .indisponibilizarHorario(horario, dia, categoria)
+        .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, false)
         .subscribe({
-          next: (response: any) => {
-            this.snackBar.open(response.mensagem, 'Ciente', { duration: 3000 });
-
-            const listaDia = this.horariosPorDia[dia] || [];
-            const idx = listaDia.findIndex(h => h.horario === horario);
-            if (idx !== -1) {
-              listaDia[idx].status = 'INDISPONIVEL';
-              this.horariosPorDia[dia] = listaDia;
-            }
-
+          next: () => {
+            diasAlvo.forEach(d => {
+              const listaDia = this.horariosPorDia[d] || [];
+              const idx = listaDia.findIndex(h => h.horario === horario);
+              if (idx !== -1) {
+                listaDia[idx].status = 'INDISPONIVEL';
+                this.horariosPorDia[d] = listaDia;
+              }
+            });
             this.carregarHorariosDaSemana(); // ✅ recarrega os dados atualizados
             this.horariosService.atualizarHorarios(this.horariosPorDia);
+            this.snackBar.open('Horário indisponibilizado', 'Ciente', { duration: 3000 });
           },
           error: (error) => {
             this.logger.error('Erro ao indisponibilizar horário:', error);
