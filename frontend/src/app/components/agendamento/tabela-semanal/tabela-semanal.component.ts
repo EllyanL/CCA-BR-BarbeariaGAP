@@ -71,7 +71,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
   private storageKey: string = '';
-  private previousStorageKey: string = '';
 
   constructor(
     private router: Router,
@@ -96,8 +95,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   // Carrega do sessionStorage os agendamentos associados ao usuário atual.
-  // A chave é definida em initAfterTime() e dados de chaves antigas são
-  // limpos quando um novo usuário faz login.
+  // A chave é definida em initAfterTime() e dados anteriores são limpos
+  // quando ocorre troca de usuário.
   private loadAgendamentosFromStorage(): void {
     if (this.storageKey) {
       const data = sessionStorage.getItem(this.storageKey);
@@ -128,6 +127,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Define a chave de armazenamento baseada no CPF do usuário
+  // e carrega os agendamentos salvos para ele.
   private initAfterTime(): void {
     this.userDataSubscription = this.userService.userData$
       .pipe(delay(100))
@@ -148,7 +149,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
           this.cpfMilitarLogado = userData[0].cpf;
           this.saramMilitarLogado = userData[0].saram;
           this.idMilitarLogado = userData[0].id;
-          this.previousStorageKey = this.storageKey;
           this.storageKey = newKey;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
@@ -448,12 +448,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
         next: (ag) => { if (ag) { abrirDialogo(ag); } },
         error: err => this.logger.error('Erro ao buscar detalhes do agendamento:', err)
       });
-  }
-
-
-
-  isMeuAgendamento(agendamento: Agendamento): boolean {
-    return agendamento.militar?.saram === this.saramMilitarLogado;
   }
 
   isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
