@@ -41,6 +41,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram ORDER BY a.data DESC")
     Optional<Agendamento> findUltimoAgendamentoBySaram(@Param("saram") String saram);
 
+    boolean existsByMilitarSaramAndDataGreaterThanEqual(String saram, LocalDate data);
+
     @Query("SELECT a FROM Agendamento a WHERE a.militar.cpf = :cpf AND a.categoria = :categoria")
     List<Agendamento> findByMilitarCpfAndCategoria(@Param("cpf") String cpf, @Param("categoria") String categoria);
 
