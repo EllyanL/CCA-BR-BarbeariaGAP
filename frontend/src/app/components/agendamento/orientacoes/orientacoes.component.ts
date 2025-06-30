@@ -37,7 +37,7 @@ import { Component } from '@angular/core';
       </mat-list-item>
       <mat-list-item class="orientacoes-card__list-item">
         <mat-icon matListIcon>cancel</mat-icon>
-        Só é possível desmarcar com antecedência mínima de 30min.
+        Só é possível desmarcar com antecedência mínima de 15min.
       </mat-list-item>
     </mat-list>
   </mat-card-content>
