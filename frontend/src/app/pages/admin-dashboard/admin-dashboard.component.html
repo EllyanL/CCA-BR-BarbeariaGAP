@@ -14,25 +14,6 @@
         </mat-card-header>
         <mat-card-content>{{ stats?.totalUsuarios }}</mat-card-content>
       </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-icon>bar_chart</mat-icon>
-          <mat-card-title>Ocupação Atual</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <mat-progress-bar mode="determinate" [value]="stats?.ocupacaoAtual || 0"></mat-progress-bar>
-          <div class="progress-text">{{ stats?.ocupacaoAtual || 0 }}%</div>
-        </mat-card-content>
-      </mat-card>
-      <mat-card>
-        <mat-card-header>
-          <mat-icon>calendar_today</mat-icon>
-          <mat-card-title>Últimos 7 dias</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <canvas #weeklyChart></canvas>
-        </mat-card-content>
-      </mat-card>
     </div>
 
     <div class="filters">
