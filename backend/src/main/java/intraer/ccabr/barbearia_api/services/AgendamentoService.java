@@ -271,6 +271,11 @@ public class AgendamentoService {
         if (!podeAgendarDataHora(agendamento.getData(), agendamento.getHora())) {
             throw new IllegalArgumentException("Não é possível agendar horários passados.");
         }
+
+        LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+        if (agendamentoDateTime.isBefore(LocalDateTime.now().plusMinutes(15))) {
+            throw new IllegalArgumentException("O agendamento deve ser feito com pelo menos 15 minutos de antecedência.");
+        }
     
         
         

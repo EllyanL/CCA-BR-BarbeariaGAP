@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TabelaSemanalComponent } from './tabela-semanal.component';
 import { ServerTimeService } from 'src/app/services/server-time.service';
@@ -9,14 +11,22 @@ describe('TabelaSemanalComponent', () => {
   let component: TabelaSemanalComponent;
   let fixture: ComponentFixture<TabelaSemanalComponent>;
 
+  let dialogSpy: jasmine.SpyObj<MatDialog>;
+  let snackSpy: jasmine.SpyObj<MatSnackBar>;
+
   beforeEach(() => {
+    dialogSpy = jasmine.createSpyObj('MatDialog', ['open']);
+    snackSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
+
     TestBed.configureTestingModule({
       declarations: [TabelaSemanalComponent],
       providers: [
         {
           provide: ServerTimeService,
           useValue: { getServerTime: () => of({ timestamp: Date.now() }) }
-        }
+        },
+        { provide: MatDialog, useValue: dialogSpy },
+        { provide: MatSnackBar, useValue: snackSpy }
       ]
     });
     fixture = TestBed.createComponent(TabelaSemanalComponent);
@@ -144,5 +154,23 @@ describe('TabelaSemanalComponent', () => {
 
     botao = fixture.debugElement.query(By.css('button.botao-agendado'));
     expect(botao.nativeElement.textContent.trim().toUpperCase()).toBe('AGENDADO');
+  });
+
+  it('nao abre dialogo se horario for em menos de 15 minutos', () => {
+    const now = new Date();
+    const inTen = new Date(now.getTime() + 10 * 60 * 1000);
+    const hora = inTen.toTimeString().slice(0, 5);
+    const dia = now.getDate().toString().padStart(2, '0');
+    const mes = (now.getMonth() + 1).toString().padStart(2, '0');
+
+    component.diasDaSemana = ['segunda'];
+    component.diasComData = [`segunda - ${dia}/${mes}`];
+    component.horariosBaseSemana = [hora];
+    component.horariosPorDia = { segunda: [{ horario: hora, status: 'DISPONIVEL' }] } as any;
+
+    component.agendarCorte(component.diasComData[0], hora);
+
+    expect(snackSpy.open).toHaveBeenCalled();
+    expect(dialogSpy.open).not.toHaveBeenCalled();
   });
 });

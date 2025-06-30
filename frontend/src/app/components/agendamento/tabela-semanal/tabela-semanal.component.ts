@@ -176,9 +176,17 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     const horarioDisponivel = this.horariosPorDia[diaSemanaFormatado]?.some(
       h => h.horario === hora && h.status === 'DISPONIVEL'
     );
-  
+
     if (!horarioDisponivel) {
       this.snackBar.open('Horário não disponível para sua categoria.', 'Ciente', { duration: 3000 });
+      return;
+    }
+
+    const dataISO = this.getDataFromDiaSemana(diaSemana);
+    const agendamentoDate = new Date(`${dataISO}T${hora.slice(0, 5)}`);
+    const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
+    if (diffMs < 15 * 60 * 1000) {
+      this.snackBar.open('O agendamento precisa ser feito com no mínimo 15 minutos de antecedência.', 'Ciente', { duration: 3000 });
       return;
     }
   
