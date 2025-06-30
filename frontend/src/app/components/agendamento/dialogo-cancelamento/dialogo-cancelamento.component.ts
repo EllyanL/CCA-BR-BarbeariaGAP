@@ -6,7 +6,7 @@ import { LoggingService } from 'src/app/services/logging.service';
 export interface DialogData {
   diaSemana: string;
   hora: string;
-  saram: string;
+  usuarioId?: number;
 }
 
 @Component({
@@ -40,7 +40,6 @@ export interface DialogData {
   `,
 })
 export class DialogoCancelamentoComponent {
-  saram: string = '';
 
   constructor(
     public dialogRef: MatDialogRef<DialogoCancelamentoComponent>,
@@ -55,9 +54,9 @@ export class DialogoCancelamentoComponent {
   }
 
   onYesClick(): void {
-    const saramAutorizado = this.verifySaram();
-    if (saramAutorizado) {
-      this.dialogRef.close({ dia: this.data.diaSemana, hora: this.data.hora, saram: this.data.saram });
+    const autorizado = this.verifySaram();
+    if (autorizado) {
+      this.dialogRef.close({ dia: this.data.diaSemana, hora: this.data.hora, usuarioId: this.data.usuarioId });
     } else {
       this.snackBar.open('Somente o militar associado ao agendamento pode desmarcar.', 'Ciente', {
         duration: 3000,
@@ -70,9 +69,9 @@ export class DialogoCancelamentoComponent {
     const ldapDataString = sessionStorage.getItem('user-data') || localStorage.getItem('user-data');
     if (ldapDataString) {
       const ldapData = JSON.parse(ldapDataString);
-      const saram = ldapData[0].saram;
-      // Compara o SARAM do sessionStorage com o SARAM do agendamento clicado.
-      if (saram === this.data.saram) {
+      const id = ldapData[0].id;
+      // Compara o ID armazenado com o ID do agendamento clicado.
+      if (id === this.data.usuarioId) {
         return true;
       } else {
         return false;
