@@ -65,6 +65,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   horariosBaseSemana: string[] = [];
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
+  usuarioCarregado = false;
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
   private storageKey: string = '';
@@ -125,11 +126,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     this.userDataSubscription = this.userService.userData$.pipe(
       delay(100)
     ).subscribe(userData => {
-      if (userData && userData.length > 0) {
+      if (userData && userData.length > 0 && userData[0].cpf) {
         this.militarLogado = userData[0].nomeDeGuerra;
         this.omMilitar = userData[0].om;
         this.cpfMilitarLogado = userData[0].cpf;
         this.storageKey = `agendamentos-${this.cpfMilitarLogado}`;
+        this.usuarioCarregado = true;
         this.loadAgendamentosFromStorage();
         this.logger.log('🔐 userData carregado. Chamando loadAllData()');
         this.loadAllData();

@@ -1,4 +1,4 @@
-<mat-card class="tabela-card">
+<mat-card class="tabela-card" *ngIf="usuarioCarregado">
   <mat-card-content class="tabela-card-content">
     <!-- Mensagem de Feedback -->
     <div *ngIf="feedbackMessageTitle" class="feedback-message">
