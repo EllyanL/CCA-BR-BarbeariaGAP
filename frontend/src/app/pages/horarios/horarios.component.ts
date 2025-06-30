@@ -671,6 +671,7 @@ import { LoggingService } from 'src/app/services/logging.service';
             if (index !== -1) {
               this.horariosPorDia[dia][index].status = 'DISPONIVEL';
               this.horariosPorDia = { ...this.horariosPorDia };
+              this.horariosService.atualizarHorarios(this.horariosPorDia);
             }
           }
         },
