@@ -109,7 +109,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       const f = JSON.parse(filter);
 
       const matchesSaram = f.saram
-        ? (ag.militar?.saram || '').toLowerCase().includes(f.saram.toLowerCase())
+        ? ((ag.usuarioSaram || ag.militar?.saram || '').toLowerCase().includes(f.saram.toLowerCase()))
         : true;
       const matchesNome = f.nome
         ? (ag.militar?.nomeCompleto || '').toLowerCase().includes(f.nome.toLowerCase())

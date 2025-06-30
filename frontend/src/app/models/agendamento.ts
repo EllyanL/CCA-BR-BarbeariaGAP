@@ -9,6 +9,7 @@ export interface Agendamento {
   diaSemana: string;
   categoria: string;
   militar?: Militar | null; // ← agora opcional
+  usuarioSaram?: string;
   disponivel?: boolean;
   timestamp?: number;
 }
