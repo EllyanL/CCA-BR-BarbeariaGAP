@@ -252,14 +252,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   desmarcarAgendamento(agendamento: Agendamento) { //	Chama service para deletar agendamento.
-    if (!agendamento.militar || agendamento.militar?.saram !== this.saramMilitarLogado) {
+    if (!agendamento.militar || agendamento.militar?.id !== this.idMilitarLogado) {
       this.snackBar.open('Você não tem permissão para cancelar este agendamento.', 'Ciente', { duration: 3000 });
       return;
     }
 
     const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
       width: '300px',
-      data: { diaSemana: agendamento.diaSemana, hora: agendamento.hora, saram: agendamento.militar?.saram || 'Não informado' },
+      data: { diaSemana: agendamento.diaSemana, hora: agendamento.hora, usuarioId: agendamento.militar?.id },
       autoFocus: true
     });
 
