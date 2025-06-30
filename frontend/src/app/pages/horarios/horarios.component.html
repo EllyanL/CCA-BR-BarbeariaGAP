@@ -30,7 +30,9 @@
               <mat-form-field appearance="fill" class="dia-field">
                 <mat-label>Dia da Semana</mat-label>
                 <mat-select [(ngModel)]="diaSelecionado" name="diaSelecionado">
-                  <mat-option *ngFor="let dia of diasDaSemana; trackBy: trackByDia" [value]="dia">{{ dia | titlecase }}</mat-option>
+                  <mat-option *ngFor="let dia of diasParaSelecao; trackBy: trackByDia" [value]="dia">
+                    {{ dia === 'todos' ? 'Todos os dias' : (dia | titlecase) }}
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
               <mat-form-field appearance="fill" class="horario-field">
