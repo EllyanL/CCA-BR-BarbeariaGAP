@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,9 @@ class AgendamentoServiceFifteenDaysRuleTests {
         ag.setCategoria("GRADUADO");
         ag.setMilitar(m);
 
-        when(repo.existsByMilitarSaramAndDataGreaterThanEqual(eq("123"), any())).thenReturn(true);
+        Agendamento ultimo = new Agendamento();
+        ultimo.setData(LocalDate.now());
+        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.of(ultimo));
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));

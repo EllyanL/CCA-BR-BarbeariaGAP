@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,11 +74,10 @@ public class AgendamentoService {
         return agendamentoRepository.findByDataAndHoraAndDiaSemanaAndCategoria(data, hora, diaSemana, categoria);
     }
 
-    public boolean podeAgendar15Dias(String saram) {
-        LocalDate limite = LocalDate.now().minusDays(15);
-        boolean existe = agendamentoRepository
-                .existsByMilitarSaramAndDataGreaterThanEqual(saram, limite);
-        return !existe;
+    public boolean podeAgendar15Dias(String saram, LocalDate dataNova) {
+        return agendamentoRepository.findUltimoAgendamentoBySaram(saram)
+                .map(ultimo -> ChronoUnit.DAYS.between(ultimo.getData(), dataNova) >= 15)
+                .orElse(true);
     }
 
     public boolean podeAgendarDataHora(LocalDate data, LocalTime hora) {
@@ -273,7 +273,7 @@ public class AgendamentoService {
     
         
         
-        if (!podeAgendar15Dias(agendamento.getMilitar().getSaram())) {
+        if (!podeAgendar15Dias(agendamento.getMilitar().getSaram(), agendamento.getData())) {
             throw new IllegalArgumentException("Você só pode agendar uma vez a cada 15 dias.");
         }
         
