@@ -1,5 +1,6 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Agendamento, Militar } from '../../models/agendamento';
+import { Agendamento } from '../../models/agendamento';
+import { Militar } from '../../services/auth.service';
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import {
     HorariosPorDia,
