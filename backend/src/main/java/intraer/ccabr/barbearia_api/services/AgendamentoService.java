@@ -261,6 +261,16 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Agendamentos só são permitidos a partir de segunda às 09:10.");
         }
 
+        // 2. Horários válidos somente de segunda a sexta entre 09:10 e 18:10
+        DayOfWeek dia = agendamento.getData().getDayOfWeek();
+        LocalTime hora = agendamento.getHora();
+        LocalTime inicio = LocalTime.of(9, 10);
+        LocalTime fim = LocalTime.of(18, 10);
+
+        if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY || hora.isBefore(inicio) || hora.isAfter(fim)) {
+            throw new IllegalArgumentException("Agendamentos são permitidos apenas de segunda a sexta das 09:10 às 18:10.");
+        }
+
         // bloqueia agendamentos em datas/horas já passadas
         if (!podeAgendarDataHora(agendamento.getData(), agendamento.getHora())) {
             throw new IllegalArgumentException("Não é possível agendar horários passados.");
