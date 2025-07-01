@@ -114,6 +114,7 @@ import { LoggingService } from 'src/app/services/logging.service';
               error: err => this.logger.error('Erro ao atualizar horários:', err)
             });
           });
+        }
         });
     }
 
