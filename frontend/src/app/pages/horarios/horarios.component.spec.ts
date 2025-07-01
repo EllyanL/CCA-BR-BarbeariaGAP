@@ -3,7 +3,7 @@ import { of } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Militar } from '../../services/auth.service';
+import { Militar } from '../../models/militar';
 
 import { HorariosComponent } from './horarios.component';
 import { HorariosService } from '../../services/horarios.service';

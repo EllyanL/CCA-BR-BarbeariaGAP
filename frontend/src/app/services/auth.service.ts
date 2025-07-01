@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { Router } from '@angular/router';
 import { UserData } from '../models/userData';
+import { Militar } from '../models/militar';
 import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
 import { jwtDecode } from 'jwt-decode';
@@ -23,19 +24,6 @@ export interface LoginResponse {
   ramal?: string;
 }
 
-export interface Militar {
-  email: string;
-  om: string;
-  secao: string;
-  ramal: string;
-  nomeDeGuerra: string;
-  postoGrad: string;
-  saram: string;
-  id?: number;
-  cpf: string;
-  role?: string; // Deve ser GRADUADO ou OFICIAL
-  nomeCompleto?: string;
-}
 
 @Injectable({
   providedIn: 'root'
