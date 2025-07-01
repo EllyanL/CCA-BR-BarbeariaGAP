@@ -522,7 +522,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     const startMinutes = startHour * 60 + startMinute;
     const endMinutes = endHour * 60 + endMinute;
 
-    if (isWeekday && currentMinutes >= startMinutes && currentMinutes <= endMinutes) {
+    const withinWindow = isWeekday && currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+    if (withinWindow) {
       this.feedbackMessageTitle = '';
       return false;
     }
