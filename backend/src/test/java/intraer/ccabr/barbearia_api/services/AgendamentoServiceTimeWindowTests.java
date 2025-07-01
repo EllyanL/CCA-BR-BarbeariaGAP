@@ -43,4 +43,38 @@ class AgendamentoServiceTimeWindowTests {
 
         assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
     }
+
+    @Test
+    void validarRegrasDeNegocioLancaExcecaoQuandoForaDoHorarioPermitido() {
+        Militar m = new Militar();
+        m.setSaram("123");
+        Agendamento ag = new Agendamento();
+        ag.setData(LocalDate.now().plusDays(1));
+        ag.setHora(LocalTime.of(8, 0));
+        ag.setDiaSemana("segunda");
+        ag.setCategoria("GRADUADO");
+        ag.setMilitar(m);
+
+        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
+        when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+    }
+
+    @Test
+    void validarRegrasDeNegocioLancaExcecaoQuandoFinalDeSemana() {
+        Militar m = new Militar();
+        m.setSaram("123");
+        Agendamento ag = new Agendamento();
+        ag.setData(LocalDate.now().with(java.time.DayOfWeek.SATURDAY));
+        ag.setHora(LocalTime.of(10, 0));
+        ag.setDiaSemana("sabado");
+        ag.setCategoria("GRADUADO");
+        ag.setMilitar(m);
+
+        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
+        when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+    }
 }
