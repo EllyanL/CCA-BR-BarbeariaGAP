@@ -79,11 +79,9 @@ class AgendamentoControllerDeleteTests {
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/agendamentos/{id}", 1L))
-                .andExpect(MockMvcResultMatchers.status().isForbidden())
-                .andExpect(MockMvcResultMatchers.content().string(
-                        "Não é possível desmarcar com menos de 15 minutos de antecedência."));
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
 
-        verify(agendamentoService, never()).delete(anyLong());
+        verify(agendamentoService).delete(anyLong());
     }
 
     @Test

@@ -35,10 +35,6 @@ import { Component } from '@angular/core';
         <mat-icon matListIcon>assignment</mat-icon>
         O Atendimento será realizado conforme <b>marcação prévia</b>.
       </mat-list-item>
-      <mat-list-item class="orientacoes-card__list-item">
-        <mat-icon matListIcon>cancel</mat-icon>
-        Só é possível desmarcar com antecedência mínima de 15min.
-      </mat-list-item>
     </mat-list>
   </mat-card-content>
   <mat-dialog-actions align="end" class="orientacoes-card__actions">
