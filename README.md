@@ -56,7 +56,16 @@ WebService externo com segurança.
 
 Valores de exemplo podem ser vistos em `backend/src/main/resources/application-dev.properties`
 
-## Executando Testes do Frontend
+## Executando Testes
+
+### Backend
+Para rodar os testes do backend execute:
+```bash
+cd backend && ./mvnw test
+```
+Certifique-se de configurar as variáveis de ambiente necessárias (por exemplo, definições de banco de dados) antes de rodar os testes.
+
+### Frontend
 1. Instale as dependências:
     cd frontend
     npm install
