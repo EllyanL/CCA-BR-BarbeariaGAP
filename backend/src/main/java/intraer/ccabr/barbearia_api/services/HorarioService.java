@@ -87,15 +87,13 @@ public class HorarioService {
         List<Horario> horarios = horarioRepository.findByCategoria(categoria);
         List<HorarioDTO> dtos = horarios.stream().map(h -> {
             HorarioDTO dto = new HorarioDTO(h);
-            if (h.getStatus() == HorarioStatus.AGENDADO) {
-                agendamentoRepository
-                    .findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
-                            LocalTime.parse(h.getHorario()),
-                            h.getDia(),
-                            h.getCategoria(),
-                            LocalDate.now())
-                    .ifPresent(a -> dto.setUsuarioId(a.getMilitar().getId()));
-            }
+            agendamentoRepository
+                .findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
+                        LocalTime.parse(h.getHorario()),
+                        h.getDia(),
+                        h.getCategoria(),
+                        LocalDate.now())
+                .ifPresent(a -> dto.setUsuarioId(a.getMilitar().getId()));
             return dto;
         }).toList();
 
