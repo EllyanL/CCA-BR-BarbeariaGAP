@@ -517,18 +517,26 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     const endHour = 18;
     const endMinute = 10;
 
-    const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-    const currentMinutes = hours * 60 + minutes;
-    const startMinutes = startHour * 60 + startMinute;
-    const endMinutes = endHour * 60 + endMinute;
+    const horariosPorDia: Record<number, { inicio: number; fim: number }> = {
+      1: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
+      2: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
+      3: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
+      4: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
+      5: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute }
+    };
 
-    const withinWindow = isWeekday && currentMinutes >= startMinutes && currentMinutes <= endMinutes;
-    if (withinWindow) {
-      this.feedbackMessageTitle = '';
-      return false;
+    const janela = horariosPorDia[dayOfWeek];
+
+    if (janela) {
+      const minutosAtuais = hours * 60 + minutes;
+      if (minutosAtuais >= janela.inicio && minutosAtuais <= janela.fim) {
+        this.feedbackMessageTitle = '';
+        return false;
+      }
     }
 
-    this.feedbackMessageTitle = 'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!';
+    this.feedbackMessageTitle =
+      'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!';
     return true;
   }
 
