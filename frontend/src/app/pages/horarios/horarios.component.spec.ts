@@ -87,22 +87,23 @@ describe('HorariosComponent', () => {
     component.carregarAgendamentos();
     component.carregarHorariosDaSemana();
 
-    const status = component.getHorarioStatus('segunda', '08:00').status;
-    expect(status).toBe('AGENDADO');
-  });
+  const status = component.getHorarioStatus('segunda', '08:00').status;
+  expect(status).toBe('AGENDADO');
+});
 
-  it('isAgendamentoDesmarcavel deve retornar false para horario dentro de 15 minutos', () => {
-    const inTenMinutes = Date.now() + 10 * 60 * 1000;
-    const agendamento: Agendamento = {
-      hora: '08:00',
-      diaSemana: 'segunda',
-      categoria: 'GRADUADO',
-      timestamp: inTenMinutes
-    } as Agendamento;
+ it('isAgendamentoDesmarcavel sempre retorna true', () => {
+   const inTenMinutes = Date.now() + 10 * 60 * 1000;
+   const agendamento: Agendamento = {
+     hora: '08:00',
+     diaSemana: 'segunda',
+     categoria: 'GRADUADO',
+     timestamp: inTenMinutes
+   } as Agendamento;
 
-    const resultado = component.isAgendamentoDesmarcavel(agendamento);
-    expect(resultado).toBeFalse();
-  });
+   const resultado = component.isAgendamentoDesmarcavel(agendamento);
+   expect(resultado).toBeTrue();
+ });
+
 
   it('carregarAgendamentos ignora registros passados e mantém AGENDADO apenas para futuros', () => {
     component.saramUsuario = '1';
@@ -161,7 +162,7 @@ describe('HorariosComponent', () => {
     expect(statusFuturo).toBe('AGENDADO');
   });
 
-  it('isAgendamentoDesmarcavel considera o offset do servidor', () => {
+  it('isAgendamentoDesmarcavel ignora offset do servidor', () => {
     component.timeOffsetMs = 5 * 60 * 1000; // servidor 5 minutos à frente
     const inEighteenMinutes = Date.now() + 18 * 60 * 1000;
     const agendamento: Agendamento = {
@@ -172,7 +173,7 @@ describe('HorariosComponent', () => {
     } as Agendamento;
 
     const resultado = component.isAgendamentoDesmarcavel(agendamento);
-    expect(resultado).toBeFalse();
+    expect(resultado).toBeTrue();
   });
 
   it('agendarHorario não chama serviço para datas passadas', () => {

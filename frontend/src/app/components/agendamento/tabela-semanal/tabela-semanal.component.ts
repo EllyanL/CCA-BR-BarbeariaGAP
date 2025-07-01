@@ -567,9 +567,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
   
   isAgendamentoDesmarcavel(agendamento: Agendamento | undefined): boolean {
-    if (!agendamento || agendamento.timestamp == null) return false;
-    const diffMs = agendamento.timestamp - (Date.now() + this.timeOffsetMs);
-    return diffMs >= 15 * 60 * 1000; // 15 minutos em ms
+    return !!agendamento;
   }
 
   abrirModalAgendamento(agendamento: Agendamento): void {

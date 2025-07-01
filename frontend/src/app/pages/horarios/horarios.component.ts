@@ -700,9 +700,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     
     
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
-      if (!agendamento || agendamento.timestamp == null) return false;
-      const diffMs = agendamento.timestamp - (Date.now() + this.timeOffsetMs);
-      return diffMs >= 15 * 60 * 1000;
+      return !!agendamento;
     }
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
