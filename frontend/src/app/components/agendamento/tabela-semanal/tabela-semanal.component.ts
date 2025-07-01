@@ -519,14 +519,17 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     const endMinute = 10;
 
     if (dayOfWeek > startDay && dayOfWeek < endDay) {
+      this.feedbackMessageTitle = '';
       return false;
     }
 
     if (dayOfWeek === startDay && (hours > startHour || (hours === startHour && minutes >= startMinute))) {
+      this.feedbackMessageTitle = '';
       return false;
     }
 
     if (dayOfWeek === endDay && (hours < endHour || (hours === endHour && minutes < endMinute))) {
+      this.feedbackMessageTitle = '';
       return false;
     }
 
