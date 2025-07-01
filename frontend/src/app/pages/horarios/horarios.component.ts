@@ -14,7 +14,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UserService } from 'src/app/services/user.service';
 import { ServerTimeService } from 'src/app/services/server-time.service';
-import { delay } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { LoggingService } from 'src/app/services/logging.service';
 
@@ -89,15 +89,15 @@ import { LoggingService } from 'src/app/services/logging.service';
 
     private initAfterTime(): void {
 
-      this.userDataSubscription = this.userService.userData$.pipe(
-        delay(100)
-      ).subscribe(userData => {
-        if (userData && userData.length > 0) {
-          this.cpfUsuario = userData[0].cpf;
-          this.saramUsuario = userData[0].saram;
-          this.militarLogado = userData[0].nomeDeGuerra;
-          this.omMilitar = userData[0].om;
-          this.carregarAgendamentos();
+      this.userDataSubscription = this.userService.userData$
+        .pipe(first(data => !!data && data.length > 0))
+        .subscribe(userData => {
+          if (userData && userData.length > 0) {
+            this.cpfUsuario = userData[0].cpf;
+            this.saramUsuario = userData[0].saram;
+            this.militarLogado = userData[0].nomeDeGuerra;
+            this.omMilitar = userData[0].om;
+            this.carregarAgendamentos();
 
           this.route.queryParams.subscribe((params) => {
             const categoria = params['categoria'];
@@ -114,10 +114,7 @@ import { LoggingService } from 'src/app/services/logging.service';
               error: err => this.logger.error('Erro ao atualizar horários:', err)
             });
           });
-        } else {
-          this.logger.warn('🔐 Dados do usuário ainda não disponíveis.');
-        }
-      });
+        });
     }
 
     logout(): void {
