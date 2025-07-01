@@ -27,6 +27,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     agendamentos: Agendamento[] = [];
     militarLogado: string = '';
     omMilitar: string = '';
+    usuarioLogado?: Militar;
     diasDaSemana: string[] = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
     diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
@@ -63,7 +64,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 
 //---------------🔰Inicialização e Logout--------------------    
   ngOnInit(): void {
-      const usuario = this.authService.getUsuarioAutenticado();
+      this.usuarioLogado = this.authService.getUsuarioAutenticado();
+      const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.role?.toUpperCase() === 'ADMIN';
       this.serverTimeService.getServerTime().subscribe({
         next: (res) => {
