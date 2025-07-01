@@ -217,4 +217,47 @@ describe('TabelaSemanalComponent', () => {
     expect(snackSpy.open).toHaveBeenCalled();
     expect(dialogSpy.open).not.toHaveBeenCalled();
   });
+
+  describe('desabilitarBotoesPorHorario', () => {
+    afterEach(() => {
+      jasmine.clock().uninstall();
+    });
+
+    it('permite agendar na segunda-feira às 12h', () => {
+      const mondayNoon = new Date('2023-01-02T12:00:00'); // segunda-feira
+      jasmine.clock().install();
+      jasmine.clock().mockDate(mondayNoon);
+
+      const result = (component as any)['desabilitarBotoesPorHorario']();
+
+      expect(result).toBeFalse();
+      expect(component.feedbackMessageTitle).toBe('');
+    });
+
+    it('bloqueia agendamento na segunda-feira às 8h', () => {
+      const mondayMorning = new Date('2023-01-02T08:00:00');
+      jasmine.clock().install();
+      jasmine.clock().mockDate(mondayMorning);
+
+      const result = (component as any)['desabilitarBotoesPorHorario']();
+
+      expect(result).toBeTrue();
+      expect(component.feedbackMessageTitle).toBe(
+        'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!'
+      );
+    });
+
+    it('bloqueia agendamento no sábado às 12h', () => {
+      const saturdayNoon = new Date('2023-01-07T12:00:00'); // sabado
+      jasmine.clock().install();
+      jasmine.clock().mockDate(saturdayNoon);
+
+      const result = (component as any)['desabilitarBotoesPorHorario']();
+
+      expect(result).toBeTrue();
+      expect(component.feedbackMessageTitle).toBe(
+        'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!'
+      );
+    });
+  });
 });
