@@ -265,8 +265,10 @@ public class AgendamentoController {
                         .body("Não é possível desmarcar um agendamento que já ocorreu.");
             }
 
-            LocalDateTime agora = LocalDateTime.now();
-            LocalDateTime dataHoraAgendamento = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+            LocalDateTime agora = LocalDateTime.now().withSecond(0).withNano(0);
+            LocalDateTime dataHoraAgendamento = LocalDateTime.of(
+                    agendamento.getData(), agendamento.getHora())
+                    .withSecond(0).withNano(0);
             if (dataHoraAgendamento.minusMinutes(15).isBefore(agora)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Não é possível desmarcar com menos de 15 minutos de antecedência.");
