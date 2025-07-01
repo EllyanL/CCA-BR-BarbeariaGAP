@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service';
 import { Observable, Subscription, of } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { catchError, delay, map, tap } from 'rxjs/operators';
+import { catchError, first, map, tap } from 'rxjs/operators';
 
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
@@ -130,14 +130,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   // e carrega os agendamentos salvos para ele.
   private initAfterTime(): void {
     this.userDataSubscription = this.userService.userData$
-      .pipe(delay(100))
+      .pipe(first(data => !!data && data.length > 0 && !!data[0].saram))
       .subscribe(userData => {
-        if (
-          userData &&
-          userData.length > 0 &&
-          userData[0].saram &&
-          !this.usuarioCarregado
-        ) {
+        if (userData && userData.length > 0 && userData[0].saram) {
           const newKey = `agendamentos-${userData[0].cpf}`;
           if (this.storageKey && this.storageKey !== newKey) {
             sessionStorage.removeItem(this.storageKey);
@@ -152,12 +147,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
           this.loadAllData();
-        } else if (!userData || userData.length === 0) {
-          if (this.storageKey) {
-            sessionStorage.removeItem(this.storageKey);
-            this.agendamentos = [];
-          }
-          this.logger.warn('🔐 userData não carregado. Aguardando...');
         }
       });
   }
