@@ -517,12 +517,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     const endHour = 18;
     const endMinute = 10;
 
+    const INICIO_EXPEDIENTE = startHour * 60 + startMinute;
+    const FIM_EXPEDIENTE = endHour * 60 + endMinute;
+
     const horariosPorDia: Record<number, { inicio: number; fim: number }> = {
-      1: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
-      2: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
-      3: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
-      4: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute },
-      5: { inicio: startHour * 60 + startMinute, fim: endHour * 60 + endMinute }
+      1: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
+      2: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
+      3: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
+      4: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
+      5: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE }
     };
 
     const janela = horariosPorDia[dayOfWeek];
