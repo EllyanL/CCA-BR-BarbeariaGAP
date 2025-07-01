@@ -291,36 +291,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadAgendamentos(categoria: string) { //Carrega os agendamentos da semana e associa ao usuário logado.
+  private loadAgendamentos(categoria: string) { //Carrega os agendamentos e associa ao usuário logado.
     this.agendamentoService.getAgendamentos().pipe(
       tap(agendamentos => {
         if (agendamentos && agendamentos.length > 0) {
-          const agendamentosFiltrados = agendamentos.filter(agendamento => {
-            if (!agendamento.data) {
-              this.logger.warn('Agendamento com data indefinida:', agendamento);
-              return false;
-            }
-
-            const dataAgendamento = new Date(agendamento.data);
-            if (isNaN(dataAgendamento.getTime())) {
-              this.logger.warn('Data inválida no agendamento:', agendamento);
-              return false;
-            }
-
-            const diaSemana = dataAgendamento.getDay();
-            let adjustedDate = new Date(dataAgendamento);
-            if (diaSemana === 0) {
-              adjustedDate.setDate(dataAgendamento.getDate() + 1);
-            } else if (diaSemana !== 1) {
-              adjustedDate.setDate(dataAgendamento.getDate() - (diaSemana - 1));
-            }
-            return (
-              adjustedDate >= this.inicioDaSemana &&
-              adjustedDate <= this.fimDaSemana &&
-              agendamento.militar &&
-              agendamento.militar.categoria === categoria.toUpperCase()
-            );
-          });
+          const agendamentosFiltrados = agendamentos.filter(agendamento =>
+            agendamento.militar &&
+            agendamento.militar.categoria === categoria.toUpperCase()
+          );
 
           this.agendamentos = agendamentosFiltrados.map(agendamento => ({
             ...agendamento,
