@@ -27,7 +27,7 @@ import { LoggingService } from 'src/app/services/logging.service';
     agendamentos: Agendamento[] = [];
     militarLogado: string = '';
     omMilitar: string = '';
-    usuarioLogado?: Militar;
+    usuarioLogado: Militar | null = null;
     diasDaSemana: string[] = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
     diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];

@@ -24,5 +24,6 @@ public class HorarioDTO {
         this.horario = horario.getHorario();
         this.categoria = horario.getCategoria();
         this.status = horario.getStatus().name();
+        this.usuarioId = null;
     }
 }
