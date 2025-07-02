@@ -87,6 +87,7 @@
             <th>Dia da Semana</th>
             <th>Categoria</th>
             <th>Militar</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -106,6 +107,13 @@
               <ng-template #noMilitar>
                 <div>Militar não encontrado</div>
               </ng-template>
+            </td>
+            <td>
+              <button mat-icon-button color="warn"
+                      *ngIf="isAgendamentoDoMilitarLogado(agendamento)"
+                      (click)="desmarcarAgendamento(agendamento)">
+                <mat-icon>delete</mat-icon>
+              </button>
             </td>
           </tr>
         </tbody>
