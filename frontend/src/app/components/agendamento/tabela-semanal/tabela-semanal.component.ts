@@ -116,11 +116,16 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   }
 
-  
+
 
   ngOnInit(): void {
-    // this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id;
-    this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id ?? null;
+    const usuario = this.authService.getUsuarioAutenticado();
+    this.idMilitarLogado = usuario?.id ?? null;
+    if (usuario?.cpf) {
+      this.storageKey = `agendamentos-${usuario.cpf}`;
+      this.loadAgendamentosFromStorage();
+      this.cdr.detectChanges();
+    }
     this.serverTimeService.getServerTime().subscribe({
       next: (res) => {
         this.timeOffsetMs = res.timestamp - Date.now();
