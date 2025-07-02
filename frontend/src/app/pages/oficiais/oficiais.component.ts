@@ -3,6 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { HorariosService } from 'src/app/services/horarios.service'; // Importar o serviço
 import { OrientacoesComponent } from 'src/app/components/agendamento/orientacoes/orientacoes.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-oficiais',
@@ -23,6 +24,7 @@ import { LoggingService } from 'src/app/services/logging.service';
             [opcoesPostoGrad]="opcoesPostoGrad"
             [categoria]="categoria"
             [horariosPorDia]="horariosPorDia"
+            [saramUsuario]="saramUsuario"
           ></app-tabela-semanal>
         </div>
       </mat-sidenav-content>
@@ -35,11 +37,13 @@ export class OficiaisComponent implements OnInit {
   categoria = 'OFICIAL';
   opcoesPostoGrad: string[] = ['ASP', '2TEN', '1TEN', 'CAP', 'MAJ', 'TC', 'CEL'];
   horariosPorDia: { [dia: string]: { horario: string, status: string }[] } = {};
+  saramUsuario: string = '';
 
   constructor(
     private dialog: MatDialog,
     private horariosService: HorariosService,
-    private logger: LoggingService
+    private logger: LoggingService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -51,6 +55,9 @@ export class OficiaisComponent implements OnInit {
         this.logger.error('Erro ao carregar horários em OficiaisComponent:', error);
       }
     });
+
+    const usuario = this.authService.getUsuarioAutenticado();
+    this.saramUsuario = usuario?.saram || '';
 
     this.dialog.open(OrientacoesComponent, {
       enterAnimationDuration: '1000ms'

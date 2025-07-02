@@ -56,7 +56,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('retorna status agendado do usuário', () => {
-      component.idMilitarLogado = 1;
+      component.saramUsuario = '123';
       component.agendamentos = [{
         id: 1,
         data: '',
@@ -83,7 +83,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('retorna status agendado por outro usuário', () => {
-      component.idMilitarLogado = 1;
+      component.saramUsuario = '123';
       component.agendamentos = [{
         id: 1,
         data: '',
@@ -118,15 +118,13 @@ describe('TabelaSemanalComponent', () => {
       expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
     });
 
-    it('detecta agendamento do usuário via usuarioId', () => {
-      component.idMilitarLogado = 5;
-      component.horariosPorDia = {
-        segunda: [{ horario: '08:00', status: 'AGENDADO', usuarioId: 5 }]
-      } as any;
+    it('detecta agendamento do usuário via usuarioSaram', () => {
+      component.saramUsuario = '555';
       const agendamento = {
         hora: '08:00',
         diaSemana: 'segunda',
         categoria: '',
+        usuarioSaram: '555',
         militar: null
       } as any;
       const result = component.isAgendamentoDoMilitarLogado(agendamento);
@@ -146,7 +144,7 @@ describe('TabelaSemanalComponent', () => {
     let botao = fixture.debugElement.query(By.css('button.tabela-botao-disponivel'));
     expect(botao.attributes['ng-reflect-color']).toBe('primary');
 
-    component.idMilitarLogado = 1;
+    component.saramUsuario = '123';
     component.agendamentos = [{
       id: 1,
       data: '',

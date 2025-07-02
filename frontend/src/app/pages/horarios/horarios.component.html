@@ -81,7 +81,8 @@
       </div>
 
       <!-- Tabela de horários -->
-      <table *ngIf="usuarioLogado" class="horarios">
+      <div *ngIf="saramUsuario">
+      <table class="horarios">
         <thead class="horarios-header">
           <tr>
             <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia">
@@ -164,6 +165,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </mat-card-content>
   </mat-card>
 </app-admin-navbar>
