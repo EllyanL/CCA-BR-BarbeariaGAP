@@ -26,6 +26,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("barbearia-api")
                     .withSubject(user.getCpf())
+                    .withClaim("saram", user.getSaram())
                     .withClaim("role", user.getRole().name())
                     .withClaim("postoGrad", user.getPostoGrad()) // 👈 Adicionado
                     .withClaim("om", user.getOm())               // 👈 Adicionado
