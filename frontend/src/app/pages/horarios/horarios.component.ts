@@ -14,8 +14,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UserService } from 'src/app/services/user.service';
 import { ServerTimeService } from 'src/app/services/server-time.service';
-import { first } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { take, timeout, catchError } from 'rxjs/operators';
+import { Subscription, of } from 'rxjs';
 import { LoggingService } from 'src/app/services/logging.service';
 
 @Component({
@@ -90,14 +90,25 @@ import { LoggingService } from 'src/app/services/logging.service';
     private initAfterTime(): void {
 
       this.userDataSubscription = this.userService.userData$
-        .pipe(first(data => !!data && data.length > 0))
+        .pipe(
+          take(1),
+          timeout(5000),
+          catchError(err => {
+            this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
+            return of([]);
+          })
+        )
         .subscribe(userData => {
           if (userData && userData.length > 0) {
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
             this.militarLogado = userData[0].nomeDeGuerra;
             this.omMilitar = userData[0].om;
-            this.carregarAgendamentos();
+          } else {
+            this.saramUsuario = this.authService.getUsuarioAutenticado()?.saram || '';
+          }
+
+          this.carregarAgendamentos();
 
           this.route.queryParams.subscribe((params) => {
             const categoria = params['categoria'];
@@ -114,7 +125,6 @@ import { LoggingService } from 'src/app/services/logging.service';
               error: err => this.logger.error('Erro ao atualizar horários:', err)
             });
           });
-        }
         });
     }
 
