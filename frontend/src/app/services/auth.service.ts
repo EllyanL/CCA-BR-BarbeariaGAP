@@ -103,13 +103,15 @@ export class AuthService {
   getUsuarioAutenticado(): Militar | null {
     const token = this.getToken();
     let roleFromToken: string | null = null;
-  
+    const idFromUserData = this.userService.getUserData()[0]?.id;
+
     if (token) {
       try {
         const decodedToken: any = jwtDecode(token);
         roleFromToken = decodedToken.role || null;
         this.logger.log('🔑 ROLE do token:', roleFromToken); // 👈 ADICIONE ISTO
         return {
+          id: idFromUserData,
           cpf: decodedToken.sub,
           saram: decodedToken.saram,
           role: roleFromToken,

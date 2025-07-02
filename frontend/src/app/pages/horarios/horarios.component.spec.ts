@@ -72,6 +72,7 @@ describe('HorariosComponent', () => {
     horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
     horariosService.getHorariosBase.and.returnValue(of([]));
     authService.getUsuarioAutenticado.and.returnValue({
+      id: 1,
       saram: '1',
       cpf: '123',
       nomeCompleto: '',
@@ -140,6 +141,7 @@ describe('HorariosComponent', () => {
     horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
     horariosService.getHorariosBase.and.returnValue(of([]));
     authService.getUsuarioAutenticado.and.returnValue({
+      id: 1,
       saram: '1',
       cpf: '123',
       nomeCompleto: '',
@@ -178,7 +180,7 @@ describe('HorariosComponent', () => {
 
   it('agendarHorario não chama serviço para datas passadas', () => {
     authService.isAuthenticated.and.returnValue(true);
-    authService.getUsuarioAutenticado.and.returnValue({ cpf: '123', saram: '1' } as Militar);
+    authService.getUsuarioAutenticado.and.returnValue({ id: 1, cpf: '123', saram: '1' } as Militar);
     spyOn(snack, 'open');
     const past = new Date(Date.now() - 60 * 60 * 1000);
     const dia = `segunda - ${past.getDate().toString().padStart(2, '0')}/${(past.getMonth()+1).toString().padStart(2, '0')}`;

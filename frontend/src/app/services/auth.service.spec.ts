@@ -19,7 +19,7 @@ describe('AuthService token decoding', () => {
       providers: [
         { provide: Router, useValue: {} },
         { provide: LoggingService, useValue: { log: () => {}, error: () => {} } },
-        { provide: UserService, useValue: { setUserData: () => {} } }
+        { provide: UserService, useValue: { setUserData: () => {}, getUserData: () => [{ id: 1 }] } }
       ]
     });
     service = TestBed.inject(AuthService);
