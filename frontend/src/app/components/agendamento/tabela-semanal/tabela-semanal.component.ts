@@ -507,6 +507,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   getHorarioStatus(dia: string, hora: string): { cor: string, texto: string, acao: string } {
     const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
   
+    // LOG DE DEBUG
+    console.log('[STATUS] Dia:', dia, 'Hora:', hora);
+    console.log('[STATUS] Agendamento:', agendamento);
+    console.log('[STATUS] idLogado:', this.idMilitarLogado, 'saramLogado:', this.saramUsuario);
+    if (agendamento) {
+      console.log('[STATUS] Dono do agendamento → id:', agendamento.militar?.id, 'saram:', agendamento.militar?.saram);
+    }
+  
+    // Verifica se há agendamento e se é do usuário logado
     if (agendamento) {
       const podeVerificarUsuario = this.idMilitarLogado !== undefined || !!this.saramUsuario;
   
@@ -517,6 +526,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
   
+    // Caso não haja agendamento, verifica status do horário base
     const diaSemanaFormatado = dia.split(" - ")[0].trim().toLowerCase();
     const statusHorario = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase();
   
@@ -530,9 +540,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   
     return { cor: "disabled", texto: "Indisponível", acao: "nenhuma" };
   }
-  
-  
-  
 
 
   private loadMilitares(categoria: string) {
