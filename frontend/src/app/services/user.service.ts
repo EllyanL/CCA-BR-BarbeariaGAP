@@ -64,7 +64,8 @@ export class UserService {
         this.saveUserData(userArray);
       },
       error: (err) => {
-        this.logger.error('Erro ao obter dados do usuário:', err);
+        this.logger.error('Erro ao obter dados do usuário, retornando token:', err);
+        this.userDataSubject.next([]);
       }
     });
   }
