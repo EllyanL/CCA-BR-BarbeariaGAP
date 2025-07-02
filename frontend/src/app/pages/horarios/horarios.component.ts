@@ -48,6 +48,7 @@ import { UserService } from 'src/app/services/user.service';
     timeOffsetMs: number = 0;
     private userDataSubscription?: Subscription;
     private horariosSub?: Subscription;
+    private storageKey: string = '';
 
     constructor(
       private horariosService: HorariosService,
@@ -62,6 +63,30 @@ import { UserService } from 'src/app/services/user.service';
       private serverTimeService: ServerTimeService,
       private logger: LoggingService
     ) {}
+
+    private saveAgendamentos(): void {
+      if (this.storageKey) {
+        try {
+          sessionStorage.setItem(this.storageKey, JSON.stringify(this.agendamentos));
+        } catch (e) {
+          this.logger.error('Erro ao salvar agendamentos no storage:', e);
+        }
+      }
+    }
+
+    private loadAgendamentosFromStorage(): void {
+      if (this.storageKey) {
+        const data = sessionStorage.getItem(this.storageKey);
+        if (data) {
+          try {
+            this.agendamentos = JSON.parse(data);
+          } catch (e) {
+            this.logger.error('Erro ao carregar agendamentos do storage:', e);
+            this.agendamentos = [];
+          }
+        }
+      }
+    }
 
 //---------------🔰Inicialização e Logout--------------------    
   ngOnInit(): void {
@@ -104,13 +129,20 @@ import { UserService } from 'src/app/services/user.service';
           if (userData && userData.length > 0) {
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
+            this.storageKey = `agendamentos-${this.cpfUsuario}`;
             this.cdr.detectChanges();
             this.militarLogado = userData[0].nomeDeGuerra;
             this.omMilitar = userData[0].om;
           } else {
-            this.saramUsuario = this.authService.getUsuarioAutenticado()?.saram || '';
+            const fallback = this.authService.getUsuarioAutenticado();
+            this.saramUsuario = fallback?.saram || '';
+            if (fallback?.cpf) {
+              this.cpfUsuario = fallback.cpf;
+              this.storageKey = `agendamentos-${fallback.cpf}`;
+            }
           }
 
+          this.loadAgendamentosFromStorage();
           this.carregarAgendamentos();
 
           this.route.queryParams.subscribe((params) => {
@@ -585,6 +617,7 @@ import { UserService } from 'src/app/services/user.service';
                 if (a.timestamp == null) return true;
                 return a.timestamp >= agora;
               });
+            this.saveAgendamentos();
           } else {
             this.agendamentos = [];
           }
@@ -598,6 +631,7 @@ import { UserService } from 'src/app/services/user.service';
               duration: 3000,
             }
           );
+          this.loadAgendamentosFromStorage();
         }
       });
     }
@@ -683,8 +717,9 @@ import { UserService } from 'src/app/services/user.service';
             this.agendamentos.push(novoAgendamento);
             this.agendamentos = [...this.agendamentos];
           }
-    
+
           this.horariosService.atualizarHorarios(this.horariosPorDia);
+          this.saveAgendamentos();
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -744,6 +779,7 @@ import { UserService } from 'src/app/services/user.service';
               this.horariosService.atualizarHorarios(this.horariosPorDia);
             }
           }
+          this.saveAgendamentos();
         },
         error: (error) => {
           this.logger.error('Erro ao desmarcar agendamento:', error);
