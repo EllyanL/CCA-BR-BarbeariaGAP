@@ -105,7 +105,7 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", "Dados inválidos para indisponibilizar horário."));
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             logger.error("Erro ao indisponibilizar horário", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -130,7 +130,7 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", "Dados inválidos para disponibilizar horário."));
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             logger.error("Erro ao disponibilizar horário", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -145,7 +145,7 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", "Dados inválidos para indisponibilizar horários."));
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             logger.error("Erro ao indisponibilizar horários", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -160,7 +160,7 @@ public class HorarioController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", "Dados inválidos para disponibilizar horários."));
+                    .body(Map.of("mensagem", e.getMessage()));
         } catch (Exception e) {
             logger.error("Erro ao disponibilizar horários", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
