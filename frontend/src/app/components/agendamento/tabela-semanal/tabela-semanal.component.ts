@@ -461,8 +461,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
+    const saramRef = this.saramUsuario || this.saramMilitarLogado;
     return !!agendamento && (
-      agendamento.militar?.saram === this.saramUsuario ||
+      agendamento.militar?.saram === saramRef ||
       agendamento.militar?.id === this.idMilitarLogado
     );
   }
