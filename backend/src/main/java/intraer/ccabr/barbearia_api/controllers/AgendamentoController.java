@@ -126,10 +126,7 @@ public class AgendamentoController {
             agendamentoService.marcarHorarioComoAgendado(agendamento);
             return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            if (e.getMessage() != null && e.getMessage().contains("15 dias")) {
-                return buildResponse("Você só pode marcar um corte a cada 15 dias.", HttpStatus.CONFLICT);
-            }
-            return buildResponse("Dados inválidos para agendamento.", HttpStatus.CONFLICT);
+            return buildResponse(e.getMessage(), HttpStatus.CONFLICT);
         }
     }
 
@@ -225,7 +222,7 @@ public class AgendamentoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("Dados inválidos para atualização do agendamento.");
+                    .body(e.getMessage());
         } catch (Exception e) {
             logger.error("Erro ao atualizar agendamento", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
