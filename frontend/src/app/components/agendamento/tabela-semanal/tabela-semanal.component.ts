@@ -642,24 +642,27 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
   
-  isAgendamentoDesmarcavel(
-    agendamento?: Agendamento,
-    dia?: string,
-    hora?: string
-  ): boolean {
-    if (agendamento) {
-      return this.isAgendamentoDoMilitarLogado(agendamento);
-    }
+isAgendamentoDesmarcavel(
+  agendamento?: Agendamento,
+  dia?: string,
+  hora?: string
+): boolean {
+  if (agendamento) {
+    return this.isAgendamentoDoMilitarLogado(agendamento);
+  }
 
-    if (!dia || !hora) {
-      return false;
-    }
+  if (!dia || !hora) {
+    return false;
+  }
 
-    const diaKey = dia.split(' - ')[0].trim().toLowerCase();
-    const usuarioId = this.horariosPorDia[diaKey]?.find(
-      h => h.horario === hora
-    )?.usuarioId;
-    return usuarioId === this.idMilitarLogado;
+  const diaKey = dia.split(' - ')[0].trim().toLowerCase();
+  const usuarioId = this.horariosPorDia[diaKey]?.find(
+    h => h.horario === hora
+  )?.usuarioId;
+  
+  return usuarioId === this.idMilitarLogado;
+}
+
   }
   
   abrirModalAgendamento(agendamento: Agendamento): void {
