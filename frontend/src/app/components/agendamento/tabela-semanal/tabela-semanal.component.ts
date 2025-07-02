@@ -107,6 +107,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       if (data) {
         try {
           this.agendamentos = JSON.parse(data);
+          this.logger.log(
+            `Agendamentos carregados da chave ${this.storageKey}:`,
+            this.agendamentos.length
+          );
         } catch (e) {
           this.logger.error('Erro ao carregar agendamentos do storage:', e);
           this.agendamentos = [];
