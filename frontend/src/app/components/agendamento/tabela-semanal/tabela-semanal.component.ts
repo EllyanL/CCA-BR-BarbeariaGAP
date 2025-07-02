@@ -2,7 +2,7 @@ import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service';
 import { Observable, Subscription, of } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { catchError, first, map, tap } from 'rxjs/operators';
+import { catchError, map, tap, take, timeout } from 'rxjs/operators';
 
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
@@ -130,7 +130,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   // e carrega os agendamentos salvos para ele.
   private initAfterTime(): void {
     this.userDataSubscription = this.userService.userData$
-      .pipe(first(data => !!data && data.length > 0 && !!data[0].saram))
+      .pipe(
+        take(1),
+        timeout(5000)
+      )
       .subscribe(userData => {
         if (userData && userData.length > 0 && userData[0].saram) {
           const newKey = `agendamentos-${userData[0].cpf}`;
