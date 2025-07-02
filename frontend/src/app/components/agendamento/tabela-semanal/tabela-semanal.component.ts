@@ -149,16 +149,20 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         timeout(5000),
         catchError(err => {
           this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
-        
+
           const fallback = this.authService.getUsuarioAutenticado();
           if (fallback?.id) {
             this.idMilitarLogado = fallback.id;
           }
-        
+          if (fallback?.cpf) {
+            this.storageKey = `agendamentos-${fallback.cpf}`;
+          }
+
           this.usuarioCarregado = true;
+          this.loadAgendamentosFromStorage();
           this.loadAllData();
           this.cdr.detectChanges();
-        
+
           return of([]);
         })
         
