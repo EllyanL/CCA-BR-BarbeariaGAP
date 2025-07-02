@@ -1,4 +1,3 @@
-<ng-container *ngIf="saramUsuario || idMilitarLogado">
 <mat-card class="tabela-card" *ngIf="usuarioCarregado">
   <mat-card-content class="tabela-card-content">
     <!-- Mensagem de Feedback -->
@@ -39,29 +38,29 @@
                   </button>
                 </div>
 
-                <!-- Agendado -->
-                <ng-container *ngSwitchCase="'cancelar'">
-                  <ng-container *ngIf="getAgendamentoParaDiaHora(dia, hora) as agendamento">
-                    <button class="botao-agendado"
-                            [disabled]="!isAgendamentoDoMilitarLogado(agendamento)"
-                            (click)="handleClick(agendamento, dia, hora)"
-                            [attr.title]="getTextTooltip(agendamento)"
-                            [@cancelarAnimacao]>
-                      AGENDADO
-                    </button>
-                  </ng-container>
-                </ng-container>
-                <ng-container *ngSwitchCase="'ocupado'">
-                  <ng-container *ngIf="getAgendamentoParaDiaHora(dia, hora) as agendamento">
-                    <button class="botao-agendado"
-                            [disabled]="!isAgendamentoDoMilitarLogado(agendamento)"
-                            (click)="handleClick(agendamento, dia, hora)"
-                            [attr.title]="getTextTooltip(agendamento)"
-                            [@cancelarAnimacao]>
-                      AGENDADO
-                    </button>
-                  </ng-container>
-                </ng-container>
+                <!-- Agendado pelo usuário logado -->
+                <div *ngSwitchCase="'cancelar'" class="tabela-botao-container">
+                  <button
+                    class="tabela-botao botao-agendado"
+                    [disabled]="!isAgendamentoDesmarcavel(getAgendamentoParaDiaHora(dia, hora))"
+                    (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
+                    [attr.title]="getTextTooltip(getAgendamentoParaDiaHora(dia, hora))"
+                    [@cancelarAnimacao]
+                  >
+                    {{ status.texto.toUpperCase() }}
+                  </button>
+                </div>
+
+                <!-- Agendado por outro usuário -->
+                <div *ngSwitchCase="'ocupado'" class="tabela-botao-container">
+                  <button
+                    class="tabela-botao botao-agendado-outro"
+                    disabled
+                    title="Horário já agendado por outro usuário"
+                  >
+                    {{ status.texto.toUpperCase() }}
+                  </button>
+                </div>
 
                 <!-- Indisponível -->
                 <div *ngSwitchDefault class="tabela-horario-indisponivel" [attr.title]="feedbackMessageTitle || 'Este horário não está disponível nesta semana'">
@@ -113,4 +112,3 @@
     </div>
   </mat-card-content>
 </mat-card>
-</ng-container>
