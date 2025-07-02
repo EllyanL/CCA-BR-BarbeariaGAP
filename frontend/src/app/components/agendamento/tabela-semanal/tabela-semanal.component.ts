@@ -50,7 +50,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() opcoesPostoGrad: string[] = [];
   @Input() horariosPorDia: { [key: string]: { horario: string, status: string, usuarioId?: number }[] } = {};
   @Input() saramUsuario!: string;
-  @Input() idMilitarLogado: number | null = null;
+  @Input() idMilitarLogado: number | null | undefined;
+
   oficiais: Militar[] = [];
   graduados: Militar[] = [];
   militarLogado: string = '';
@@ -118,7 +119,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   
 
   ngOnInit(): void {
-    this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id;
+    // this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id;
+    this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id ?? null;
     this.serverTimeService.getServerTime().subscribe({
       next: (res) => {
         this.timeOffsetMs = res.timestamp - Date.now();
@@ -172,7 +174,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.omMilitar = userData[0].om;
           this.cpfMilitarLogado = userData[0].cpf;
           this.saramMilitarLogado = userData[0].saram;
-          this.idMilitarLogado = userData[0].id;
+          // this.idMilitarLogado = userData[0].id;
+          this.idMilitarLogado = userData[0].id ?? null;
+
           // 👀 After assigning the user properties we trigger change detection
           // so that UI elements that depend on these values (e.g. button states)
           // are updated immediately.
