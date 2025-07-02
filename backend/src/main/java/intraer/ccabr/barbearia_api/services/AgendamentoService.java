@@ -204,7 +204,7 @@ public class AgendamentoService {
     }
 
     public Optional<Agendamento> atualizarAgendamento(Long id, LocalDate novaData, LocalTime novaHora, String novoDia) {
-        Optional<Agendamento> agOpt = agendamentoRepository.findById(id);
+        Optional<Agendamento> agOpt = agendamentoRepository.findByIdWithMilitar(id);
         if (agOpt.isEmpty()) {
             return Optional.empty();
         }
