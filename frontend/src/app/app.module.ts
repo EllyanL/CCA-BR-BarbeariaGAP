@@ -12,6 +12,7 @@ import { CapitalizePipe } from './pipes/capitalize.pipe';
 import { CpfMaskDirective } from './directives/cpf-mask.directive';
 import { DialogoAgendamentoComponent } from './components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoCancelamentoComponent } from './components/agendamento/dialogo-cancelamento/dialogo-cancelamento.component';
+import { DialogoEditarAgendamentoComponent } from './components/agendamento/dialogo-editar-agendamento/dialogo-editar-agendamento.component';
 import { DialogoDesmarcarComponent } from './components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { DialogoDetalhesAgendamentoComponent } from './components/agendamento/dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
 import { DialogoLogoutComponent } from './components/agendamento/dialogo-logout/dialogo-logout.component';
@@ -60,6 +61,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
     DialogoAgendamentoComponent,
     DialogoCancelamentoComponent,
     DialogoDetalhesAgendamentoComponent,
+    DialogoEditarAgendamentoComponent,
     OrientacoesComponent,
     TabelaSemanalComponent,
     GraduadosComponent,
