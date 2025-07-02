@@ -1,22 +1,22 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { Agendamento } from '../../models/agendamento';
-import { Militar } from '../../models/militar';
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import {
     HorariosPorDia,
     HorariosService,
 } from '../../services/horarios.service';
+import { Subscription, of } from 'rxjs';
+import { catchError, take, timeout } from 'rxjs/operators';
 
+import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
+import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { UserService } from 'src/app/services/user.service';
+import { Militar } from '../../models/militar';
 import { ServerTimeService } from 'src/app/services/server-time.service';
-import { take, timeout, catchError } from 'rxjs/operators';
-import { Subscription, of } from 'rxjs';
-import { LoggingService } from 'src/app/services/logging.service';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
     selector: 'app-horarios',
@@ -104,6 +104,7 @@ import { LoggingService } from 'src/app/services/logging.service';
           if (userData && userData.length > 0) {
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
+            this.cdr.detectChanges();
             this.militarLogado = userData[0].nomeDeGuerra;
             this.omMilitar = userData[0].om;
           } else {
@@ -705,11 +706,12 @@ import { LoggingService } from 'src/app/services/logging.service';
       }
     }
 
-    isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
-      const saram = agendamento.usuarioSaram || agendamento.militar?.saram;
-      return saram === this.saramUsuario;
+    isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
+      const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
+      const resultado = saramAgendamento === this.saramUsuario;
+      console.log('[DEBUG] Comparando SARAM:', saramAgendamento, 'com', this.saramUsuario, '→', resultado);
+      return resultado;
     }
-    
     
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
       return !!agendamento;

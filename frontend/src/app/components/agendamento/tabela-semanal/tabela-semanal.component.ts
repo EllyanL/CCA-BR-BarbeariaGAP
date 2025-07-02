@@ -1,11 +1,12 @@
-import { Component, Input, OnDestroy, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service';
 import { Observable, Subscription, of } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { catchError, map, tap, take, timeout } from 'rxjs/operators';
+import { catchError, map, take, tap, timeout } from 'rxjs/operators';
 
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { DialogoAgendamentoComponent } from '../dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoCancelamentoComponent } from '../dialogo-cancelamento/dialogo-cancelamento.component';
 import { DialogoDetalhesAgendamentoComponent } from '../dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
@@ -18,7 +19,6 @@ import { MilitarService } from 'src/app/services/militar.service';
 import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
-import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -112,7 +112,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         }
       }
     }
+
   }
+
+  
 
   ngOnInit(): void {
     this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id;
@@ -144,10 +147,19 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         timeout(5000),
         catchError(err => {
           this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
-          this.loadAllData();
+        
+          const fallback = this.authService.getUsuarioAutenticado();
+          if (fallback?.id) {
+            this.idMilitarLogado = fallback.id;
+          }
+        
           this.usuarioCarregado = true;
+          this.loadAllData();
+          this.cdr.detectChanges();
+        
           return of([]);
         })
+        
       )
       .subscribe(userData => {
         if (userData && userData.length > 0 && userData[0].saram) {
@@ -444,10 +456,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
-    const saram = agendamento.usuarioSaram || agendamento.militar?.saram;
-    return saram === this.saramUsuario;
-  }
+  isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
+    return !!agendamento && agendamento.militar?.id == this.idMilitarLogado;
+  }  
+  
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {
     const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
@@ -486,7 +498,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   getHorarioStatus(dia: string, hora: string): { cor: string, texto: string, acao: string } {
     const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
-
+    
     if (agendamento) {
       if (this.isAgendamentoDoMilitarLogado(agendamento)) {
         return { cor: "accent", texto: "Agendado", acao: "cancelar" };
@@ -590,10 +602,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
   
-  isAgendamentoDesmarcavel(agendamento: Agendamento | undefined): boolean {
-    return !!agendamento;
+  isAgendamentoDesmarcavel(agendamento?: Agendamento): boolean {
+    return !!agendamento && this.isAgendamentoDoMilitarLogado(agendamento);
   }
-
+  
   abrirModalAgendamento(agendamento: Agendamento): void {
     this.dialog.open(DialogoAgendamentoComponent, {
       width: '500px',
