@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
 
-    @Query("SELECT a FROM Agendamento a WHERE a.data = :data AND a.diaSemana = :diaSemana AND a.hora IN :horas AND a.categoria = :categoria")
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.data = :data AND a.diaSemana = :diaSemana AND a.hora IN :horas AND a.categoria = :categoria")
     List<Agendamento> findByDataAndDiaSemanaAndHoraInAndCategoria(
             @Param("data") LocalDate data,
             @Param("diaSemana") String diaSemana,
@@ -29,13 +29,13 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
         @Param("categoria") String categoria
         );
 
-    @Query("SELECT a FROM Agendamento a WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria")
-        Optional<Agendamento> findByDataAndHoraAndDiaSemanaAndCategoria(
-                @Param("data") LocalDate data,
-                @Param("hora") LocalTime hora, 
-                @Param("diaSemana") String diaSemana,
-                @Param("categoria") String categoria
-        );
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria")
+    Optional<Agendamento> findByDataAndHoraAndDiaSemanaAndCategoria(
+            @Param("data") LocalDate data,
+            @Param("hora") LocalTime hora,
+            @Param("diaSemana") String diaSemana,
+            @Param("categoria") String categoria
+    );
         
 
     @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram ORDER BY a.data DESC")
@@ -43,15 +43,18 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
     boolean existsByMilitarSaramAndDataGreaterThanEqual(String saram, LocalDate data);
 
-    @Query("SELECT a FROM Agendamento a WHERE a.militar.cpf = :cpf AND a.categoria = :categoria")
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.cpf = :cpf AND a.categoria = :categoria")
     List<Agendamento> findByMilitarCpfAndCategoria(@Param("cpf") String cpf, @Param("categoria") String categoria);
 
-    @Query("SELECT a FROM Agendamento a WHERE a.militar.cpf = :cpf AND a.categoria = :categoria AND a.data >= :data ORDER BY a.data")
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.cpf = :cpf AND a.categoria = :categoria AND a.data >= :data ORDER BY a.data")
     List<Agendamento> findByMilitarCpfAndCategoriaAndDataAfter(
             @Param("cpf") String cpf,
             @Param("categoria") String categoria,
             @Param("data") LocalDate data
     );
+
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar")
+    List<Agendamento> findAllWithMilitar();
 
     @Modifying
     @Query("DELETE FROM Agendamento a WHERE a.hora = :hora")
@@ -70,6 +73,9 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             String categoria,
             LocalDate data
     );
+
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.id = :id")
+    Optional<Agendamento> findByIdWithMilitar(@Param("id") Long id);
 
     @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria AND a.id <> :id")
     boolean existsForUpdate(@Param("id") Long id,

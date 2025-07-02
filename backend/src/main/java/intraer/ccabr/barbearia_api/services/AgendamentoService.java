@@ -53,11 +53,11 @@ public class AgendamentoService {
     }
 
     public List<Agendamento> findAll() {
-        return agendamentoRepository.findAll();
+        return agendamentoRepository.findAllWithMilitar();
     }
 
     public Optional<Agendamento> findById(Long id) {
-        return agendamentoRepository.findById(id);
+        return agendamentoRepository.findByIdWithMilitar(id);
     }
 
     @Transactional
