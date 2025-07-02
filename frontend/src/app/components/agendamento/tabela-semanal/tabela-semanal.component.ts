@@ -50,13 +50,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() opcoesPostoGrad: string[] = [];
   @Input() horariosPorDia: { [key: string]: { horario: string, status: string, usuarioId?: number }[] } = {};
   @Input() saramUsuario!: string;
+  @Input() idMilitarLogado: number | null = null;
   oficiais: Militar[] = [];
   graduados: Militar[] = [];
   militarLogado: string = '';
   omMilitar: string = '';
   cpfMilitarLogado: string = '';
   saramMilitarLogado: string = '';
-  idMilitarLogado?: number;
   postos: string[] = ['AP', '2T', '1T', 'CP', 'MJ', 'TC', 'CL', 'BG', 'MB', 'TB'];
   graduacoes = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 
@@ -457,8 +457,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
-    return !!agendamento && agendamento.militar?.id == this.idMilitarLogado;
-  }  
+    return !!agendamento && (
+      agendamento.militar?.saram === this.saramUsuario ||
+      agendamento.militar?.id === this.idMilitarLogado
+    );
+  }
   
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {

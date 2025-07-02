@@ -25,6 +25,7 @@ import { AuthService } from 'src/app/services/auth.service';
             [categoria]="categoria"
             [horariosPorDia]="horariosPorDia"
             [saramUsuario]="saramUsuario"
+            [idMilitarLogado]="idMilitarLogado"
           ></app-tabela-semanal>
         </div>
       </mat-sidenav-content>
@@ -38,6 +39,7 @@ export class OficiaisComponent implements OnInit {
   opcoesPostoGrad: string[] = ['ASP', '2TEN', '1TEN', 'CAP', 'MAJ', 'TC', 'CEL'];
   horariosPorDia: { [dia: string]: { horario: string, status: string }[] } = {};
   saramUsuario: string = '';
+  idMilitarLogado: number | null = null;
 
   constructor(
     private dialog: MatDialog,
@@ -58,6 +60,7 @@ export class OficiaisComponent implements OnInit {
 
     const usuario = this.authService.getUsuarioAutenticado();
     this.saramUsuario = usuario?.saram || '';
+    this.idMilitarLogado = usuario?.id || null;
 
     this.dialog.open(OrientacoesComponent, {
       enterAnimationDuration: '1000ms'
