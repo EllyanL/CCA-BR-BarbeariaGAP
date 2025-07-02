@@ -48,4 +48,21 @@ describe('AuthService token decoding', () => {
 
     localStorage.removeItem('barbearia-token');
   });
+
+  it('uses id claim when present', () => {
+    const payload = {
+      sub: '123',
+      id: 99,
+      saram: '456',
+      role: 'GRADUADO'
+    };
+    const token = createToken(payload);
+    sessionStorage.setItem('barbearia-token', token);
+
+    const militar = service.getUsuarioAutenticado();
+
+    expect(militar?.id).toBe(99);
+
+    sessionStorage.removeItem('barbearia-token');
+  });
 });

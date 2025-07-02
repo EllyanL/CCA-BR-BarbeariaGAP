@@ -109,9 +109,10 @@ export class AuthService {
       try {
         const decodedToken: any = jwtDecode(token);
         roleFromToken = decodedToken.role || null;
-        this.logger.log('🔑 ROLE do token:', roleFromToken); // 👈 ADICIONE ISTO
+        const idFromToken = decodedToken.id;
+        this.logger.log('🔑 ROLE do token:', roleFromToken);
         return {
-          id: idFromUserData,
+          id: idFromToken !== undefined ? idFromToken : idFromUserData,
           cpf: decodedToken.sub,
           saram: decodedToken.saram,
           role: roleFromToken,
