@@ -86,87 +86,54 @@ public class HorarioController {
     @PostMapping("/indisponibilizar")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> indisponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
-        try {
-            if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
-                horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
-                horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
-            }
-            Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
-                    horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
-            Map<String, Object> response = new HashMap<>();
-            if (horarioIndisponibilizado != null) {
-                response.put("mensagem", "Horário indisponibilizado com sucesso para " + horarioDTO.getCategoria());
-                response.put("horario", horarioIndisponibilizado);
-            } else {
-                response.put("mensagem", "Nenhum horário encontrado para indisponibilizar.");
-            }
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
-        } catch (Exception e) {
-            logger.error("Erro ao indisponibilizar horário", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
-        }
+        if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
+        horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
+        horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
     }
+    Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
+            horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+    Map<String, Object> response = new HashMap<>();
+    if (horarioIndisponibilizado != null) {
+        response.put("mensagem", "Horário indisponibilizado com sucesso para " + horarioDTO.getCategoria());
+        response.put("horario", horarioIndisponibilizado);
+    } else {
+        response.put("mensagem", "Nenhum horário encontrado para indisponibilizar.");
+    }
+    return ResponseEntity.ok(response);
+}
     @PostMapping("/disponibilizar")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> disponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
-        try {
-            if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
-                horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
-                horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
-            }
-            Horario horarioDisponibilizado = horarioService.disponibilizarHorario(
-                    horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
-            Map<String, Object> response = new HashMap<>();
-            response.put("mensagem", "Horário disponibilizado com sucesso para " + horarioDTO.getCategoria());
-            response.put("horario", horarioDisponibilizado);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
-        } catch (Exception e) {
-            logger.error("Erro ao disponibilizar horário", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
+        if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
+            horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
+            horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
         }
+        Horario horarioDisponibilizado = horarioService.disponibilizarHorario(
+                horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+        Map<String, Object> response = new HashMap<>();
+        response.put("mensagem", "Horário disponibilizado com sucesso para " + horarioDTO.getCategoria());
+        response.put("horario", horarioDisponibilizado);
+        return ResponseEntity.ok(response);
     }
+
     @PostMapping("/indisponibilizar/tudo/{dia}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> indisponibilizarTodosHorarios(@PathVariable String dia, @RequestBody List<String> horarios, @RequestParam String categoria) {
-        try {
-            Map<String, Object> response = horarioService.indisponibilizarTodosHorarios(dia, horarios, categoria);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
-        } catch (Exception e) {
-            logger.error("Erro ao indisponibilizar horários", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
-        }
+        Map<String, Object> response = horarioService.indisponibilizarTodosHorarios(dia, horarios, categoria);
+        return ResponseEntity.ok(response);
     }
+
     @PostMapping("/disponibilizar/tudo/{dia}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> disponibilizarTodosHorarios(@PathVariable String dia, @RequestBody List<String> horarios, @RequestParam String categoria) {
-        try {
-            Map<String, Object> response = horarioService.disponibilizarTodosHorarios(dia, horarios, categoria);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("mensagem", e.getMessage()));
-        } catch (Exception e) {
-            logger.error("Erro ao disponibilizar horários", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("mensagem", "Erro interno no servidor, tente novamente"));
-        }
+        Map<String, Object> response = horarioService.disponibilizarTodosHorarios(dia, horarios, categoria);
+        return ResponseEntity.ok(response);
     }
+    
     @GetMapping("/categoria/{categoria}")
     public ResponseEntity<Map<String, List<HorarioDTO>>> listarPorCategoria(@PathVariable String categoria) {
         return ResponseEntity.ok(horarioService.listarHorariosAgrupadosPorCategoria(categoria));

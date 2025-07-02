@@ -120,14 +120,10 @@ public class AgendamentoController {
         }
 
         agendamento.setMilitar(militar);
-        try {
-            agendamentoService.validarRegrasDeNegocio(agendamento);
-            Agendamento saved = agendamentoService.saveAgendamento(agendamento);
-            agendamentoService.marcarHorarioComoAgendado(agendamento);
-            return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return buildResponse(e.getMessage(), HttpStatus.CONFLICT);
-        }
+        agendamentoService.validarRegrasDeNegocio(agendamento);
+        Agendamento saved = agendamentoService.saveAgendamento(agendamento);
+        agendamentoService.marcarHorarioComoAgendado(agendamento);
+        return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -214,20 +210,11 @@ public class AgendamentoController {
                     .body("Você só pode editar agendamentos da sua própria categoria.");
         }
 
-        try {
-            Optional<Agendamento> atualizado = agendamentoService.atualizarAgendamento(id, dto.getData(), dto.getHora(), dto.getDiaSemana());
-            if (atualizado.isPresent()) {
-                return ResponseEntity.ok(new AgendamentoDTO(atualizado.get()));
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Erro ao atualizar agendamento", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno no servidor, tente novamente");
+        Optional<Agendamento> atualizado = agendamentoService.atualizarAgendamento(id, dto.getData(), dto.getHora(), dto.getDiaSemana());
+        if (atualizado.isPresent()) {
+            return ResponseEntity.ok(new AgendamentoDTO(atualizado.get()));
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
     }
 
     @DeleteMapping("/{id}")
@@ -263,21 +250,12 @@ public class AgendamentoController {
             }
 
 
-            try {
-                agendamentoService.delete(id);
-                horarioService.disponibilizarHorario(
-                        agendamento.getDiaSemana(),
-                        agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm")),
-                        agendamento.getCategoria());
-                return ResponseEntity.noContent().build();
-            } catch (DataIntegrityViolationException e) {
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("Erro: O agendamento está associado a outro registro.");
-            } catch (Exception e) {
-                logger.error("Erro ao excluir agendamento", e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("Erro interno no servidor, tente novamente");
-            }
+            agendamentoService.delete(id);
+            horarioService.disponibilizarHorario(
+                    agendamento.getDiaSemana(),
+                    agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm")),
+                    agendamento.getCategoria());
+            return ResponseEntity.noContent().build();
         }
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
@@ -295,10 +273,6 @@ public class AgendamentoController {
             return ResponseEntity.ok(resultado);
         } catch (DateTimeParseException e) {
             return ResponseEntity.badRequest().body(null);
-        } catch (Exception e) {
-            logger.error("Erro ao verificar agendamentos em lote", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno no servidor, tente novamente");
         }
     }
 

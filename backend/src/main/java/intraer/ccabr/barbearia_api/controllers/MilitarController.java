@@ -31,14 +31,8 @@ public class MilitarController {
     // Método CREATE - Salva um militar.
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Militar militar) {
-        try {
-            Militar savedMilitar = militarService.save(militar);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedMilitar);
-        } catch (Exception e) {
-            logger.error("Erro ao salvar militar", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno no servidor, tente novamente");
-        }
+        Militar savedMilitar = militarService.save(militar);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedMilitar);
     }
 
     // Método READ - Lista todos os militares.

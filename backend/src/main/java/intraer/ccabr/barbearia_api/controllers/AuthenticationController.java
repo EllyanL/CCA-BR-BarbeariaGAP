@@ -230,13 +230,7 @@ public class AuthenticationController {
      */
     @PostMapping("/user-data")
     public ResponseEntity<?> getUserData(@RequestBody @Valid AuthenticationDTO data) {
-        try {
-            return authenticationService.getUserData(data);
-        } catch (Exception e) {
-            logger.error("Erro ao buscar dados do usuário", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Erro interno no servidor, tente novamente");
-        }
+        return authenticationService.getUserData(data);
     }
 
     /**
