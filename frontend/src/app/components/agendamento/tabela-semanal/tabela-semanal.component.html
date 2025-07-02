@@ -42,7 +42,7 @@
                 <div *ngSwitchCase="'cancelar'" class="tabela-botao-container">
                   <button
                     class="tabela-botao botao-agendado"
-                    [disabled]="!isAgendamentoDesmarcavel(getAgendamentoParaDiaHora(dia, hora))"
+                    [disabled]="!isAgendamentoDesmarcavel(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
                     (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
                     [attr.title]="getTextTooltip(getAgendamentoParaDiaHora(dia, hora))"
                     [@cancelarAnimacao]
