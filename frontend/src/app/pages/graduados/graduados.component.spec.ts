@@ -15,7 +15,7 @@ describe('GraduadosComponent', () => {
     TestBed.configureTestingModule({
       declarations: [GraduadosComponent],
       providers: [
-        { provide: AuthService, useValue: { getUsuarioAutenticado: () => ({ saram: '1' }) } },
+        { provide: AuthService, useValue: { getUsuarioAutenticado: () => ({ id: 1, saram: '1' }) } },
         { provide: MatDialog, useValue: {} },
         { provide: HorariosService, useValue: { carregarHorariosDaSemana: () => of({}) } },
         { provide: LoggingService, useValue: { log: () => {}, error: () => {} } }
