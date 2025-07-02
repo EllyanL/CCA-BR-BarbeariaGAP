@@ -161,6 +161,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.cpfMilitarLogado = userData[0].cpf;
           this.saramMilitarLogado = userData[0].saram;
           this.idMilitarLogado = userData[0].id;
+          // 👀 After assigning the user properties we trigger change detection
+          // so that UI elements that depend on these values (e.g. button states)
+          // are updated immediately.
+          this.cdr.detectChanges();
+
           this.storageKey = newKey;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
