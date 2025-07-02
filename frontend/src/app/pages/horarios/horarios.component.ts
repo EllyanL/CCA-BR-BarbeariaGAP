@@ -66,6 +66,8 @@ import { LoggingService } from 'src/app/services/logging.service';
 //---------------🔰Inicialização e Logout--------------------    
   ngOnInit(): void {
       this.usuarioLogado = this.authService.getUsuarioAutenticado();
+      this.saramUsuario = this.usuarioLogado?.saram || '';
+      this.cdr.detectChanges();
       const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.role?.toUpperCase() === 'ADMIN';
       this.serverTimeService.getServerTime().subscribe({
