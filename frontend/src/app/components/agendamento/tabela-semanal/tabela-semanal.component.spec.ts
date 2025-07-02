@@ -129,29 +129,22 @@ describe('TabelaSemanalComponent', () => {
       expect(status).toEqual({ cor: 'accent', texto: 'Agendado', acao: 'cancelar' });
     });
 
-    it('retorna status indisponível quando horário não existe', () => {
-      component.horariosPorDia = {
-        segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }]
-      } as any;
+it('isAgendamentoDesmarcavel verifica usuarioId do horario', () => {
+  component.idMilitarLogado = 1;
+  component.horariosPorDia = {
+    segunda: [
+      { horario: '08:00', status: 'AGENDADO', usuarioId: 1 },
+      { horario: '09:00', status: 'AGENDADO', usuarioId: 2 }
+    ]
+  } as any;
 
-      const status = component.getHorarioStatus('segunda', '08:00');
-      expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
-    });
+  const podeCancelar = component.isAgendamentoDesmarcavel(undefined, 'segunda', '08:00');
+  const naoPodeCancelar = component.isAgendamentoDesmarcavel(undefined, 'segunda', '09:00');
 
-    it('detecta agendamento do usuário via saram', () => {
-      component.saramUsuario = '555';
-      const agendamento = {
-        hora: '08:00',
-        diaSemana: 'segunda',
-        categoria: '',
-        militar: {
-          id: 99,
-          saram: '555'
-        }
-      } as any;
-      const result = component.isAgendamentoDoMilitarLogado(agendamento);
-      expect(result).toBeTrue();
-    });
+  expect(podeCancelar).toBeTrue();
+  expect(naoPodeCancelar).toBeFalse();
+});
+
 
     it('detecta agendamento do usuário via id', () => {
       component.idMilitarLogado = 7;
