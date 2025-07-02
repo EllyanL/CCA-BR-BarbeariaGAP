@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service';
 import { Observable, Subscription, of } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
@@ -44,10 +44,11 @@ import { UserService } from 'src/app/services/user.service';
     ])
   ]
 })
-export class TabelaSemanalComponent implements OnInit, OnDestroy {
+export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() categoria: string = '';
   @Input() opcoesPostoGrad: string[] = [];
   @Input() horariosPorDia: { [key: string]: { horario: string, status: string, usuarioId?: number }[] } = {};
+  @Input() saramUsuario!: string;
   oficiais: Militar[] = [];
   graduados: Militar[] = [];
   militarLogado: string = '';
@@ -80,7 +81,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
     private horariosService: HorariosService,
     private userService: UserService,
     private serverTimeService: ServerTimeService,
-    private logger: LoggingService
+    private logger: LoggingService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   private saveAgendamentos(): void {
@@ -124,6 +126,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
         this.initAfterTime();
       }
     });
+  }
+
+  ngOnChanges(_changes: SimpleChanges): void {
+    this.cdr.detectChanges();
   }
 
   // Define a chave de armazenamento baseada no CPF do usuário
@@ -420,12 +426,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy {
   }
 
   isAgendamentoDoMilitarLogado(agendamento: Agendamento): boolean {
-    const byMilitar = agendamento.militar?.id === this.idMilitarLogado;
-    const dia = agendamento.diaSemana.toLowerCase();
-    const index = this.horariosPorDia[dia]?.findIndex(h => h.horario === agendamento.hora.slice(0,5));
-    const byHorario = index !== undefined && index > -1 &&
-      this.horariosPorDia[dia][index].usuarioId === this.idMilitarLogado;
-    return !!(byMilitar || byHorario);
+    const saram = agendamento.usuarioSaram || agendamento.militar?.saram;
+    return saram === this.saramUsuario;
   }
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {
