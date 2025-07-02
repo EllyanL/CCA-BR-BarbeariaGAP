@@ -111,6 +111,7 @@ export class AuthService {
         this.logger.log('🔑 ROLE do token:', roleFromToken); // 👈 ADICIONE ISTO
         return {
           cpf: decodedToken.sub,
+          saram: decodedToken.saram,
           role: roleFromToken,
           nomeCompleto: decodedToken.nomeCompleto,
           email: decodedToken.email,

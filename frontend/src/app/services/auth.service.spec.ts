@@ -1,0 +1,51 @@
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
+import { LoggingService } from './logging.service';
+import { UserService } from './user.service';
+
+function createToken(payload: any): string {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const body = btoa(JSON.stringify(payload));
+  return `${header}.${body}.signature`;
+}
+
+describe('AuthService token decoding', () => {
+  let service: AuthService;
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [
+        { provide: Router, useValue: {} },
+        { provide: LoggingService, useValue: { log: () => {}, error: () => {} } },
+        { provide: UserService, useValue: { setUserData: () => {} } }
+      ]
+    });
+    service = TestBed.inject(AuthService);
+  });
+
+  it('extracts saram field from JWT', () => {
+    const payload = {
+      sub: '123',
+      saram: '456',
+      role: 'GRADUADO',
+      nomeCompleto: 'Nome',
+      email: 'n@example.com',
+      om: 'OM',
+      postoGrad: 'SGT'
+    };
+    const token = createToken(payload);
+    localStorage.setItem('barbearia-token', token);
+
+    const militar = service.getUsuarioAutenticado();
+
+    expect(militar).toEqual(jasmine.objectContaining({
+      cpf: payload.sub,
+      saram: payload.saram,
+      role: payload.role
+    }));
+
+    localStorage.removeItem('barbearia-token');
+  });
+});
