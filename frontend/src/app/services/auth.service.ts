@@ -74,9 +74,15 @@ export class AuthService {
   }
 
   saveToken(token: string, rememberMe: boolean): void {
+    // Clear existing token and any persisted user data before saving the new token
+    localStorage.removeItem(this.tokenKey);
+    sessionStorage.removeItem(this.tokenKey);
+    localStorage.removeItem('user-data');
+    sessionStorage.removeItem('user-data');
+
     const storage = rememberMe ? localStorage : sessionStorage;
     storage.setItem(this.tokenKey, token); // this.tokenKey deve ser 'barbearia-token'
-  }  
+  }
 
   isAuthenticated(): boolean {
     const token = this.getToken();
