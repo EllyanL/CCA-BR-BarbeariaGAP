@@ -127,7 +127,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.idMilitarLogado = usuario?.id ?? null;
     if (usuario?.cpf) {
       this.storageKey = `agendamentos-${usuario.cpf}`;
-      this.loadAgendamentosFromStorage();
       this.cdr.detectChanges();
     }
     this.serverTimeService.getServerTime().subscribe({
@@ -165,10 +164,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           }
           if (fallback?.cpf) {
             this.storageKey = `agendamentos-${fallback.cpf}`;
+            this.loadAgendamentosFromStorage();
           }
 
           this.usuarioCarregado = true;
-          this.loadAgendamentosFromStorage();
           this.loadAllData();
           this.cdr.detectChanges();
 
