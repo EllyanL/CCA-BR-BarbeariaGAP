@@ -65,4 +65,23 @@ describe('AuthService token decoding', () => {
 
     sessionStorage.removeItem('barbearia-token');
   });
+
+  it('extracts nomeCompleto and email when present', () => {
+    const payload = {
+      sub: '123',
+      saram: '456',
+      role: 'GRADUADO',
+      nomeCompleto: 'Nome Teste',
+      email: 'email@test.com'
+    };
+    const token = createToken(payload);
+    localStorage.setItem('barbearia-token', token);
+
+    const militar = service.getUsuarioAutenticado();
+
+    expect(militar?.nomeCompleto).toBe(payload.nomeCompleto);
+    expect(militar?.email).toBe(payload.email);
+
+    localStorage.removeItem('barbearia-token');
+  });
 });
