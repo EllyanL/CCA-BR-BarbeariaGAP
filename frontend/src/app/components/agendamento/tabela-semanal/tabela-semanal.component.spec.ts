@@ -112,6 +112,16 @@ describe('TabelaSemanalComponent', () => {
       expect(status).toEqual({ cor: 'basic', texto: 'Agendado', acao: 'ocupado' });
     });
 
+    it('retorna cancelar quando usuarioId do horario pertence ao militar logado', () => {
+      component.agendamentos = [];
+      component.horariosPorDia = {
+        segunda: [{ horario: '08:00', status: 'AGENDADO', usuarioId: 1 }]
+      } as any;
+
+      const status = component.getHorarioStatus('segunda', '08:00');
+      expect(status).toEqual({ cor: 'accent', texto: 'Agendado', acao: 'cancelar' });
+    });
+
     it('retorna status indisponível quando horário não existe', () => {
       component.horariosPorDia = {
         segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }]
