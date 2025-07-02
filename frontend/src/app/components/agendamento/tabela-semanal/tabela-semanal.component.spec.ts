@@ -41,6 +41,13 @@ describe('TabelaSemanalComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('exibe detalhes mesmo sem agendamentos', () => {
+    component.agendamentos = [];
+    fixture.detectChanges();
+    const titulo = fixture.debugElement.query(By.css('.agendamentos-detalhes h3'));
+    expect(titulo).toBeTruthy();
+  });
+
   describe('getHorarioStatus', () => {
     beforeEach(() => {
       component.diasDaSemana = ['segunda'];
