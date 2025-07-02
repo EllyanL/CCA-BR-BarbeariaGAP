@@ -76,47 +76,52 @@
     </table>
 
     <!-- Seção de Detalhes dos Agendamentos -->
-    <div *ngIf="agendamentos.length > 0" class="agendamentos-detalhes">
+    <div class="agendamentos-detalhes">
       <h3>Detalhes dos Agendamentos</h3>
-      <table class="tabela-detalhes">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Hora</th>
-            <th>Dia da Semana</th>
-            <th>Categoria</th>
-            <th>Militar</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let agendamento of agendamentos; trackBy: trackByAgendamento">
-            <td>{{ agendamento.data }}</td>
-            <td>{{ agendamento.hora }}</td>
-            <td>{{ agendamento.diaSemana | uppercase }}</td>
-            <td>{{ agendamento.categoria | titlecase }}</td>
-            <td>
-              <div *ngIf="agendamento.militar; else noMilitar">
-                <strong>SARAM:</strong> {{ agendamento.militar.saram || 'Não informado' }}<br>
-                <strong>Nome:</strong> {{ agendamento.militar.nomeCompleto || 'Não informado' }}<br>
-                <strong>Email:</strong> {{ agendamento.militar.email || 'Não informado' }}<br>
-                <strong>Seção:</strong> {{ agendamento.militar.secao || 'Não informado' }}<br>
-                <strong>Ramal:</strong> {{ agendamento.militar.ramal || 'Não informado' }}
-              </div>
-              <ng-template #noMilitar>
-                <div>Militar não encontrado</div>
-              </ng-template>
-            </td>
-            <td>
-              <button mat-icon-button color="warn"
-                      *ngIf="isAgendamentoDoMilitarLogado(agendamento)"
-                      (click)="desmarcarAgendamento(agendamento)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <ng-container *ngIf="agendamentos.length > 0; else semAgendamentos">
+        <table class="tabela-detalhes">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Hora</th>
+              <th>Dia da Semana</th>
+              <th>Categoria</th>
+              <th>Militar</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let agendamento of agendamentos; trackBy: trackByAgendamento">
+              <td>{{ agendamento.data }}</td>
+              <td>{{ agendamento.hora }}</td>
+              <td>{{ agendamento.diaSemana | uppercase }}</td>
+              <td>{{ agendamento.categoria | titlecase }}</td>
+              <td>
+                <div *ngIf="agendamento.militar; else noMilitar">
+                  <strong>SARAM:</strong> {{ agendamento.militar.saram || 'Não informado' }}<br>
+                  <strong>Nome:</strong> {{ agendamento.militar.nomeCompleto || 'Não informado' }}<br>
+                  <strong>Email:</strong> {{ agendamento.militar.email || 'Não informado' }}<br>
+                  <strong>Seção:</strong> {{ agendamento.militar.secao || 'Não informado' }}<br>
+                  <strong>Ramal:</strong> {{ agendamento.militar.ramal || 'Não informado' }}
+                </div>
+                <ng-template #noMilitar>
+                  <div>Militar não encontrado</div>
+                </ng-template>
+              </td>
+              <td>
+                <button mat-icon-button color="warn"
+                        *ngIf="isAgendamentoDoMilitarLogado(agendamento)"
+                        (click)="desmarcarAgendamento(agendamento)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </ng-container>
+      <ng-template #semAgendamentos>
+        <p>Nenhum agendamento encontrado.</p>
+      </ng-template>
     </div>
   </mat-card-content>
 </mat-card>

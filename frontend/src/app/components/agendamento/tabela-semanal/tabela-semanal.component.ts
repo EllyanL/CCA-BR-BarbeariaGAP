@@ -548,6 +548,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
   
     if (statusHorario === "AGENDADO") {
+      const usuarioId = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.usuarioId;
+      if (usuarioId && usuarioId === this.idMilitarLogado) {
+        return { cor: "accent", texto: "Agendado", acao: "cancelar" };
+      }
       return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
   
@@ -637,7 +641,18 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
   
   isAgendamentoDesmarcavel(agendamento?: Agendamento): boolean {
-    return !!agendamento && this.isAgendamentoDoMilitarLogado(agendamento);
+    if (agendamento) {
+      return this.isAgendamentoDoMilitarLogado(agendamento);
+    }
+
+    for (const dia of Object.keys(this.horariosPorDia)) {
+      const entry = this.horariosPorDia[dia].find(h => h.usuarioId === this.idMilitarLogado);
+      if (entry) {
+        return true;
+      }
+    }
+
+    return false;
   }
   
   abrirModalAgendamento(agendamento: Agendamento): void {
