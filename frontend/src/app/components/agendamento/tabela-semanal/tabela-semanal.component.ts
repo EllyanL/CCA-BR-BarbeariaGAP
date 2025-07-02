@@ -411,7 +411,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
   handleClick(agendamento: Agendamento | undefined, dia?: string, hora?: string) {
     const abrirDialogo = (ag: Agendamento) => {
-      const podeDesmarcar = this.isAgendamentoDoMilitarLogado(ag) && this.isAgendamentoDesmarcavel(ag);
+      const podeDesmarcar =
+        this.isAgendamentoDoMilitarLogado(ag) &&
+        this.isAgendamentoDesmarcavel(ag, ag.diaSemana, ag.hora);
       const dialogRef = this.dialog.open(DialogoDetalhesAgendamentoComponent, {
         width: '400px',
         data: { agendamento: ag, podeDesmarcar }
@@ -548,6 +550,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
   
     if (statusHorario === "AGENDADO") {
+      const usuarioId = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.usuarioId;
+      if (usuarioId && usuarioId === this.idMilitarLogado) {
+        return { cor: "accent", texto: "Agendado", acao: "cancelar" };
+      }
       return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
   
@@ -636,8 +642,24 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
   
-  isAgendamentoDesmarcavel(agendamento?: Agendamento): boolean {
-    return !!agendamento && this.isAgendamentoDoMilitarLogado(agendamento);
+  isAgendamentoDesmarcavel(
+    agendamento?: Agendamento,
+    dia?: string,
+    hora?: string
+  ): boolean {
+    if (agendamento) {
+      return this.isAgendamentoDoMilitarLogado(agendamento);
+    }
+
+    if (!dia || !hora) {
+      return false;
+    }
+
+    const diaKey = dia.split(' - ')[0].trim().toLowerCase();
+    const usuarioId = this.horariosPorDia[diaKey]?.find(
+      h => h.horario === hora
+    )?.usuarioId;
+    return usuarioId === this.idMilitarLogado;
   }
   
   abrirModalAgendamento(agendamento: Agendamento): void {
