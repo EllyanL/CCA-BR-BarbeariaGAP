@@ -18,6 +18,7 @@ import { MilitarService } from 'src/app/services/militar.service';
 import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
+import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -81,6 +82,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     private horariosService: HorariosService,
     private userService: UserService,
     private serverTimeService: ServerTimeService,
+    private authService: AuthService,
     private logger: LoggingService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -113,6 +115,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnInit(): void {
+    this.idMilitarLogado = this.authService.getUsuarioAutenticado()?.id;
     this.serverTimeService.getServerTime().subscribe({
       next: (res) => {
         this.timeOffsetMs = res.timestamp - Date.now();
@@ -138,7 +141,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.userDataSubscription = this.userService.userData$
       .pipe(
         take(1),
-        timeout(5000)
+        timeout(5000),
+        catchError(err => {
+          this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
+          this.usuarioCarregado = true;
+          return of([]);
+        })
       )
       .subscribe(userData => {
         if (userData && userData.length > 0 && userData[0].saram) {
@@ -155,7 +163,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.storageKey = newKey;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
+          this.cdr.detectChanges();
           this.loadAllData();
+        } else {
+          this.usuarioCarregado = true;
         }
       });
   }

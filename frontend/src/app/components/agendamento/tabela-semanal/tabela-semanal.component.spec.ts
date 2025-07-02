@@ -3,6 +3,7 @@ import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from 'src/app/services/auth.service';
 
 import { TabelaSemanalComponent } from './tabela-semanal.component';
 import { ServerTimeService } from 'src/app/services/server-time.service';
@@ -25,6 +26,7 @@ describe('TabelaSemanalComponent', () => {
           provide: ServerTimeService,
           useValue: { getServerTime: () => of({ timestamp: Date.now() }) }
         },
+        { provide: AuthService, useValue: { getUsuarioAutenticado: () => ({ id: 1 }) } },
         { provide: MatDialog, useValue: dialogSpy },
         { provide: MatSnackBar, useValue: snackSpy }
       ]
