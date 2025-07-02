@@ -22,7 +22,13 @@ fab-barbearia-gap/
 ## Como Executar
 ### Ambiente de Desenvolvimento
 1. Configure as variáveis de ambiente (veja abaixo).
-2. Na raiz do projeto, execute:
+2. Verifique se os scripts possuem permissão de execução (especialmente em
+   sistemas onde as permissões possam ser perdidas após o clone). Caso
+   necessário, execute:
+   ```bash
+   chmod +x start-dev.sh build-prod.sh backend/mvnw
+   ```
+3. Na raiz do projeto, execute:
    ```bash
    ./start-dev.sh
    O script inicia o backend em http://localhost:8080 e o frontend em http://localhost:4200
