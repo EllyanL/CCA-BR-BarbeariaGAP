@@ -506,27 +506,33 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   getHorarioStatus(dia: string, hora: string): { cor: string, texto: string, acao: string } {
     const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
-    
+  
     if (agendamento) {
-      if (this.isAgendamentoDoMilitarLogado(agendamento)) {
+      const podeVerificarUsuario = this.idMilitarLogado !== undefined || !!this.saramUsuario;
+  
+      if (podeVerificarUsuario && this.isAgendamentoDoMilitarLogado(agendamento)) {
         return { cor: "accent", texto: "Agendado", acao: "cancelar" };
       }
+  
       return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
-
+  
     const diaSemanaFormatado = dia.split(" - ")[0].trim().toLowerCase();
     const statusHorario = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase();
-
+  
     if (statusHorario === "DISPONIVEL") {
       return { cor: "primary", texto: "Disponível", acao: "agendar" };
     }
-
+  
     if (statusHorario === "AGENDADO") {
       return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
-
+  
     return { cor: "disabled", texto: "Indisponível", acao: "nenhuma" };
   }
+  
+  
+  
 
 
   private loadMilitares(categoria: string) {
