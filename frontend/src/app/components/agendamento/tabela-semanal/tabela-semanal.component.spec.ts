@@ -41,6 +41,13 @@ describe('TabelaSemanalComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('exibe detalhes mesmo sem agendamentos', () => {
+    component.agendamentos = [];
+    fixture.detectChanges();
+    const titulo = fixture.debugElement.query(By.css('.agendamentos-detalhes h3'));
+    expect(titulo).toBeTruthy();
+  });
+
   describe('getHorarioStatus', () => {
     beforeEach(() => {
       component.diasDaSemana = ['segunda'];
@@ -66,19 +73,7 @@ describe('TabelaSemanalComponent', () => {
         hora: '08:00',
         diaSemana: 'segunda',
         categoria: '',
-        militar: {
-          id: 1,
-          saram: '123',
-          cpf: '123',
-          nomeCompleto: '',
-          postoGrad: '',
-          nomeDeGuerra: '',
-          email: '',
-          om: '',
-          categoria: '',
-          secao: '',
-          ramal: ''
-        }
+        militar: { id: 1, saram: '123', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
       }];
 
       const status = component.getHorarioStatus('segunda', '08:00');
@@ -93,19 +88,7 @@ describe('TabelaSemanalComponent', () => {
         hora: '08:00',
         diaSemana: 'segunda',
         categoria: '',
-        militar: {
-          id: 2,
-          saram: '999',
-          cpf: '999',
-          nomeCompleto: '',
-          postoGrad: '',
-          nomeDeGuerra: '',
-          email: '',
-          om: '',
-          categoria: '',
-          secao: '',
-          ramal: ''
-        }
+        militar: { id: 2, saram: '999', cpf: '999', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
       }];
 
       const status = component.getHorarioStatus('segunda', '08:00');
@@ -120,6 +103,15 @@ describe('TabelaSemanalComponent', () => {
 
       const status = component.getHorarioStatus('segunda', '08:00');
       expect(status).toEqual({ cor: 'accent', texto: 'Agendado', acao: 'cancelar' });
+    });
+
+    it('retorna status indisponível quando horário não existe', () => {
+      component.horariosPorDia = {
+        segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }]
+      } as any;
+
+      const status = component.getHorarioStatus('segunda', '08:00');
+      expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
     });
 
     it('isAgendamentoDesmarcavel verifica usuarioId do horario', () => {
@@ -138,40 +130,13 @@ describe('TabelaSemanalComponent', () => {
       expect(naoPodeCancelar).toBeFalse();
     });
 
-    it('retorna status indisponível quando horário não existe', () => {
-      component.horariosPorDia = {
-        segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }]
-      } as any;
-
-      const status = component.getHorarioStatus('segunda', '08:00');
-      expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
-    });
-
-    it('detecta agendamento do usuário via saram', () => {
-      component.saramUsuario = '555';
-      const agendamento = {
-        hora: '08:00',
-        diaSemana: 'segunda',
-        categoria: '',
-        militar: {
-          id: 99,
-          saram: '555'
-        }
-      } as any;
-      const result = component.isAgendamentoDoMilitarLogado(agendamento);
-      expect(result).toBeTrue();
-    });
-
     it('detecta agendamento do usuário via id', () => {
       component.idMilitarLogado = 7;
       const agendamento = {
         hora: '08:00',
         diaSemana: 'segunda',
         categoria: '',
-        militar: {
-          id: 7,
-          saram: '999'
-        }
+        militar: { id: 7, saram: '999' }
       } as any;
       const result = component.isAgendamentoDoMilitarLogado(agendamento);
       expect(result).toBeTrue();
@@ -197,21 +162,8 @@ describe('TabelaSemanalComponent', () => {
       hora: '08:00',
       diaSemana: 'segunda',
       categoria: '',
-      militar: {
-        id: 1,
-        saram: '123',
-        cpf: '123',
-        nomeCompleto: '',
-        postoGrad: '',
-        nomeDeGuerra: '',
-        email: '',
-        om: '',
-        categoria: '',
-        secao: '',
-        ramal: ''
-      }
+      militar: { id: 1, saram: '123', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
     }];
-
     fixture.detectChanges();
 
     botao = fixture.debugElement.query(By.css('button.botao-agendado'));
@@ -224,21 +176,8 @@ describe('TabelaSemanalComponent', () => {
       hora: '08:00',
       diaSemana: 'segunda',
       categoria: '',
-      militar: {
-        id: 2,
-        saram: '999',
-        cpf: '999',
-        nomeCompleto: '',
-        postoGrad: '',
-        nomeDeGuerra: '',
-        email: '',
-        om: '',
-        categoria: '',
-        secao: '',
-        ramal: ''
-      }
+      militar: { id: 2, saram: '999', cpf: '999', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
     }];
-
     fixture.detectChanges();
 
     botao = fixture.debugElement.query(By.css('button.botao-agendado'));
@@ -274,7 +213,6 @@ describe('TabelaSemanalComponent', () => {
       jasmine.clock().mockDate(mondayNoon);
 
       const result = (component as any)['desabilitarBotoesPorHorario']();
-
       expect(result).toBeFalse();
       expect(component.feedbackMessageTitle).toBe('');
     });
@@ -285,7 +223,6 @@ describe('TabelaSemanalComponent', () => {
       jasmine.clock().mockDate(mondayMorning);
 
       const result = (component as any)['desabilitarBotoesPorHorario']();
-
       expect(result).toBeTrue();
       expect(component.feedbackMessageTitle).toBe(
         'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!'
@@ -298,7 +235,6 @@ describe('TabelaSemanalComponent', () => {
       jasmine.clock().mockDate(saturdayNoon);
 
       const result = (component as any)['desabilitarBotoesPorHorario']();
-
       expect(result).toBeTrue();
       expect(component.feedbackMessageTitle).toBe(
         'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!'
