@@ -31,6 +31,8 @@ public class TokenService {
                     .withClaim("role", user.getRole().name())
                     .withClaim("postoGrad", user.getPostoGrad()) // 👈 Adicionado
                     .withClaim("om", user.getOm())               // 👈 Adicionado
+                    .withClaim("nomeCompleto", user.getNomeCompleto()) // 👈 Novos claims
+                    .withClaim("email", user.getEmail())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar o token", exception);
