@@ -526,7 +526,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   
     // Verifica se há agendamento e se é do usuário logado
     if (agendamento) {
-      const podeVerificarUsuario = this.idMilitarLogado !== undefined || !!this.saramUsuario;
+      const podeVerificarUsuario = this.idMilitarLogado != null || !!this.saramUsuario;
   
       if (podeVerificarUsuario && this.isAgendamentoDoMilitarLogado(agendamento)) {
         return { cor: "accent", texto: "Agendado", acao: "cancelar" };
