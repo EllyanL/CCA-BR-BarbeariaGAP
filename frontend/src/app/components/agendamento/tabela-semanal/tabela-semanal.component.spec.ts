@@ -33,6 +33,7 @@ describe('TabelaSemanalComponent', () => {
     });
     fixture = TestBed.createComponent(TabelaSemanalComponent);
     component = fixture.componentInstance;
+    component.idMilitarLogado = 1;
     fixture.detectChanges();
   });
 
@@ -120,14 +121,31 @@ describe('TabelaSemanalComponent', () => {
       expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
     });
 
-    it('detecta agendamento do usuário via usuarioSaram', () => {
+    it('detecta agendamento do usuário via saram', () => {
       component.saramUsuario = '555';
       const agendamento = {
         hora: '08:00',
         diaSemana: 'segunda',
         categoria: '',
-        usuarioSaram: '555',
-        militar: null
+        militar: {
+          id: 99,
+          saram: '555'
+        }
+      } as any;
+      const result = component.isAgendamentoDoMilitarLogado(agendamento);
+      expect(result).toBeTrue();
+    });
+
+    it('detecta agendamento do usuário via id', () => {
+      component.idMilitarLogado = 7;
+      const agendamento = {
+        hora: '08:00',
+        diaSemana: 'segunda',
+        categoria: '',
+        militar: {
+          id: 7,
+          saram: '999'
+        }
       } as any;
       const result = component.isAgendamentoDoMilitarLogado(agendamento);
       expect(result).toBeTrue();
@@ -172,6 +190,7 @@ describe('TabelaSemanalComponent', () => {
 
     botao = fixture.debugElement.query(By.css('button.botao-agendado'));
     expect(botao.nativeElement.textContent.trim().toUpperCase()).toBe('AGENDADO');
+    expect(botao.nativeElement.disabled).toBeFalse();
 
     component.agendamentos = [{
       id: 1,
@@ -196,7 +215,7 @@ describe('TabelaSemanalComponent', () => {
 
     fixture.detectChanges();
 
-    botao = fixture.debugElement.query(By.css('button.botao-agendado-outro'));
+    botao = fixture.debugElement.query(By.css('button.botao-agendado'));
     expect(botao.nativeElement.disabled).toBeTrue();
   });
 
