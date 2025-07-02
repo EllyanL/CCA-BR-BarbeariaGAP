@@ -144,6 +144,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         timeout(5000),
         catchError(err => {
           this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
+          this.loadAllData();
           this.usuarioCarregado = true;
           return of([]);
         })
@@ -166,7 +167,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.cdr.detectChanges();
           this.loadAllData();
         } else {
+          this.logger.warn('Dados de usuário indisponíveis. Usando dados de fallback.');
           this.usuarioCarregado = true;
+          this.loadAllData();
         }
       });
   }
