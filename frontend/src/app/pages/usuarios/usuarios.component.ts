@@ -13,7 +13,15 @@ import { AuthService } from '../../services/auth.service';
   styleUrls: ['./usuarios.component.css']
 })
 export class UsuariosComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'nomeCompleto', 'postoGrad', 'categoria', 'email'];
+  displayedColumns: string[] = [
+    'id',
+    'nomeDeGuerra',
+    'nomeCompleto',
+    'email',
+    'secao',
+    'ramal',
+    'role'
+  ];
   dataSource = new MatTableDataSource<Militar>([]);
   filterValue = '';
   @ViewChild(MatPaginator) paginator?: MatPaginator;
@@ -32,10 +40,12 @@ export class UsuariosComponent implements OnInit {
         this.dataSource.filterPredicate = (m: Militar, filter: string): boolean => {
           const f = filter.trim().toLowerCase();
           return (
+            (m.nomeDeGuerra || '').toLowerCase().includes(f) ||
             (m.nomeCompleto || '').toLowerCase().includes(f) ||
-            (m.postoGrad || '').toLowerCase().includes(f) ||
-            (m.categoria || '').toLowerCase().includes(f) ||
-            (m.email || '').toLowerCase().includes(f)
+            (m.email || '').toLowerCase().includes(f) ||
+            (m.secao || '').toLowerCase().includes(f) ||
+            (m.ramal || '').toLowerCase().includes(f) ||
+            (m.role || '').toLowerCase().includes(f)
           );
         };
         if (this.paginator) {

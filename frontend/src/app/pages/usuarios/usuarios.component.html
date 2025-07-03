@@ -8,21 +8,29 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
         <td mat-cell *matCellDef="let m">{{ m.id }}</td>
       </ng-container>
+      <ng-container matColumnDef="nomeDeGuerra">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome de Guerra</th>
+        <td mat-cell *matCellDef="let m">{{ m.nomeDeGuerra }}</td>
+      </ng-container>
       <ng-container matColumnDef="nomeCompleto">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome Completo</th>
         <td mat-cell *matCellDef="let m">{{ m.nomeCompleto }}</td>
-      </ng-container>
-      <ng-container matColumnDef="postoGrad">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Posto/Grad</th>
-        <td mat-cell *matCellDef="let m">{{ m.postoGrad }}</td>
-      </ng-container>
-      <ng-container matColumnDef="categoria">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
-        <td mat-cell *matCellDef="let m">{{ m.categoria }}</td>
       </ng-container>
       <ng-container matColumnDef="email">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>
         <td mat-cell *matCellDef="let m">{{ m.email }}</td>
+      </ng-container>
+      <ng-container matColumnDef="secao">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Seção</th>
+        <td mat-cell *matCellDef="let m">{{ m.secao }}</td>
+      </ng-container>
+      <ng-container matColumnDef="ramal">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Ramal</th>
+        <td mat-cell *matCellDef="let m">{{ m.ramal }}</td>
+      </ng-container>
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Perfil</th>
+        <td mat-cell *matCellDef="let m">{{ m.role }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
