@@ -46,8 +46,8 @@ export class AgendamentoService {
   }
   
 
-  deleteAgendamento(id: number): Observable<Agendamento> {
-    return this.http.delete<Agendamento>(`${this.apiUrl}/${id}`).pipe(
+  deleteAgendamento(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
       catchError(error => throwError(() => error))
     );
   }
