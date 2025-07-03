@@ -252,53 +252,51 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     adicionarHorarioBase(): void {
-      if (this.horarioValido && this.horarioPersonalizado) {
-        this.horariosService
-          .adicionarHorarioBase(
-            this.horarioPersonalizado,
-            this.diaSelecionado,
-            this.categoriaSelecionada
-          )
-          .subscribe({
-            next: (horarioSalvo: any) => {
-              if (!this.horariosBaseSemana.includes(horarioSalvo.horario)) {
-                this.horariosBaseSemana.push(horarioSalvo.horario);
-                this.ordenarHorarios();
-              }
-
-              const dia = this.diaSelecionado;
-              const listaDia = this.horariosPorDia[dia] || [];
-              if (!listaDia.some(h => h.horario === horarioSalvo.horario)) {
-                listaDia.push({ horario: horarioSalvo.horario, status: 'DISPONIVEL' });
-                this.horariosPorDia[dia] = listaDia;
-              }
-
-              this.carregarHorariosDaSemana();
-              this.horariosService.atualizarHorarios(this.horariosPorDia);
-              this.snackBar.open(
-                'Horário base ' + horarioSalvo.horario + ' cadastrado com sucesso.',
-                'Ciente',
-                { duration: 3000 }
-              );
-              this.horarioPersonalizado = '';
-              this.horarioValido = false;
-            },
-            error: (error: any) => {
-              this.logger.error('Erro ao adicionar horário:', error);
-              this.snackBar.open(
-                'Não foi possível adicionar o horário. Verifique se já existe e tente novamente.',
-                'Ciente',
-                { duration: 5000 }
-              );
-            },
-          });
-      } else {
+      if (!this.horarioValido || !this.horarioPersonalizado) {
         this.snackBar.open(
           'Digite um horário válido (HH:mm) antes de confirmar.',
           'Ciente',
           { duration: 3000 }
         );
+        return;
       }
+
+      const horario = this.horarioPersonalizado;
+      const categoria = this.categoriaSelecionada;
+      const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
+
+      const requisicao$ = diasAlvo.length > 1
+        ? this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria)
+        : this.horariosService.adicionarHorarioBase(horario, this.diaSelecionado, categoria);
+
+      requisicao$.subscribe({
+        next: () => {
+          if (!this.horariosBaseSemana.includes(horario)) {
+            this.horariosBaseSemana.push(horario);
+            this.ordenarHorarios();
+          }
+
+          diasAlvo.forEach(dia => {
+            const listaDia = this.horariosPorDia[dia] || [];
+            if (!listaDia.some(h => h.horario === horario)) {
+              listaDia.push({ horario, status: 'DISPONIVEL' });
+              this.horariosPorDia[dia] = listaDia;
+            }
+          });
+
+          this.carregarHorariosDaSemana();
+          this.horariosService.atualizarHorarios(this.horariosPorDia);
+          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
+          this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em ${msgDias}.`, 'Ciente', { duration: 3000 });
+          this.horarioPersonalizado = '';
+          this.horarioValido = false;
+        },
+        error: (error: any) => {
+          this.logger.error('Erro ao adicionar horário:', error);
+          const msgDias = diasAlvo.length > 1 ? 'os dias selecionados' : 'o dia escolhido';
+          this.snackBar.open(`Não foi possível adicionar o horário nos ${msgDias}.`, 'Ciente', { duration: 5000 });
+        }
+      });
     }
 
     // adicionarHorarioDia(dia: string, horario: string): void {
@@ -463,26 +461,35 @@ import { UserService } from 'src/app/services/user.service';
         this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: 3000 });
         return;
       }
-    
-      this.horariosService.removerHorarioBase(this.horarioPersonalizado, this.diaSelecionado, this.categoriaSelecionada)
-        .subscribe({
-          next: () => {
-            this.snackBar.open('Horário removido com sucesso.', 'Ciente', { duration: 3000 });
 
-            this.horariosBaseSemana = this.horariosBaseSemana.filter(h => h !== this.horarioPersonalizado);
-            if (this.horariosPorDia[this.diaSelecionado]) {
-              this.horariosPorDia[this.diaSelecionado] = this.horariosPorDia[this.diaSelecionado]
-                .filter(h => h.horario !== this.horarioPersonalizado);
+      const horario = this.horarioPersonalizado;
+      const categoria = this.categoriaSelecionada;
+      const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
+
+      const requisicao$ = diasAlvo.length > 1
+        ? this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria)
+        : this.horariosService.removerHorarioBase(horario, this.diaSelecionado, categoria);
+
+      requisicao$.subscribe({
+        next: () => {
+          this.horariosBaseSemana = this.horariosBaseSemana.filter(h => h !== horario);
+          diasAlvo.forEach(dia => {
+            if (this.horariosPorDia[dia]) {
+              this.horariosPorDia[dia] = this.horariosPorDia[dia].filter(h => h.horario !== horario);
             }
+          });
 
-            this.carregarHorariosDaSemana(); // atualiza a tabela
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
-          },
-          error: (err) => {
-            this.logger.error('Erro ao remover horário:', err);
-            this.snackBar.open('Falha ao remover o horário. Tente novamente.', 'Ciente', { duration: 3000 });
-          }
-        });
+          this.carregarHorariosDaSemana();
+          this.horariosService.atualizarHorarios(this.horariosPorDia);
+          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
+          this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: 3000 });
+        },
+        error: (err) => {
+          this.logger.error('Erro ao remover horário:', err);
+          const msgDias = diasAlvo.length > 1 ? 'os dias selecionados' : 'o dia escolhido';
+          this.snackBar.open(`Falha ao remover o horário dos ${msgDias}.`, 'Ciente', { duration: 3000 });
+        }
+      });
     }
         
 
