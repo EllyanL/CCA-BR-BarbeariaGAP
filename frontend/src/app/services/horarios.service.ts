@@ -114,6 +114,16 @@ export class HorariosService {
     );
   }
 
+  adicionarHorarioBaseEmDias(horario: string, dias: string[], categoria: string): Observable<any[]> {
+    const requests = dias.map(d => this.adicionarHorarioBase(horario, d, categoria));
+    return forkJoin(requests);
+  }
+
+  removerHorarioBaseEmDias(horario: string, dias: string[], categoria: string): Observable<any[]> {
+    const requests = dias.map(d => this.removerHorarioBase(horario, d, categoria));
+    return forkJoin(requests);
+  }
+
   getHorariosDisponiveis(): Observable<HorariosPorDiaECategoria> {
     return this.http.get<HorariosPorDiaECategoria>(this.apiUrl).pipe(
       tap(response => this.logger.log('Resposta do backend:', response)),
