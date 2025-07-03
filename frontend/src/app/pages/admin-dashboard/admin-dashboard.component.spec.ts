@@ -32,7 +32,7 @@ describe('AdminDashboardComponent', () => {
         { provide: LoggingService, useValue: { error: () => {}, log: () => {}, warn: () => {} } },
         { provide: AuthService, useValue: { logout: () => {} } },
         { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
-        { provide: AgendamentoService, useValue: { deleteAgendamento: () => of({}) } },
+        { provide: AgendamentoService, useValue: { deleteAgendamento: () => of(void 0) } },
         { provide: MatSnackBar, useValue: { open: () => {} } }
       ]
     });
