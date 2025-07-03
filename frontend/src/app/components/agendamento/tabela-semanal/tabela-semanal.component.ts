@@ -231,7 +231,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.setDiasSemanaAtual();
     this.loadHorariosBase();
     this.loadMilitares(this.categoria);
-    this.loadAgendamentos(this.categoria);
+    this.loadAgendamentos();
   }
   
   getLabelDiaComData(dia: string): string {
@@ -336,13 +336,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  private loadAgendamentos(categoria: string) { //Carrega os agendamentos e associa ao usuário logado.
+  private loadAgendamentos() { //Carrega os agendamentos e associa ao usuário logado.
     this.agendamentoService.getAgendamentos().pipe(
       tap(agendamentos => {
         if (agendamentos && agendamentos.length > 0) {
           const agendamentosFiltrados = agendamentos.filter(agendamento =>
-            agendamento.militar &&
-            agendamento.militar.categoria === categoria.toUpperCase()
+            this.isAgendamentoDoMilitarLogado(agendamento)
           );
 
           this.agendamentos = agendamentosFiltrados.map(agendamento => ({
