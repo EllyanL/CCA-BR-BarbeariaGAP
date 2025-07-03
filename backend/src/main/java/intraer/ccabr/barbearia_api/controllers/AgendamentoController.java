@@ -122,7 +122,7 @@ public class AgendamentoController {
         agendamento.setMilitar(militar);
         agendamentoService.validarRegrasDeNegocio(agendamento);
         Agendamento saved = agendamentoService.saveAgendamento(agendamento);
-        agendamentoService.marcarHorarioComoAgendado(agendamento);
+        agendamentoService.marcarHorarioComoAgendado(saved);
         return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
     }
 
