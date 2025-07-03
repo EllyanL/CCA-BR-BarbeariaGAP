@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, throwError, map } from 'rxjs';
 
 import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
@@ -18,7 +18,8 @@ export class AgendamentoService {
   ) {}
 
   getAgendamentos(): Observable<Agendamento[]> {
-    return this.http.get<Agendamento[]>(this.apiUrl).pipe(
+    return this.http.get<Agendamento[] | null>(this.apiUrl).pipe(
+      map(response => response ?? []),
       catchError(error => {
         this.logger.error('Erro ao obter agendamentos (service):', error);
         return throwError(() => error);
