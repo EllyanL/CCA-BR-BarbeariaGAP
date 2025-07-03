@@ -107,7 +107,7 @@ import { UserService } from 'src/app/services/user.service';
           }
           this.initAfterTime();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.logger.error('Erro ao obter hora do servidor:', err);
           this.initAfterTime();
         }
@@ -120,7 +120,7 @@ import { UserService } from 'src/app/services/user.service';
         .pipe(
           take(1),
           timeout(5000),
-          catchError(err => {
+          catchError((err: any) => {
             this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
             return of([]);
           })
@@ -157,7 +157,7 @@ import { UserService } from 'src/app/services/user.service';
                 this.horariosPorDia = h;
                 this.cdr.detectChanges();
               },
-              error: err => this.logger.error('Erro ao atualizar horários:', err)
+              error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
             });
           });
         });
@@ -335,7 +335,7 @@ import { UserService } from 'src/app/services/user.service';
             this.horarioValido = false;
             this.cdr.detectChanges();
           },
-          error: (err) => {
+          error: (err: any) => {
             this.logger.error('Erro ao adicionar horário no dia:', err);
             this.snackBar.open(err.message || 'Erro ao adicionar horário.', 'Ciente', { duration: 5000 });
           }
@@ -412,7 +412,7 @@ import { UserService } from 'src/app/services/user.service';
             this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.snackBar.open('Horário indisponibilizado', 'Ciente', { duration: 3000 });
           },
-          error: (error) => {
+          error: (error: any) => {
             this.logger.error('Erro ao indisponibilizar horário:', error);
             this.snackBar.open(
               'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.',
@@ -445,7 +445,7 @@ import { UserService } from 'src/app/services/user.service';
           this.carregarHorariosDaSemana();
           this.horariosService.atualizarHorarios(this.horariosPorDia);
         },
-        error: (error) => {
+        error: (error: any) => {
           this.logger.error('Erro ao adicionar horário individual:', error);
           this.snackBar.open(
             'Falha ao adicionar horário. Verifique os dados e tente novamente.',
@@ -484,7 +484,7 @@ import { UserService } from 'src/app/services/user.service';
           const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
           this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: 3000 });
         },
-        error: (err) => {
+        error: (err: any) => {
           this.logger.error('Erro ao remover horário:', err);
           const msgDias = diasAlvo.length > 1 ? 'os dias selecionados' : 'o dia escolhido';
           this.snackBar.open(`Falha ao remover o horário dos ${msgDias}.`, 'Ciente', { duration: 3000 });
@@ -555,7 +555,7 @@ import { UserService } from 'src/app/services/user.service';
               { duration: 3000 }
             );
           },
-          error: (error) => {
+          error: (error: any) => {
             this.snackBar.open(
               'Falha ao indisponibilizar o dia. Tente novamente.',
               'Ciente',
@@ -591,7 +591,7 @@ import { UserService } from 'src/app/services/user.service';
             );
             this.cdr.detectChanges();
           },
-          error: (error) => {
+          error: (error: any) => {
             this.snackBar.open(
               'Falha ao disponibilizar o dia. Verifique a conexão e tente novamente.',
               'Ciente',
@@ -629,7 +629,7 @@ import { UserService } from 'src/app/services/user.service';
             this.agendamentos = [];
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           this.logger.error('Erro ao carregar agendamentos:', error);
           this.snackBar.open(
             'Não foi possível carregar seus agendamentos. Atualize a página.',
@@ -729,7 +729,7 @@ import { UserService } from 'src/app/services/user.service';
           this.saveAgendamentos();
           this.cdr.detectChanges();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.logger.error('Erro ao agendar:', err);
           this.snackBar.open(
             'Não foi possível realizar o agendamento. Tente novamente.',
@@ -788,7 +788,7 @@ import { UserService } from 'src/app/services/user.service';
           }
           this.saveAgendamentos();
         },
-        error: (error) => {
+        error: (error: any) => {
           this.logger.error('Erro ao desmarcar agendamento:', error);
           this.snackBar.open('Não foi possível desmarcar o agendamento. Tente novamente.', 'Ciente', { duration: 5000 });
         }
