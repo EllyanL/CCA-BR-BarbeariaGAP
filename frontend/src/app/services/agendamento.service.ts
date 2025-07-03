@@ -18,7 +18,8 @@ export class AgendamentoService {
   ) {}
 
   getAgendamentos(): Observable<Agendamento[]> {
-    return this.http.get<Agendamento[]>(this.apiUrl).pipe(
+    return this.http.get<Agendamento[] | null>(this.apiUrl).pipe(
+      map(response => response ?? []),
       catchError(error => {
         this.logger.error('Erro ao obter agendamentos (service):', error);
         return throwError(() => error);

@@ -627,6 +627,7 @@ import { UserService } from 'src/app/services/user.service';
             this.saveAgendamentos();
           } else {
             this.agendamentos = [];
+            this.saveAgendamentos();
           }
         },
         error: (error: any) => {
