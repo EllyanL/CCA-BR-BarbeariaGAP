@@ -4,7 +4,7 @@ import {
     HorariosPorDia,
     HorariosService,
 } from '../../services/horarios.service';
-import { Subscription, of } from 'rxjs';
+import { Subscription, Observable, of } from 'rxjs';
 import { catchError, take, timeout } from 'rxjs/operators';
 
 import { Agendamento } from '../../models/agendamento';
@@ -265,7 +265,7 @@ import { UserService } from 'src/app/services/user.service';
       const categoria = this.categoriaSelecionada;
       const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
 
-      const requisicao$ = diasAlvo.length > 1
+      const requisicao$: Observable<any> = diasAlvo.length > 1
         ? this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria)
         : this.horariosService.adicionarHorarioBase(horario, this.diaSelecionado, categoria);
 
@@ -466,7 +466,7 @@ import { UserService } from 'src/app/services/user.service';
       const categoria = this.categoriaSelecionada;
       const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
 
-      const requisicao$ = diasAlvo.length > 1
+      const requisicao$: Observable<any> = diasAlvo.length > 1
         ? this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria)
         : this.horariosService.removerHorarioBase(horario, this.diaSelecionado, categoria);
 
