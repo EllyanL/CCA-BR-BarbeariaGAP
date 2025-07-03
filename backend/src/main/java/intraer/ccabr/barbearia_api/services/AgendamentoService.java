@@ -175,14 +175,15 @@ public class AgendamentoService {
             agendamento.getCategoria()
         );
 
-        if (horarioOpt.isPresent()) {
-            Horario horario = horarioOpt.get();
-            horario.setStatus(HorarioStatus.AGENDADO); // Enum corretamente usado
-            horarioRepository.save(horario);
-        } else {
-            logger.warn("⚠️ Horário não encontrado para marcação como AGENDADO: {} {} {}",
-                agendamento.getDiaSemana(), horaFormatada, agendamento.getCategoria());
-        }
+        Horario horario = horarioOpt.orElseGet(() -> new Horario(
+            agendamento.getDiaSemana(),
+            horaFormatada,
+            agendamento.getCategoria(),
+            HorarioStatus.AGENDADO
+        ));
+
+        horario.setStatus(HorarioStatus.AGENDADO);
+        horarioRepository.save(horario);
     }
 
     public void marcarHorarioComoDisponivel(Agendamento agendamento) {
@@ -193,14 +194,15 @@ public class AgendamentoService {
             agendamento.getCategoria()
         );
 
-        if (horarioOpt.isPresent()) {
-            Horario horario = horarioOpt.get();
-            horario.setStatus(HorarioStatus.DISPONIVEL);
-            horarioRepository.save(horario);
-        } else {
-            logger.warn("⚠️ Horário não encontrado para marcação como DISPONIVEL: {} {} {}",
-                agendamento.getDiaSemana(), horaFormatada, agendamento.getCategoria());
-        }
+        Horario horario = horarioOpt.orElseGet(() -> new Horario(
+            agendamento.getDiaSemana(),
+            horaFormatada,
+            agendamento.getCategoria(),
+            HorarioStatus.DISPONIVEL
+        ));
+
+        horario.setStatus(HorarioStatus.DISPONIVEL);
+        horarioRepository.save(horario);
     }
 
     public Optional<Agendamento> atualizarAgendamento(Long id, LocalDate novaData, LocalTime novaHora, String novoDia) {
