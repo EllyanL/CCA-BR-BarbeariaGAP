@@ -1,0 +1,42 @@
+/* Roboto */
+@font-face {
+    font-family: 'Roboto';
+    src: url('assets/fonts/roboto-light.woff2') format('woff2');
+    font-weight: 300;
+  }
+  @font-face {
+    font-family: 'Roboto';
+    src: url('assets/fonts/roboto-regular.woff2') format('woff2');
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: 'Roboto';
+    src: url('assets/fonts/roboto-medium.woff2') format('woff2');
+    font-weight: 500;
+  }
+  
+  /* Montserrat */
+  @font-face {
+    font-family: 'Montserrat';
+    src: url('assets/fonts/montserrat-light.woff2') format('woff2');
+    font-weight: 300;
+  }
+  @font-face {
+    font-family: 'Montserrat';
+    src: url('assets/fonts/montserrat-regular.woff2') format('woff2');
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: 'Montserrat';
+    src: url('assets/fonts/montserrat-bold.woff2') format('woff2');
+    font-weight: 700;
+  }
+  
+  @font-face {
+    font-family: 'Material Icons';
+    src: url('/assets/fonts/MaterialIcons-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: block;
+  }
+  
