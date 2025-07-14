@@ -350,6 +350,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
             hora: agendamento.hora.trim()
           }));
           this.saveAgendamentos();
+        } else {
+          this.agendamentos = [];
+          this.saveAgendamentos();
         }
       }),
       catchError(error => {

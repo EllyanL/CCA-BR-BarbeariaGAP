@@ -632,7 +632,12 @@ import { UserService } from 'src/app/services/user.service';
                 if (a.timestamp == null) return true;
                 return a.timestamp >= agora;
               });
-            this.saveAgendamentos();
+
+            if (this.agendamentos.length === 0) {
+              this.saveAgendamentos();
+            } else {
+              this.saveAgendamentos();
+            }
           } else {
             this.agendamentos = [];
             this.saveAgendamentos();
