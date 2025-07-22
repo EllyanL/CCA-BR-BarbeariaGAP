@@ -266,7 +266,7 @@ public class AgendamentoService {
         // 2. Horários válidos somente de segunda a sexta entre 09:10 e 18:10
         DayOfWeek dia = agendamento.getData().getDayOfWeek();
         LocalTime hora = agendamento.getHora();
-        LocalTime inicio = LocalTime.of(9, 10);
+        LocalTime inicio = LocalTime.of(9, 00);
         LocalTime fim = LocalTime.of(18, 10);
 
         if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY || hora.isBefore(inicio) || hora.isAfter(fim)) {
