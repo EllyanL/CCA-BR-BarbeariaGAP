@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { UserData } from 'src/app/models/userData';
 import { UserService } from '../../../services/user.service';
+import { OrientacoesComponent } from '../../agendamento/orientacoes/orientacoes.component';
 
 // Certifique-se de importar o modelo
 
