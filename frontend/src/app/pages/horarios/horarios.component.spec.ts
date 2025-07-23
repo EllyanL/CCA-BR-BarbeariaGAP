@@ -1,16 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { Agendamento } from '../../models/agendamento';
+import { AgendamentoService } from '../../services/agendamento.service';
+import { AuthService } from '../../services/auth.service';
+import { HorariosComponent } from './horarios.component';
+import { HorariosService } from '../../services/horarios.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Militar } from '../../models/militar';
-
-import { HorariosComponent } from './horarios.component';
-import { HorariosService } from '../../services/horarios.service';
-import { AgendamentoService } from '../../services/agendamento.service';
-import { AuthService } from '../../services/auth.service';
 import { UserService } from '../../services/user.service';
-import { Agendamento } from '../../models/agendamento';
+import { of } from 'rxjs';
 
 describe('HorariosComponent', () => {
   let component: HorariosComponent;

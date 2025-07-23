@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { AuthService } from 'src/app/services/auth.service';
 import { By } from '@angular/platform-browser';
-import { of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AuthService } from 'src/app/services/auth.service';
-
-import { TabelaSemanalComponent } from './tabela-semanal.component';
 import { ServerTimeService } from 'src/app/services/server-time.service';
+import { TabelaSemanalComponent } from './tabela-semanal.component';
+import { of } from 'rxjs';
 
 describe('TabelaSemanalComponent', () => {
   let component: TabelaSemanalComponent;
@@ -56,13 +56,13 @@ describe('TabelaSemanalComponent', () => {
       fixture.detectChanges();
     });
 
-    it('retorna status disponível quando horário está livre', () => {
+    it('retorna status disponivel quando horário está livre', () => {
       component.horariosPorDia = {
         segunda: [{ horario: '08:00', status: 'DISPONIVEL' }]
       } as any;
 
       const status = component.getHorarioStatus('segunda', '08:00');
-      expect(status).toEqual({ cor: 'primary', texto: 'Disponível', acao: 'agendar' });
+      expect(status).toEqual({ cor: 'primary', texto: 'DISPONIVEL', acao: 'agendar' });
     });
 
     it('retorna status agendado do usuário', () => {
@@ -105,13 +105,13 @@ describe('TabelaSemanalComponent', () => {
       expect(status).toEqual({ cor: 'accent', texto: 'Agendado', acao: 'cancelar' });
     });
 
-    it('retorna status indisponível quando horário não existe', () => {
+    it('retorna status indisponivel quando horário não existe', () => {
       component.horariosPorDia = {
         segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }]
       } as any;
 
       const status = component.getHorarioStatus('segunda', '08:00');
-      expect(status).toEqual({ cor: 'disabled', texto: 'Indisponível', acao: 'nenhuma' });
+      expect(status).toEqual({ cor: 'disabled', texto: 'Indisponivel', acao: 'nenhuma' });
     });
 
     it('isAgendamentoDesmarcavel verifica usuarioId do horario', () => {

@@ -23,7 +23,7 @@
           <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
             <ng-container *ngIf="getHorarioStatus(dia, hora.trim()) as status">
               <ng-container [ngSwitch]="status.acao">
-                <!-- Disponível para agendar -->
+                <!-- DISPONIVEL para agendar -->
                 <div *ngSwitchCase="'agendar'" class="tabela-botao-container">
                   <button
                     title="{{ hora }}"
@@ -62,8 +62,8 @@
                   </button>
                 </div>
 
-                <!-- Indisponível -->
-                <div *ngSwitchDefault class="tabela-horario-indisponivel" [attr.title]="feedbackMessageTitle || 'Este horário não está disponível nesta semana'">
+                <!-- Indisponivel -->
+                <div *ngSwitchDefault class="tabela-horario-indisponivel" [attr.title]="feedbackMessageTitle || 'Este horário não está disponivel nesta semana'">
                   <button mat-raised-button disabled class="tabela-botao-indisponivel">
                     {{ status.texto }}
                   </button>

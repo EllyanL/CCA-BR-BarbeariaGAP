@@ -3,9 +3,9 @@ import { Observable, catchError, tap, throwError } from 'rxjs';
 
 import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
+import { Militar } from '../models/militar';
 import { Router } from '@angular/router';
 import { UserData } from '../models/userData';
-import { Militar } from '../models/militar';
 import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
 import { jwtDecode } from 'jwt-decode';
@@ -149,7 +149,7 @@ export class AuthService {
   private handleError = (error: HttpErrorResponse): Observable<never> => {
     let errorMessage = 'Ocorreu um erro inesperado. Tente novamente mais tarde.';
     if (error.status === 401) errorMessage = 'CPF ou senha incorretos. Verifique suas credenciais.';
-    else if (error.status === 503) errorMessage = 'O servidor está indisponível no momento. Tente novamente mais tarde.';
+    else if (error.status === 503) errorMessage = 'O servidor está indisponivel no momento. Tente novamente mais tarde.';
     else if (error.status >= 500) errorMessage = 'Erro no servidor. Por favor, tente novamente mais tarde.';
     else if (error.status >= 400 && error.status < 500) errorMessage = 'Erro na solicitação. Verifique os dados informados.';
     this.logger.error('Erro capturado:', error);

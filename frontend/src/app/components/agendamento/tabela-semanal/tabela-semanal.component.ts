@@ -246,7 +246,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     );
 
     if (!horarioDisponivel) {
-      this.snackBar.open('Horário não disponível para sua categoria.', 'Ciente', { duration: 3000 });
+      this.snackBar.open('Horário não disponivel para sua categoria.', 'Ciente', { duration: 3000 });
       return;
     }
 
@@ -547,7 +547,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const statusHorario = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase();
   
     if (statusHorario === "DISPONIVEL") {
-      return { cor: "primary", texto: "Disponível", acao: "agendar" };
+      return { cor: "primary", texto: "DISPONIVEL", acao: "agendar" };
     }
   
     if (statusHorario === "AGENDADO") {
@@ -558,7 +558,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return { cor: "basic", texto: "Agendado", acao: "ocupado" };
     }
   
-    return { cor: "disabled", texto: "Indisponível", acao: "nenhuma" };
+    return { cor: "disabled", texto: "Indisponivel", acao: "nenhuma" };
   }
 
 

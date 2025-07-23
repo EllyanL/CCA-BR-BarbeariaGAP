@@ -4,7 +4,7 @@ import {
     HorariosPorDia,
     HorariosService,
 } from '../../services/horarios.service';
-import { Subscription, Observable, of } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { catchError, take, timeout } from 'rxjs/operators';
 
 import { Agendamento } from '../../models/agendamento';
@@ -178,7 +178,7 @@ import { UserService } from 'src/app/services/user.service';
         this.agendarHorario(dia, horario); // Usuário comum tenta agendar
       } else if (status === 'INDISPONIVEL') {
         this.snackBar.open(
-          'Horário indisponível; provavelmente já reservado ou bloqueado. Escolha outro.',
+          'Horário indisponivel; provavelmente já reservado ou bloqueado. Escolha outro.',
           'Ciente',
           { duration: 3000 }
         );
@@ -557,7 +557,7 @@ import { UserService } from 'src/app/services/user.service';
             // Atualize os horários do componente com a resposta
             this.carregarHorariosDaSemana();
             this.snackBar.open(
-              `Dia ${dia} marcado como indisponível`,
+              `Dia ${dia} marcado como indisponivel`,
               'Ciente',
               { duration: 3000 }
             );

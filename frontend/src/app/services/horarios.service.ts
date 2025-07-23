@@ -1,7 +1,7 @@
-import { BehaviorSubject, Observable, Subscription, throwError, interval, forkJoin } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, forkJoin, interval, throwError } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { catchError, map, tap, switchMap, startWith } from 'rxjs/operators';
+import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
 
 import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';

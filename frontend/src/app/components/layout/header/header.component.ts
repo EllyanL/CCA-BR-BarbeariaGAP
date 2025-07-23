@@ -1,12 +1,17 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
-import { DialogoLogoutComponent } from '../../agendamento/dialogo-logout/dialogo-logout.component';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+
 import { CapitalizePipe } from 'src/app/pipes/capitalize.pipe';
-import { UserService } from '../../../services/user.service';
-import { UserData } from 'src/app/models/userData';  // Certifique-se de importar o modelo
-import { Subscription } from 'rxjs';
+import { DialogoLogoutComponent } from '../../agendamento/dialogo-logout/dialogo-logout.component';
 import { LoggingService } from 'src/app/services/logging.service';
+import { MatDialog } from '@angular/material/dialog';
+import { Subscription } from 'rxjs';
+import { UserData } from 'src/app/models/userData';
+import { UserService } from '../../../services/user.service';
+
+// Certifique-se de importar o modelo
+
+
 
 export const slide = trigger('slide', [
   state('void', style({ transform: 'translateY(-100%)', opacity: 0 })),
@@ -24,100 +29,92 @@ export const rotateToggle = trigger('rotateToggle', [
 @Component({
   selector: 'app-header',
   template: `
-    <mat-card-header *ngIf="!isCollapsed" class="header-card" [@slide]>
-      <h2 class="header-card__welcome">
-        Bem-vindo, <span class="header-card__nome">{{ nomeHeader }}</span>
-      </h2>
-      <mat-card-title class="header-card__title">
-        BARBEARIA - {{ titleHeader }}
-        <img
-          src="assets/images/logo-gapbr.png"
-          alt="Logo do GAP-BR"
-          class="header-card__logo"
-          width="50"
-          height="55"
-        />
-         
-        <button
-          mat-mini-fab
-          color="primary"
-          class="header-card__logout-button"
-          (click)="logout()"
-          title="Sair"
+    <header *ngIf="!isCollapsed" class="header-container" [@slide]>
+      <div class="left">
+        <img src="assets/images/logo-gapbr.png" alt="Logo do GAP-BR" />
+      </div>
+      <div class="center">
+        <img src="assets/images/Logo_Cabecalho.png" alt="Logo da Barbearia" />
+      </div>
+      <div class="right">
+        <mat-icon>home</mat-icon>
+        <mat-icon>person</mat-icon>
+        <span class="nome">{{ nomeHeader }}</span>
+      </div>
+      <button
+        title="{{ isCollapsed ? 'Expandir Cabeçalho' : 'Encolher Cabeçalho' }}"
+        class="button-toggle"
+        (click)="toggleHeader()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+          fill="#FFFFFF"
+          [@rotateToggle]="isCollapsed ? 'collapsed' : 'expanded'"
         >
-          <img
-            src="assets/images/logout.png"
-            alt="Logout"
-            class="header-card__logout-icon"
-            width="30"
-            height="30"
-          />
-        </button>
-      </mat-card-title>
-      <!-- Botão Toggle para expandir/recolher -->
-      <button title="{{ isCollapsed ? 'Expandir Cabeçalho' : 'Encolher Cabeçalho' }}" class="button-toggle" (click)="toggleHeader()">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF" [@rotateToggle]="isCollapsed ? 'collapsed' : 'expanded'">
-          <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z"/>
+        <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z" />
         </svg>
       </button>
-    </mat-card-header>
-    <!-- Botão Toggle visível quando o cabeçalho está colapsado -->
+      </header>
     <div class="container-button-toggle" *ngIf="isCollapsed">
       <button class="button-toggle" title="Expandir Cabeçalho" (click)="toggleHeader()">
         <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
-          <path d="M480-432 296-616l-56 56 240 240 240-240-56-56-184 184Z"/>
+        <path d="M480-432 296-616l-56 56 240 240 240-240-56-56-184 184Z" />
         </svg>
       </button>
     </div>
   `,
   animations: [slide, rotateToggle],
   styles: [`
-    .header-card {
+    .header-container {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      background-color: #ffffff;
-      color: #1976d2;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .header-card__title {
-      font-size: 1.8rem;
-      text-align: center;
-      color: #1976d2;
-    }
-
-    .header-card__welcome {
-      margin: 0;
-      color: #1976d2;
-    }
-
-    .header-card__nome {
-      color: #1976d2;
-    }
-
-    .header-card__logout-button {
-      background-color: #2196f3;
+      justify-content: space-between;
+      background-color: #070F5E;
       color: #ffffff;
+      height: 06rem;
+      padding: 0 1rem;
     }
 
-    .header-card__logout-button:hover {
-      background-color: #1976d2;
+    .left img {
+      height: 6rem;
+    }
+    .center img {
+      height: 12rem;
+    }
+
+    .center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .right mat-icon,
+    .nome {
+      color: #ffffff;
     }
 
     .button-toggle {
       background: none;
       border: none;
       padding: 0;
-      margin: 0;
-      outline: none;
+      margin-left: 0.5rem;
       cursor: pointer;
     }
 
     .container-button-toggle {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      background-color: #070F5E;
     }
   `]
 })

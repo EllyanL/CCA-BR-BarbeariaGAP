@@ -171,11 +171,11 @@ mat-icon {
 }
 
 .circulo.warn {
-  background-color: #f44336; /* Indisponível */
+  background-color: #f44336; /* Indisponivel */
 }
 
 .circulo.primary {
-  background-color: #2196f3; /* Disponível */
+  background-color: #2196f3; /* DISPONIVEL */
 }
 
 .circulo.accent {
