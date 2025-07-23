@@ -13,7 +13,8 @@ import { Component } from '@angular/core';
 `,
   styles: [`
       footer {
-        background-color: rgba(248, 249, 250, 0.9);
+        background-color: #FFFFFF;
+        color: #000000;
         width: 100%;
         height: 2.3rem;
         position: fixed;
@@ -26,12 +27,12 @@ import { Component } from '@angular/core';
         z-index: 1;
       }
 
-    footer__copyright {
-      font-size: 0.9rem;
-      opacity: 0.8;
-      display: flex;
-      align-items: center;
-    }
+      footer__copyright {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+      }
 
     .footer__copyright img {
       margin-left: 10px;
