@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Subscription } from 'rxjs';
 import { UserData } from 'src/app/models/userData';
 import { UserService } from '../../../services/user.service';
+import { OrientacoesComponent } from '../../agendamento/orientacoes/orientacoes.component';
 
 // Certifique-se de importar o modelo
 
@@ -40,7 +41,34 @@ export const rotateToggle = trigger('rotateToggle', [
         <mat-icon>home</mat-icon>
         <mat-icon>person</mat-icon>
         <span class="nome">{{ nomeHeader }}</span>
+        <button
+          mat-icon-button
+          class="menu-toggle"
+          [matMenuTriggerFor]="userMenu"
+          (menuOpened)="menuOpen = true"
+          (menuClosed)="menuOpen = false"
+          aria-label="Menu do usuário"
+          data-testid="menu-trigger"
+        >
+          <mat-icon [@rotateToggle]="menuOpen ? 'expanded' : 'collapsed'">
+            expand_more
+          </mat-icon>
+        </button>
       </div>
+      <mat-menu #userMenu="matMenu">
+        <button mat-menu-item (click)="openRegras()">
+          <mat-icon>assignment</mat-icon>
+          <span>Regras</span>
+        </button>
+        <button mat-menu-item>
+          <mat-icon>calendar_today</mat-icon>
+          <span>Meus agendamentos</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Sair</span>
+        </button>
+      </mat-menu>
       <button
         title="{{ isCollapsed ? 'Expandir Cabeçalho' : 'Encolher Cabeçalho' }}"
         class="button-toggle"
@@ -102,6 +130,17 @@ export const rotateToggle = trigger('rotateToggle', [
       color: #ffffff;
     }
 
+    .menu-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ffffff;
+    }
+
+    mat-menu button.mat-menu-item mat-icon {
+      margin-right: 0.5rem;
+    }
+
     .button-toggle {
       background: none;
       border: none;
@@ -125,6 +164,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private userDataSubscription?: Subscription;
 
   isCollapsed: boolean = false;
+  menuOpen: boolean = false;
 
   constructor(
     private dialog: MatDialog,
@@ -143,6 +183,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   logout() {
     const dialogRef = this.dialog.open(DialogoLogoutComponent, { width: '300px' });
     dialogRef.afterClosed().subscribe(() => {});
+  }
+
+  openRegras() {
+    this.dialog.open(OrientacoesComponent, { enterAnimationDuration: '500ms' });
   }
 
   setNomeHeader() {
