@@ -13,6 +13,8 @@ import { Component } from '@angular/core';
 `,
   styles: [`
       footer {
+        background-color: #000000;
+        color: #FFFFFF;
         background-color: #FFFFFF;
         color: #000000;
         width: 100%;
@@ -29,6 +31,7 @@ import { Component } from '@angular/core';
 
       footer__copyright {
         font-size: 0.9rem;
+        opacity: 1;
         opacity: 0.8;
         display: flex;
         align-items: center;
