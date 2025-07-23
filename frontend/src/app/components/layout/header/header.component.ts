@@ -30,7 +30,7 @@ export const rotateToggle = trigger('rotateToggle', [
 @Component({
   selector: 'app-header',
   template: `
-    <header *ngIf="!isCollapsed" class="header-container" [@slide]>
+    <header class="header-container" [@slide]>
       <div class="left">
         <img src="assets/images/logo-gapbr.png" alt="Logo do GAP-BR" />
       </div>
@@ -69,30 +69,7 @@ export const rotateToggle = trigger('rotateToggle', [
           <span>Sair</span>
         </button>
       </mat-menu>
-      <button
-        title="{{ isCollapsed ? 'Expandir Cabeçalho' : 'Encolher Cabeçalho' }}"
-        class="button-toggle"
-        (click)="toggleHeader()"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          height="24px"
-          viewBox="0 -960 960 960"
-          width="24px"
-          fill="#FFFFFF"
-          [@rotateToggle]="isCollapsed ? 'collapsed' : 'expanded'"
-        >
-        <path d="M480-528 296-344l-56-56 240-240 240 240-56 56-184-184Z" />
-        </svg>
-      </button>
-      </header>
-    <div class="container-button-toggle" *ngIf="isCollapsed">
-      <button class="button-toggle" title="Expandir Cabeçalho" (click)="toggleHeader()">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#FFFFFF">
-        <path d="M480-432 296-616l-56 56 240 240 240-240-56-56-184 184Z" />
-        </svg>
-      </button>
-    </div>
+    </header>
   `,
   animations: [slide, rotateToggle],
   styles: [`
@@ -141,20 +118,6 @@ export const rotateToggle = trigger('rotateToggle', [
       margin-right: 0.5rem;
     }
 
-    .button-toggle {
-      background: none;
-      border: none;
-      padding: 0;
-      margin-left: 0.5rem;
-      cursor: pointer;
-    }
-
-    .container-button-toggle {
-      display: flex;
-      justify-content: center;
-      padding: 0.5rem;
-      background-color: #070F5E;
-    }
   `]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
@@ -163,7 +126,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private userDataSubscription?: Subscription;
 
-  isCollapsed: boolean = false;
   menuOpen: boolean = false;
 
   constructor(
@@ -174,10 +136,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setNomeHeader();
-  }
-
-  toggleHeader() {
-    this.isCollapsed = !this.isCollapsed;
   }
 
   logout() {
