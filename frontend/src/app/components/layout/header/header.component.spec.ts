@@ -5,6 +5,7 @@ import { HeaderComponent } from './header.component';
 import { LoggingService } from '../../../services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { UserService } from '../../../services/user.service';
 
 describe('HeaderComponent', () => {
@@ -17,7 +18,7 @@ describe('HeaderComponent', () => {
     const userServiceStub = { userData$: userSubject.asObservable() } as Partial<UserService>;
     TestBed.configureTestingModule({
       declarations: [HeaderComponent],
-      imports: [MatIconModule],
+      imports: [MatIconModule, MatMenuModule],
       providers: [
         { provide: UserService, useValue: userServiceStub },
         { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of() }) } },
@@ -38,7 +39,15 @@ describe('HeaderComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     const icons = compiled.querySelectorAll('mat-icon');
-    expect(icons.length).toBe(2);
+    expect(icons.length).toBeGreaterThan(2);
     expect(compiled.querySelector('.nome')?.textContent).toContain('SGT');
+  });
+
+  it('contains user menu trigger', () => {
+    userSubject.next([{ postoGrad: 'SGT', nomeDeGuerra: 'Teste' }]);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const trigger = compiled.querySelector('[data-testid="menu-trigger"]');
+    expect(trigger).toBeTruthy();
   });
 });
