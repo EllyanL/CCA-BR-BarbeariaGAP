@@ -8,17 +8,37 @@ import { AuthService } from 'src/app/services/auth.service';
 @Component({
   selector: 'app-oficiais',
   template: `
-    <mat-sidenav-container class="page-container">
-      <mat-sidenav mode="side" opened>
-        <app-sidebar></app-sidebar>
-      </mat-sidenav>
-      <mat-sidenav-content>
+    <ng-container *ngIf="isAdmin; else noSidebar">
+      <mat-sidenav-container class="page-container">
+        <mat-sidenav mode="side" opened>
+          <app-sidebar></app-sidebar>
+        </mat-sidenav>
+        <mat-sidenav-content>
+          <div class="oficiais-page-content">
+            <app-header
+              class="oficiais-page-content__header"
+              [titleHeader]="titleHeader"
+            ></app-header>
+
+            <app-tabela-semanal
+              class="oficiais-page-content__tabela-semanal"
+              [opcoesPostoGrad]="opcoesPostoGrad"
+              [categoria]="categoria"
+              [horariosPorDia]="horariosPorDia"
+              [saramUsuario]="saramUsuario"
+              [idMilitarLogado]="idMilitarLogado"
+            ></app-tabela-semanal>
+          </div>
+        </mat-sidenav-content>
+      </mat-sidenav-container>
+    </ng-container>
+    <ng-template #noSidebar>
+      <div class="page-container">
         <div class="oficiais-page-content">
           <app-header
             class="oficiais-page-content__header"
             [titleHeader]="titleHeader"
           ></app-header>
-
           <app-tabela-semanal
             class="oficiais-page-content__tabela-semanal"
             [opcoesPostoGrad]="opcoesPostoGrad"
@@ -28,8 +48,8 @@ import { AuthService } from 'src/app/services/auth.service';
             [idMilitarLogado]="idMilitarLogado"
           ></app-tabela-semanal>
         </div>
-      </mat-sidenav-content>
-    </mat-sidenav-container>
+      </div>
+    </ng-template>
   `,
 })
 export class OficiaisComponent implements OnInit {
@@ -40,6 +60,7 @@ export class OficiaisComponent implements OnInit {
   horariosPorDia: { [dia: string]: { horario: string, status: string }[] } = {};
   saramUsuario: string = '';
   idMilitarLogado: number | null = null;
+  isAdmin: boolean = false;
 
   constructor(
     private dialog: MatDialog,
@@ -49,6 +70,7 @@ export class OficiaisComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isAdmin = this.authService.isAdmin();
     this.horariosService.carregarHorariosDaSemana('OFICIAL').subscribe({
       next: (horarios) => {
         this.horariosPorDia = horarios;
