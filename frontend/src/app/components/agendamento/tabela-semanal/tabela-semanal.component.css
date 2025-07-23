@@ -18,6 +18,7 @@
   padding: 8px;
   text-align: center;
   font-weight: bold;
+  color: #000;
 }
 
 .tabela-header-dia {
@@ -33,6 +34,7 @@
 .tabela-coluna-horario {
   font-weight: bold;
   min-width: 100px;
+  color: #000;
 }
 
 .tabela-coluna-dia {
