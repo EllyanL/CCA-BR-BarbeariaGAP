@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-navbar',
@@ -11,7 +12,7 @@ export class AdminNavbarComponent implements OnInit {
   @Input() contentClass = '';
   isAdmin = false;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
@@ -19,5 +20,9 @@ export class AdminNavbarComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  goToDashboard(): void {
+    this.router.navigate(['/admin/dashboard']);
   }
 }
