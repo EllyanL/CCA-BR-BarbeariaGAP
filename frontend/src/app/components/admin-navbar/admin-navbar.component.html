@@ -1,12 +1,21 @@
-<header class="dashboard-header">
-  <div class="header-spacer"></div>
-  <img src="assets/images/Logo_Cabecalho.png" class="header-logo" alt="Logo da Barbearia" />
-  <div class="header-icons">
-    <button mat-icon-button aria-label="Notificações">
-      <mat-icon>notifications</mat-icon>
-    </button>
-    <button mat-icon-button aria-label="Tela cheia">
-      <mat-icon>fullscreen</mat-icon>
+<header class="admin-header">
+  <div class="left">
+    <img
+      src="assets/images/logo-gapbr.png"
+      alt="Logo GAP"
+      class="logo-gap"
+    />
+  </div>
+  <div class="center">
+    <img
+      src="assets/images/Logo_Cabecalho.png"
+      alt="Logo Barbearia"
+      class="logo-barbearia"
+    />
+  </div>
+  <div class="right">
+    <button mat-icon-button aria-label="Home" (click)="goToDashboard()">
+      <mat-icon>home</mat-icon>
     </button>
     <button mat-icon-button aria-label="Logout" (click)="logout()">
       <mat-icon>logout</mat-icon>

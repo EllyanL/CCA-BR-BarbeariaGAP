@@ -6,10 +6,10 @@
 
 .dashboard-sidenav {
   position: fixed;
-  top: 4rem;
+  top: 5rem;
   left: 0;
   width: 240px;
-  height: calc(100vh - 4rem);
+  height: calc(100vh - 5rem);
   overflow-y: auto;
   flex-shrink: 0;
   background-color: #070F5E;
@@ -52,34 +52,49 @@
   background-color: #3949ab;
 }
 
-.dashboard-header {
+.admin-header {
+  background-color: #070F5E;
+  height: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 4rem;
   z-index: 1000;
-  background-color: #070F5E;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.header-spacer {
-  flex: 1;
-}
-
-.header-logo {
-  width: 12rem;
+.logo-gap {
+  width: 6rem;
   height: auto;
 }
 
-.header-icons {
+.logo-barbearia {
+  height: auto;
+  width: 12rem;
+}
+
+.left,
+.center,
+.right {
   display: flex;
-  gap: 1rem;
-  position: absolute;
-  right: 1rem;
+  align-items: center;
+}
+
+.center {
+  flex: 1;
+  justify-content: center;
+}
+
+.right button {
+  background: none;
+  border: none;
+  color: white;
+  margin-left: 1rem;
+  font-size: 1.5rem;
+  cursor: pointer;
 }
 
 .admin-layout .mat-sidenav-content {
@@ -87,8 +102,8 @@
 }
 
 .main-content {
-  margin-top: 4rem;
+  margin-top: 5rem;
   margin-left: 240px;
   padding: 2rem;
-  min-height: calc(100vh - 4rem);
+  min-height: calc(100vh - 5rem);
 }
