@@ -64,12 +64,19 @@ Valores de exemplo podem ser vistos em `backend/src/main/resources/application-d
 
 ## Executando Testes
 
+### Pré-requisitos para Testes do Backend
+Para rodar os testes é necessário ter o **JDK** instalado (o projeto usa Java 18).
+Também é recomendável possuir o **Maven** configurado. Caso não tenha o Maven
+localmente, o wrapper `./mvnw` realizará o download automático na primeira
+execução.
+
 ### Backend
 Para rodar os testes do backend execute:
 ```bash
 cd backend && ./mvnw test
 ```
-Certifique-se de configurar as variáveis de ambiente necessárias (por exemplo, definições de banco de dados) antes de rodar os testes.
+Certifique-se de configurar as variáveis de ambiente necessárias (por exemplo,
+definições de banco de dados) antes de rodar os testes.
 
 ### Frontend
 1. Instale as dependências:
@@ -79,8 +86,21 @@ Certifique-se de configurar as variáveis de ambiente necessárias (por exemplo,
 2. Caso o comando ng não esteja disponível:
     npm install -g @angular/cli
 
-3. Execute:
+3. Compile o frontend para garantir que não há erros de build:
+    npm run build
+
+4. Execute os testes:
     npm test
+
+### Dicas de Solução de Problemas
+Se o comando `./mvnw test` falhar, verifique os seguintes pontos:
+- **Permissão de execução**: certifique-se de que `backend/mvnw` está
+  marcado como executável (`chmod +x backend/mvnw`).
+- **Variáveis de ambiente**: faltas ou valores incorretos podem impedir a
+  inicialização do contexto de testes.
+- **Download de dependências**: a primeira execução do wrapper requer acesso à
+  internet para baixar o Maven e bibliotecas. Caso esteja atrás de um proxy,
+  configure as variáveis de proxy do Maven conforme a sua rede.
 
 ## Documentação
 Informaçães detalhadas sobre regras de agendamento e desenvolvimento estão em docs/ANOTATIONS.md
