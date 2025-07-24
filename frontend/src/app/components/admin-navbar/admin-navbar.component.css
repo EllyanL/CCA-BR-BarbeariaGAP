@@ -6,10 +6,10 @@
 
 .dashboard-sidenav {
   position: fixed;
-  top: 5rem;
+  top: 0;
   left: 0;
   width: 240px;
-  height: calc(100vh - 5rem);
+  height: 100vh;
   overflow-y: auto;
   flex-shrink: 0;
   background-color: #070F5E;
@@ -24,16 +24,6 @@
   height: 100%;
 }
 
-.sidebar-logo {
-  display: flex;
-  justify-content: center;
-  padding: 1rem 0;
-}
-
-.sidebar-logo img {
-  height: 4rem;
-  width: auto;
-}
 
 .sidebar-title {
   color: #ffffff;
@@ -54,26 +44,26 @@
 
 .admin-header {
   background-color: #070F5E;
-  height: 5rem;
+  height: 4.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
   position: fixed;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 240px;
+  width: calc(100% - 240px);
   z-index: 1000;
 }
 
 .logo-gap {
-  width: 4rem;
+  width: 6rem;
   height: auto;
 }
 
 .logo-barbearia {
   height: auto;
-  width: 55rem;
+  width: 12rem;
 }
 
 .left,
@@ -102,8 +92,9 @@
 }
 
 .main-content {
-  margin-top: 5rem;
+  margin-top: 4.5rem;
   margin-left: 240px;
   padding: 2rem;
-  min-height: calc(100vh - 5rem);
+  width: calc(100% - 240px);
+  min-height: calc(100vh - 4.5rem);
 }
