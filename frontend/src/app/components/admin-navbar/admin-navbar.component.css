@@ -1,9 +1,11 @@
 .admin-layout {
+  display: flex;
   height: 100vh;
 }
 
 .dashboard-sidenav {
-  width: 220px;
+  width: 240px;
+  flex-shrink: 0;
   background-color: #070F5E;
   color: #ffffff;
   height: 100vh;
@@ -53,6 +55,7 @@
   z-index: 10;
   background-color: #070F5E;
   color: #ffffff;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -73,4 +76,8 @@
   gap: 1rem;
   position: absolute;
   right: 1rem;
+}
+
+.admin-layout .mat-sidenav-content {
+  flex: 1;
 }
