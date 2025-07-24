@@ -8,7 +8,7 @@
   </div>
   <div class="center">
     <img
-      src="assets/images/Logo_Cabecalho_admin.png"
+      src="assets/images/Logo_Cabecalho.png"
       alt="Logo Barbearia"
       class="logo-barbearia"
     />
@@ -26,9 +26,6 @@
 <mat-sidenav-container [ngClass]="containerClass" class="admin-layout">
   <mat-sidenav *ngIf="isAdmin" mode="side" opened class="dashboard-sidenav">
     <div class="sidebar-content">
-      <!-- <div class="sidebar-logo">
-        <img src="assets/images/logo-gapbr.png" alt="Logo GAP" />
-      </div> -->
       <h3 class="sidebar-title">Painel Administrativo</h3>
       <mat-nav-list>
         <a mat-list-item routerLink="/admin/dashboard" routerLinkActive="active-link">Dashboard</a>
