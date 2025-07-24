@@ -1,3 +1,19 @@
+<header class="dashboard-header">
+  <div class="header-spacer"></div>
+  <img src="assets/images/Logo_Cabecalho.png" class="header-logo" alt="Logo da Barbearia" />
+  <div class="header-icons">
+    <button mat-icon-button aria-label="Notificações">
+      <mat-icon>notifications</mat-icon>
+    </button>
+    <button mat-icon-button aria-label="Tela cheia">
+      <mat-icon>fullscreen</mat-icon>
+    </button>
+    <button mat-icon-button aria-label="Logout" (click)="logout()">
+      <mat-icon>logout</mat-icon>
+    </button>
+  </div>
+</header>
+
 <mat-sidenav-container [ngClass]="containerClass" class="admin-layout">
   <mat-sidenav *ngIf="isAdmin" mode="side" opened class="dashboard-sidenav">
     <div class="sidebar-content">
@@ -14,22 +30,7 @@
     </div>
   </mat-sidenav>
 
-  <mat-sidenav-content [ngClass]="contentClass">
-    <header class="dashboard-header">
-      <div class="header-spacer"></div>
-      <img src="assets/images/Logo_Cabecalho.png" class="header-logo" alt="Logo da Barbearia" />
-      <div class="header-icons">
-        <button mat-icon-button aria-label="Notificações">
-          <mat-icon>notifications</mat-icon>
-        </button>
-        <button mat-icon-button aria-label="Tela cheia">
-          <mat-icon>fullscreen</mat-icon>
-        </button>
-        <button mat-icon-button aria-label="Logout" (click)="logout()">
-          <mat-icon>logout</mat-icon>
-        </button>
-      </div>
-    </header>
+  <mat-sidenav-content [ngClass]="contentClass" class="main-content">
     <ng-content></ng-content>
   </mat-sidenav-content>
 </mat-sidenav-container>
