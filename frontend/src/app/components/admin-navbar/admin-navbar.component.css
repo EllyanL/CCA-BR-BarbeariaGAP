@@ -1,3 +1,8 @@
+.admin-layout {
+  height: 100vh;
+  display: flex;
+}
+
 .dashboard-sidenav {
   width: 220px;
   background-color: #070F5E;
