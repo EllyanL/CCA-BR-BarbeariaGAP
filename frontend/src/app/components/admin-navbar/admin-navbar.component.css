@@ -58,13 +58,13 @@
 }
 
 .logo-gap {
-  width: 6rem;
+  width: 3rem;
   height: auto;
 }
 
 .logo-barbearia {
   height: auto;
-  width: 12rem;
+  width: 50rem;
 }
 
 .left,
@@ -99,3 +99,4 @@
   width: calc(100% - 240px);
   min-height: calc(100vh - 4.5rem);
 }
+

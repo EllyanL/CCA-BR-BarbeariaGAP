@@ -5,10 +5,10 @@ import { CapitalizePipe } from 'src/app/pipes/capitalize.pipe';
 import { DialogoLogoutComponent } from '../../agendamento/dialogo-logout/dialogo-logout.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
+import { OrientacoesComponent } from '../../agendamento/orientacoes/orientacoes.component';
 import { Subscription } from 'rxjs';
 import { UserData } from 'src/app/models/userData';
 import { UserService } from '../../../services/user.service';
-import { OrientacoesComponent } from '../../agendamento/orientacoes/orientacoes.component';
 
 // Certifique-se de importar o modelo
 
@@ -35,7 +35,7 @@ export const rotateToggle = trigger('rotateToggle', [
         <img src="assets/images/logo-gapbr.png" alt="Logo do GAP-BR" />
       </div>
       <div class="center">
-        <img src="assets/images/Logo_Cabecalho.png" alt="Logo da Barbearia" />
+        <img src="assets/images/Logo_Cabecalho_admin.png" alt="Logo da Barbearia" />
       </div>
       <div class="right">
         <mat-icon>home</mat-icon>
@@ -84,10 +84,10 @@ export const rotateToggle = trigger('rotateToggle', [
     }
 
     .left img {
-      height: 6rem;
+      height: 5rem;
     }
     .center img {
-      height: 12rem;
+      height: 3rem;
     }
 
     .center {
