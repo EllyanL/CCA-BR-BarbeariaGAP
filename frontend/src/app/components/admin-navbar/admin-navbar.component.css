@@ -32,14 +32,25 @@
 }
 
 .dashboard-sidenav a {
-  color: #ffffff;
+  color: #ffffff !important;
   padding: 0.75rem 1rem;
   margin: 0.25rem 0;
+  /* ensure text within Angular Material list items also inherits white color */
+  --mdc-list-list-item-label-text-color: #ffffff;
+}
+
+/* override Angular Material inner spans that set their own color */
+.dashboard-sidenav a .mdc-list-item__content,
+.dashboard-sidenav a .mdc-list-item__primary-text,
+.dashboard-sidenav a .mat-mdc-list-item-content,
+.dashboard-sidenav a .mat-mdc-list-item-text {
+  color: #ffffff !important;
 }
 
 .dashboard-sidenav a:hover,
 .dashboard-sidenav a.active-link {
   background-color: #3949ab;
+  color: #ffffff !important;
 }
 
 .admin-header {
