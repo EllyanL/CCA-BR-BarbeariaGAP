@@ -152,7 +152,7 @@ public class AuthenticationService {
  * @return Um objeto {@link UserDetails} representando o usuário
  *         recém-registrado.
  */
-public Optional<Militar> registerNewUser(RegisterDTO data) {
+    public Optional<Militar> registerNewUser(RegisterDTO data) {
     UserRole role;
     if (isOficial(data.getPostoGrad())) {
         role = UserRole.OFICIAL;
@@ -178,6 +178,58 @@ public Optional<Militar> registerNewUser(RegisterDTO data) {
     return Optional.of(militarRepository.save(user));
 
 }
+
+    /**
+     * Atualiza ou cria um {@link Militar} baseado nos dados externos fornecidos.
+     * Caso o militar já exista, somente campos provenientes de sistemas externos
+     * (nome, posto, contato etc.) serão atualizados, preservando id e permissões.
+     *
+     * @param externalData dados recebidos de serviços externos
+     * @param rawPassword  senha em texto puro para ser codificada (pode ser null)
+     * @return a instância persistida de {@link Militar}
+     */
+    public Militar saveOrUpdateFromDto(UserDTO externalData, String rawPassword) {
+        Optional<Militar> existingOpt = militarRepository.findByCpf(externalData.getCpf());
+
+        Militar militar;
+        if (existingOpt.isPresent()) {
+            militar = existingOpt.get();
+        } else {
+            UserRole role = externalData.getRole() != null
+                    ? UserRole.valueOf(externalData.getRole().toUpperCase())
+                    : UserRole.USER;
+            militar = new Militar(
+                    externalData.getSaram(),
+                    externalData.getNomeCompleto(),
+                    externalData.getPostoGrad(),
+                    externalData.getNomeDeGuerra(),
+                    externalData.getEmail(),
+                    externalData.getOm(),
+                    externalData.getCpf(),
+                    role
+            );
+        }
+
+        militar.setCategoria(externalData.getCategoria());
+        militar.setSecao(externalData.getSecao() != null ? externalData.getSecao() : "Não informado");
+        militar.setRamal(externalData.getRamal() != null ? externalData.getRamal() : "Não informado");
+        militar.setEmail(externalData.getEmail());
+        militar.setNomeCompleto(externalData.getNomeCompleto());
+        militar.setNomeDeGuerra(externalData.getNomeDeGuerra());
+        militar.setOm(externalData.getOm());
+        militar.setPostoGrad(externalData.getPostoGrad());
+        militar.setSaram(externalData.getSaram());
+
+        if (externalData.getRole() != null) {
+            militar.setRole(UserRole.valueOf(externalData.getRole().toUpperCase()));
+        }
+
+        if (rawPassword != null) {
+            militar.setSenha(passwordEncoder.encode(rawPassword));
+        }
+
+        return militarRepository.save(militar);
+    }
 
     /**
      * Verifica se o posto/graduação do militar é de oficial.
