@@ -1,0 +1,2 @@
+ALTER TABLE militares
+    ALTER COLUMN secao TYPE VARCHAR(20);
