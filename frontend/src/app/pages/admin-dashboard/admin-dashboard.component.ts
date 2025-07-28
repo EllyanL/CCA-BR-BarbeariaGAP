@@ -62,6 +62,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   loadStats(): void {
     this.dashboardService.getStats().subscribe({
       next: data => {
+        this.logger.log('Estatísticas recebidas:', data);
         this.stats = data;
       },
       error: err => this.logger.error('Erro ao carregar estatísticas', err)
@@ -71,6 +72,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   loadRecent(): void {
     this.dashboardService.getRecent().subscribe({
       next: data => {
+        this.logger.log('Dados recentes recebidos:', data);
         this.recent = data;
         this.dataSource.data = data;
         this.applyFilters();
@@ -161,12 +163,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  formatNome(valor: string): string {
+  formatNome(valor?: string | null): string {
+    if (!valor) {
+      return 'Não informado';
+    }
     return valor
       .toLowerCase()
       .split(' ')
       .map(p => p.charAt(0).toUpperCase() + p.slice(1))
       .join(' ');
+  }
+
+  formatCategoria(valor?: string | null): string {
+    return this.formatNome(valor);
   }
 
   formatHora(hora: string): string {
