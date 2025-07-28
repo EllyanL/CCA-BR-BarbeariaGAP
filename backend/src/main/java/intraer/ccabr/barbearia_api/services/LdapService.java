@@ -77,7 +77,7 @@ public class LdapService {
      * @return Lista de {@link UserDTO} contendo os dados do usuário recuperados do LDAP.
      * @throws NamingException Se ocorrer um erro durante a busca no LDAP.
      */
-    private List<UserDTO> fetchLdapData(AuthenticationDTO data, DirContext ctx) throws NamingException {
+    protected List<UserDTO> fetchLdapData(AuthenticationDTO data, DirContext ctx) throws NamingException {
         List<UserDTO> ldapDataList = new ArrayList<>();
         NamingEnumeration<SearchResult> results = ctx.search(ldapBase, "(uid=" + data.cpf() + ")", createSearchControls());
 
@@ -135,7 +135,7 @@ public class LdapService {
      * @return DirContext configurado para o LDAP.
      * @throws NamingException Se ocorrer um erro ao criar o contexto.
      */
-    private DirContext createLdapContext(AuthenticationDTO data) throws NamingException {
+    protected DirContext createLdapContext(AuthenticationDTO data) throws NamingException {
         Hashtable<String, String> env = new Hashtable<>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, this.ldapHost);
