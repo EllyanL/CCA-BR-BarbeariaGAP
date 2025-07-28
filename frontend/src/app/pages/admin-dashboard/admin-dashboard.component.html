@@ -47,13 +47,17 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
         <td mat-cell *matCellDef="let a">{{ formatHora(a.hora) }}</td>
       </ng-container>
+      <ng-container matColumnDef="saram">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Saram</th>
+        <td mat-cell *matCellDef="let a">{{ a.saram }}</td>
+      </ng-container>
       <ng-container matColumnDef="militar">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Militar</th>
-        <td mat-cell *matCellDef="let a">{{ a.militar?.nomeCompleto }}</td>
+        <td mat-cell *matCellDef="let a">{{ formatNome(a.militar?.nomeCompleto) }}</td>
       </ng-container>
       <ng-container matColumnDef="categoria">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
-        <td mat-cell *matCellDef="let a">{{ a.categoria }}</td>
+        <td mat-cell *matCellDef="let a">{{ formatNome(a.categoria) }}</td>
       </ng-container>
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Ações</th>

@@ -27,7 +27,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   filterPostoGrad = '';
   filterEmail = '';
   weekly: WeeklyCount[] = [];
-  displayedColumns = ['data', 'hora', 'militar', 'categoria', 'actions'];
+  displayedColumns = ['data', 'hora', 'saram', 'militar', 'categoria', 'actions'];
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
@@ -159,6 +159,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       },
       error: err => this.logger.error('Erro ao excluir agendamento', err)
     });
+  }
+
+  formatNome(valor: string): string {
+    return valor
+      .toLowerCase()
+      .split(' ')
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .join(' ');
   }
 
   formatHora(hora: string): string {
