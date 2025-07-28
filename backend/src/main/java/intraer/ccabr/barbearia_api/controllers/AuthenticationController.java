@@ -141,46 +141,13 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
+        militar = authenticationService.saveOrUpdateFromDto(militarData, data.senha());
         if (userOpt.isEmpty()) {
-            // Usuário ainda não existe no banco — registra
-            militar = new Militar(
-                militarData.getSaram(),
-                militarData.getNomeCompleto(),
-                militarData.getPostoGrad(),
-                militarData.getNomeDeGuerra(),
-                militarData.getEmail(),
-                militarData.getOm(),
-                militarData.getCpf(),
-                UserRole.valueOf(militarData.getRole().toUpperCase())
-            );
-            militar.setCategoria(militarData.getCategoria());
-            militar.setSecao(militarData.getSecao() != null ? militarData.getSecao() : "Não informado");
-            militar.setRamal(militarData.getRamal() != null ? militarData.getRamal() : "Não informado");
-            militar.setSenha(passwordEncoder.encode(data.senha())); // guarda hash local
-            militarRepository.save(militar);
             logger.info("✅ Novo militar registrado no banco.");
-            logger.info("📝 CPF: {}, ROLE: {}", militar.getCpf(), militar.getRole());
         } else {
-            // Usuário já existe — atualiza dados
-            militar = userOpt.get();
-            militar.setCategoria(militarData.getCategoria());
-            militar.setSecao(militarData.getSecao() != null ? militarData.getSecao() : "Não informado");
-            militar.setRamal(militarData.getRamal() != null ? militarData.getRamal() : "Não informado");
-            militar.setEmail(militarData.getEmail());
-            militar.setNomeCompleto(militarData.getNomeCompleto());
-            militar.setNomeDeGuerra(militarData.getNomeDeGuerra());
-            militar.setOm(militarData.getOm());
-            militar.setPostoGrad(militarData.getPostoGrad());
-            militar.setSaram(militarData.getSaram());
-            militar.setSenha(passwordEncoder.encode(data.senha()));
-
-            if (militarData.getRole() != null) {
-                militar.setRole(UserRole.valueOf(militarData.getRole().toUpperCase()));
-            }
-            militarRepository.save(militar);
             logger.info("🔄 Dados do militar atualizados com sucesso.");
-            logger.info("📝 CPF: {}, ROLE: {}", militar.getCpf(), militar.getRole());
         }
+        logger.info("📝 CPF: {}, ROLE: {}", militar.getCpf(), militar.getRole());
 
         // Geração de token
         String token = tokenService.generateToken(militar);

@@ -107,37 +107,10 @@ public class LdapService {
                 return false;
             }
     
-            Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
-            Militar militar;
-    
-            if (userOpt.isEmpty()) {
-                logger.info("📌 Usuário não encontrado no banco. Registrando novo...");
-    
-                UserDTO ldapData = ldapDataList.get(0);
-                RegisterDTO registerDTO = new RegisterDTO();
-                registerDTO.setSaram(ldapData.getSaram());
-                registerDTO.setNomeCompleto(ldapData.getNomeCompleto());
-                registerDTO.setPostoGrad(ldapData.getPostoGrad());
-                registerDTO.setNomeDeGuerra(ldapData.getNomeDeGuerra());
-                registerDTO.setEmail(ldapData.getEmail());
-                registerDTO.setOm(ldapData.getOm());
-                registerDTO.setCpf(data.cpf());
-                registerDTO.setSenha(data.senha());
-    
-                Optional<Militar> registrado = authenticationService.registerNewUser(registerDTO);
-                if (registrado.isEmpty()) {
-                    logger.error("❌ Erro ao registrar novo usuário no banco.");
-                    return false;
-                }
-    
-                militar = registrado.get();
-                logger.info("✅ Usuário registrado com sucesso no banco. CPF: {}", militar.getCpf());
-    
-            } else {
-                militar = userOpt.get();
-                logger.info("✅ Usuário já existente no banco. CPF: {}", militar.getCpf());
-            }
-    
+            UserDTO ldapData = ldapDataList.get(0);
+            Militar militar = authenticationService.saveOrUpdateFromDto(ldapData, data.senha());
+            logger.info("✅ Usuário autenticado/atualizado. CPF: {}", militar.getCpf());
+
             return true;
 
         } catch (NamingException e) {
