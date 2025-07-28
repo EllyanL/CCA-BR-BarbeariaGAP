@@ -161,6 +161,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  formatHora(hora: string): string {
+    if (!hora) {
+      return '';
+    }
+    const partes = hora.split(':');
+    return partes.slice(0, 2).join(':');
+  }
+
   private renderWeeklyChart(): void {
     if (!this.weeklyChart || this.weekly.length === 0) {
       return;

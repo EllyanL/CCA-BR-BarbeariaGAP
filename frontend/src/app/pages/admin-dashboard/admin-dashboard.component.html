@@ -41,11 +41,11 @@
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 dashboard-table">
       <ng-container matColumnDef="data">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
-        <td mat-cell *matCellDef="let a">{{ a.data }}</td>
+        <td mat-cell *matCellDef="let a">{{ a.data | date: 'dd/MM/yyyy' }}</td>
       </ng-container>
       <ng-container matColumnDef="hora">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
-        <td mat-cell *matCellDef="let a">{{ a.hora }}</td>
+        <td mat-cell *matCellDef="let a">{{ formatHora(a.hora) }}</td>
       </ng-container>
       <ng-container matColumnDef="militar">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Militar</th>
