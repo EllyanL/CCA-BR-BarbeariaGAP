@@ -55,11 +55,11 @@ public class Militar implements UserDetails {
     @JsonProperty
     private String om;
 
-    @Column(name = "secao", length = 10)
+    @Column(name = "secao", length = 20)
     @JsonProperty
     private String secao;
 
-    @Column(name = "ramal", length = 20)
+    @Column(name = "ramal", length = 15)
     @JsonProperty
     private String ramal;
 
@@ -71,7 +71,7 @@ public class Militar implements UserDetails {
     @JsonProperty
     private String senha;
 
-    @Column(name = "categoria", length = 10)
+    @Column(name = "categoria", length = 15)
     @JsonProperty
     private String categoria;
 
