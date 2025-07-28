@@ -37,30 +37,6 @@
   margin-bottom: 20px;
 }
 
-.admin__logout-button,
-.admin__return-button {
-  width: 40px;
-  height: 40px;
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.admin__logout-button:focus,
-.admin__return-button:focus {
-  outline: 2px solid #2196f3;
-}
-
-.admin__logout-icon,
-.admin__return-icon {
-  vertical-align: middle;
-  font-size: 1.1rem;
-}
-
 /* === Cabeçalho e layout principal === */
 .header-section {
   display: flex;
