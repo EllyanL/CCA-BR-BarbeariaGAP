@@ -1,20 +1,23 @@
 <app-admin-navbar [containerClass]="'usuarios-container'" [contentClass]="'usuarios-content'">
     <h1>Usuários</h1>
 
-    <input (input)="applyFilter($event)" placeholder="Filtrar" />
+    <mat-form-field appearance="fill" class="usuarios-filter">
+      <mat-label>Buscar</mat-label>
+      <input matInput (input)="applyFilter($event)" placeholder="Buscar" />
+    </mat-form-field>
 
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8 usuarios-table">
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
         <td mat-cell *matCellDef="let m">{{ m.id }}</td>
       </ng-container>
+      <ng-container matColumnDef="postoGrad">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Posto/Grad</th>
+        <td mat-cell *matCellDef="let m">{{ m.postoGrad }}</td>
+      </ng-container>
       <ng-container matColumnDef="nomeDeGuerra">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome de Guerra</th>
-        <td mat-cell *matCellDef="let m">{{ m.nomeDeGuerra }}</td>
-      </ng-container>
-      <ng-container matColumnDef="nomeCompleto">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome Completo</th>
-        <td mat-cell *matCellDef="let m">{{ m.nomeCompleto }}</td>
+        <td mat-cell *matCellDef="let m">{{ m.nomeDeGuerra | capitalize }}</td>
       </ng-container>
       <ng-container matColumnDef="email">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th>

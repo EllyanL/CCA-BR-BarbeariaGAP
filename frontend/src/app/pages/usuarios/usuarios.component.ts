@@ -15,8 +15,8 @@ import { AuthService } from '../../services/auth.service';
 export class UsuariosComponent implements OnInit {
   displayedColumns: string[] = [
     'id',
+    'postoGrad',
     'nomeDeGuerra',
-    'nomeCompleto',
     'email',
     'secao',
     'ramal',
@@ -40,8 +40,9 @@ export class UsuariosComponent implements OnInit {
         this.dataSource.filterPredicate = (m: Militar, filter: string): boolean => {
           const f = filter.trim().toLowerCase();
           return (
+            String(m.id || '').toLowerCase().includes(f) ||
+            (m.postoGrad || '').toLowerCase().includes(f) ||
             (m.nomeDeGuerra || '').toLowerCase().includes(f) ||
-            (m.nomeCompleto || '').toLowerCase().includes(f) ||
             (m.email || '').toLowerCase().includes(f) ||
             (m.secao || '').toLowerCase().includes(f) ||
             (m.ramal || '').toLowerCase().includes(f) ||
