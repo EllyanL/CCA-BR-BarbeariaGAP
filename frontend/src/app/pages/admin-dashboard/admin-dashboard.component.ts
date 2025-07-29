@@ -5,13 +5,13 @@ import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { Chart } from 'chart.js/auto';
-import { LoggingService } from 'src/app/services/logging.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { Router } from '@angular/router';
 import { HorariosService } from 'src/app/services/horarios.service';
+import { LoggingService } from 'src/app/services/logging.service';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-admin-dashboard',

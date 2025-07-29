@@ -6,10 +6,10 @@ CREATE TABLE militares (
     nome_de_guerra VARCHAR(20),
     email VARCHAR(50),
     om VARCHAR(15),
-    categoria VARCHAR(15),
+    quadro VARCHAR(15),
     secao VARCHAR(10),
     ramal VARCHAR(15),
     cpf VARCHAR(15) UNIQUE,
     senha VARCHAR(255),
-    role VARCHAR(10)
+    categoria VARCHAR(10)
 );
