@@ -22,10 +22,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   stats?: DashboardStats;
   recent: Agendamento[] = [];
   dataSource = new MatTableDataSource<Agendamento>([]);
-  filterSaram = '';
-  filterNome = '';
-  filterPostoGrad = '';
-  filterEmail = '';
+  searchTerm = '';
   weekly: WeeklyCount[] = [];
   displayedColumns = ['data', 'hora', 'saram', 'militar', 'categoria', 'actions'];
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
@@ -106,35 +103,39 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  applyFilters(): void {
+  applyFilters(event?: Event): void {
+    if (event) {
+      const target = event.target as HTMLInputElement;
+      this.searchTerm = target.value.trim().toLowerCase();
+    }
+
     this.dataSource.filterPredicate = (ag: Agendamento, filter: string): boolean => {
-      const f = JSON.parse(filter);
+      if (!filter) { return true; }
+      const f = filter.trim().toLowerCase();
 
-      const matchesSaram = f.saram
-        ? ((ag.usuarioSaram || ag.militar?.saram || '').toLowerCase().includes(f.saram.toLowerCase()))
-        : true;
-      const matchesNome = f.nome
-        ? (ag.militar?.nomeCompleto || '').toLowerCase().includes(f.nome.toLowerCase())
-        : true;
-      const matchesPostoGrad = f.postoGrad
-        ? (ag.militar?.postoGrad || '').toLowerCase().includes(f.postoGrad.toLowerCase())
-        : true;
-      const matchesEmail = f.email
-        ? (ag.militar?.email || '').toLowerCase().includes(f.email.toLowerCase())
-        : true;
+      const nome = (ag.militar?.nomeCompleto || '').toLowerCase();
+      const saram = (ag.usuarioSaram || ag.militar?.saram || '').toLowerCase();
+      const categoria = (ag.categoria || ag.militar?.categoria || '').toLowerCase();
+      const email = (ag.militar?.email || '').toLowerCase();
+      const datas = this.normalizeDateFormats(ag.data).map(d => d.toLowerCase());
 
-      return matchesSaram && matchesNome && matchesPostoGrad && matchesEmail;
+      return [nome, saram, categoria, email, ...datas].some(v => v.includes(f));
     };
 
-    this.dataSource.filter = JSON.stringify({
-      saram: this.filterSaram,
-      nome: this.filterNome,
-      postoGrad: this.filterPostoGrad,
-      email: this.filterEmail
-    });
+    this.dataSource.filter = this.searchTerm;
     if (this.paginator) {
       this.paginator.firstPage();
     }
+  }
+
+  private normalizeDateFormats(dateStr?: string): string[] {
+    if (!dateStr) { return []; }
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) { return []; }
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyy = String(date.getFullYear());
+    return [`${dd}/${mm}/${yyyy}`, `${yyyy}-${mm}-${dd}`];
   }
   
 

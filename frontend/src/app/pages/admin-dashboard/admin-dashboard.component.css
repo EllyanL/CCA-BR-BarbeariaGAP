@@ -48,6 +48,10 @@
   flex-wrap: wrap;
 }
 
+.search-field {
+  flex: 1;
+}
+
 @media (max-width: 767px) {
   .dashboard-table {
     overflow-x: auto;

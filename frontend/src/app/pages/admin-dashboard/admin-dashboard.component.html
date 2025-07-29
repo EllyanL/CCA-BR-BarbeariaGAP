@@ -17,24 +17,9 @@
     </div>
 
     <div class="filters">
-      <mat-form-field appearance="fill">
-        <mat-label>Saram</mat-label>
-        <input matInput [(ngModel)]="filterSaram" (input)="applyFilters()" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Nome</mat-label>
-        <input matInput [(ngModel)]="filterNome" (input)="applyFilters()" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Posto/Grad</mat-label>
-        <input matInput [(ngModel)]="filterPostoGrad" (input)="applyFilters()" />
-      </mat-form-field>
-
-      <mat-form-field appearance="fill">
-        <mat-label>Email</mat-label>
-        <input matInput [(ngModel)]="filterEmail" (input)="applyFilters()" />
+      <mat-form-field appearance="fill" class="search-field">
+        <mat-label>Buscar</mat-label>
+        <input matInput (input)="applyFilters($event)" placeholder="Buscar" />
       </mat-form-field>
     </div>
 
