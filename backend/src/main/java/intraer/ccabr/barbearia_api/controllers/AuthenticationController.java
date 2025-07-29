@@ -106,7 +106,7 @@ public class AuthenticationController {
             return ResponseEntity.ok(new LoginResponseDTO(
                 admin.getId(),
                 token,
-                admin.getRole().name(),
+                admin.getCategoria().name(),
                 admin.getPostoGrad(),
                 admin.getOm(),
                 admin.getNomeDeGuerra(),
@@ -147,7 +147,7 @@ public class AuthenticationController {
         } else {
             logger.info("🔄 Dados do militar atualizados com sucesso.");
         }
-        logger.info("📝 CPF: {}, ROLE: {}", militar.getCpf(), militar.getRole());
+        logger.info("📝 CPF: {}, ROLE: {}", militar.getCpf(), militar.getCategoria());
 
         // Geração de token
         String token = tokenService.generateToken(militar);
@@ -156,7 +156,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(new LoginResponseDTO(
             militar.getId(),
             token,
-            militar.getRole().name(),
+            militar.getCategoria().name(),
             militar.getPostoGrad(),
             militar.getOm(),
             militar.getNomeDeGuerra(),
@@ -222,8 +222,8 @@ public class AuthenticationController {
                 militar.getOm(),
                 militar.getCpf()
         );
-        dto.setRole(militar.getRole().name());
-        dto.setCategoria(militar.getCategoria());
+        dto.setCategoria(militar.getCategoria().name());
+        dto.setQuadro(militar.getQuadro());
         dto.setSecao(militar.getSecao());
         dto.setRamal(militar.getRamal());
 

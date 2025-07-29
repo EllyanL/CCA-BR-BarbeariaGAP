@@ -114,13 +114,13 @@ public class CcabrService {
                     String omBruta = (String) response.get("organizacao");
                     userDTO.setOm(omBruta != null ? omBruta.trim().replace(" ", "-") : "Não informado");
                     userDTO.setCpf((String) response.get("cpf"));
-                    userDTO.setCategoria((String) response.get("quadro"));
+                    userDTO.setQuadro((String) response.get("quadro"));
                     String funcao = (String) response.get("funcao");
                     String telefone = (String) response.get("telefone");
                     logger.debug("Valores brutos do webservice - funcao: {}, telefone: {}", funcao, telefone);
                     userDTO.setSecao(extractSecao(funcao));
                     userDTO.setRamal(extractRamal(telefone));
-                    userDTO.setRole(mapRole((String) response.get("posto"), (String) response.get("pessfis_type")));
+                    userDTO.setCategoria(mapRole((String) response.get("posto"), (String) response.get("pessfis_type")));
                     logger.debug("Valores mapeados - secao: {}, ramal: {}", userDTO.getSecao(), userDTO.getRamal());
                     return userDTO;
                 })

@@ -82,7 +82,7 @@ describe('HorariosComponent', () => {
       om: '',
       secao: '',
       ramal: '',
-      role: 'USER'
+      categoria: 'USER'
     } as Militar);
 
     component.carregarAgendamentos();
@@ -151,7 +151,7 @@ describe('HorariosComponent', () => {
       om: '',
       secao: '',
       ramal: '',
-      role: 'USER'
+      categoria: 'USER'
     } as Militar);
 
     component.carregarAgendamentos();

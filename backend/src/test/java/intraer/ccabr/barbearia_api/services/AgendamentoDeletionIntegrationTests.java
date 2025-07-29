@@ -44,7 +44,7 @@ class AgendamentoDeletionIntegrationTests {
     void deletingAgendamentoFreesHorario() {
         Militar m = new Militar();
         m.setCpf("123");
-        m.setRole(UserRole.GRADUADO);
+        m.setCategoria(UserRole.GRADUADO);
         militarRepository.save(m);
 
         Horario horario = new Horario("segunda", "08:00", "GRADUADO", HorarioStatus.AGENDADO);

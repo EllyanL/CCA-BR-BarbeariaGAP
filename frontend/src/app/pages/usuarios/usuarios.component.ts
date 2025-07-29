@@ -20,7 +20,7 @@ export class UsuariosComponent implements OnInit {
     'email',
     'secao',
     'ramal',
-    'role'
+    'categoria'
   ];
   dataSource = new MatTableDataSource<Militar>([]);
   filterValue = '';
@@ -45,7 +45,7 @@ export class UsuariosComponent implements OnInit {
             (m.email || '').toLowerCase().includes(f) ||
             (m.secao || '').toLowerCase().includes(f) ||
             (m.ramal || '').toLowerCase().includes(f) ||
-            (m.role || '').toLowerCase().includes(f)
+            (m.categoria || '').toLowerCase().includes(f)
           );
         };
         if (this.paginator) {

@@ -13,7 +13,7 @@ import { jwtDecode } from 'jwt-decode';
 export interface LoginResponse {
   id?: number;
   token: string;
-  role: string; // Garantir que role venha do backend como GRADUADO ou OFICIAL
+  categoria: string; // Garantir que role venha do backend como GRADUADO ou OFICIAL
   postoGrad?: string;
   om?: string;
   nomeDeGuerra?: string;
@@ -49,7 +49,7 @@ export class AuthService {
           id: response.id,
           postoGrad: response.postoGrad || 'Desconhecido',
           nomeDeGuerra: response.nomeDeGuerra || 'Desconhecido',
-          role: response.role || 'GRADUADO', // Garantir que role seja válido
+          categoria: response.categoria || 'GRADUADO', // Garantir que role seja válido
           om: response.om || '',
           cpf: cpf,
           saram: response.saram || '',
@@ -108,20 +108,20 @@ export class AuthService {
 
   getUsuarioAutenticado(): Militar | null {
     const token = this.getToken();
-    let roleFromToken: string | null = null;
+    let categoriaFromToken: string | null = null;
     const idFromUserData = this.userService.getUserData()[0]?.id;
 
     if (token) {
       try {
         const decodedToken: any = jwtDecode(token);
-        roleFromToken = decodedToken.role || null;
+        categoriaFromToken = decodedToken.role || null;
         const idFromToken = decodedToken.id;
-        this.logger.log('🔑 ROLE do token:', roleFromToken);
+        this.logger.log('🔑 ROLE do token:', categoriaFromToken);
         return {
           id: idFromToken !== undefined ? idFromToken : idFromUserData,
           cpf: decodedToken.sub,
           saram: decodedToken.saram,
-          role: roleFromToken,
+          categoria: categoriaFromToken,
           nomeCompleto: decodedToken.nomeCompleto,
           email: decodedToken.email,
           om: decodedToken.om,

@@ -6,10 +6,10 @@ export interface Militar {
   nomeDeGuerra: string;
   email: string;
   om: string;
-  categoria: string;
+  quadro: string;
   secao: string;
   ramal: string;
   cpf?: string;
   senha?: string;
-  role?: string;
+  categoria?: string;
 }

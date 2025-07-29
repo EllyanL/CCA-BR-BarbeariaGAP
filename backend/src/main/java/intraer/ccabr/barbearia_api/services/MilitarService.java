@@ -35,8 +35,8 @@ public class MilitarService {
         militarRepository.deleteById(id);
     }
 
-    public List<Militar> findByCategoria(String categoria) {
-        return militarRepository.findByCategoria(categoria);
+    public List<Militar> findByQuadro(String quadro) {
+        return militarRepository.findByQuadro(quadro);
     }
 
     public Militar verifyAndUpdateMilitar(Militar militar) {
@@ -53,9 +53,9 @@ public class MilitarService {
             existingMilitar.setOm(militar.getOm());
             existingMilitar.setSecao(militar.getSecao());
             existingMilitar.setRamal(militar.getRamal());
-            existingMilitar.setCategoria(militar.getCategoria());
+            existingMilitar.setQuadro(militar.getQuadro());
             existingMilitar.setCpf(militar.getCpf());
-            existingMilitar.setRole(militar.getRole());
+            existingMilitar.setCategoria(militar.getCategoria());
 
             return militarRepository.save(existingMilitar);
         } else {

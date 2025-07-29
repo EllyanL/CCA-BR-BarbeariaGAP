@@ -21,7 +21,7 @@ public class TokenServiceTests {
         m.setId(1L);
         m.setCpf("123456789");
         m.setSaram("9999");
-        m.setRole(UserRole.GRADUADO);
+        m.setCategoria(UserRole.GRADUADO);
         m.setPostoGrad("SGT");
         m.setOm("OM");
         m.setNomeCompleto("Nome Completo");

@@ -62,7 +62,7 @@ class AgendamentoControllerCreateFifteenDaysTests {
 
         Militar militar = new Militar();
         militar.setCpf("111");
-        militar.setRole(UserRole.GRADUADO);
+        militar.setCategoria(UserRole.GRADUADO);
         when(militarRepository.findByCpf("111")).thenReturn(Optional.of(militar));
 
         Horario horario = new Horario("segunda", "08:00", "GRADUADO", HorarioStatus.DISPONIVEL);

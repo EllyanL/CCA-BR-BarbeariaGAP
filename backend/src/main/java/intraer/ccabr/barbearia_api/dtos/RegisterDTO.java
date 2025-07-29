@@ -14,10 +14,10 @@ public class RegisterDTO {
     String nomeDeGuerra;
     String email;
     String om;
-    String categoria;
+    String quadro;
     String secao;
     String ramal;
     String cpf;
     String senha;
-    String role;
+    String categoria;
 }

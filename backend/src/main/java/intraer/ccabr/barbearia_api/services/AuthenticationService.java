@@ -70,7 +70,7 @@ public class AuthenticationService {
             Militar user = userOpt.get();
 
             // Verifica se o usuário existe, se a senha é válida e se ele é ADMIN
-            if (user != null && user.getRole() == UserRole.ADMIN && passwordEncoder.matches(data.senha(), user.getSenha())) {
+            if (user != null && user.getCategoria() == UserRole.ADMIN && passwordEncoder.matches(data.senha(), user.getSenha())) {
                 String token = tokenService.generateToken(user);
                 return ResponseEntity.ok(new LoginResponseDTO(token));
             }
@@ -173,7 +173,7 @@ public class AuthenticationService {
             role
     );
     user.setSenha(passwordEncoder.encode(data.getSenha()));
-    user.setCategoria(role.name()); // Restaurado
+    user.setQuadro(role.name()); // Restaurado
 
     return Optional.of(militarRepository.save(user));
 
@@ -195,8 +195,8 @@ public class AuthenticationService {
         if (existingOpt.isPresent()) {
             militar = existingOpt.get();
         } else {
-            UserRole role = externalData.getRole() != null
-                    ? UserRole.valueOf(externalData.getRole().toUpperCase())
+            UserRole role = externalData.getCategoria() != null
+                    ? UserRole.valueOf(externalData.getCategoria().toUpperCase())
                     : UserRole.USER;
             militar = new Militar(
                     externalData.getSaram(),
@@ -210,7 +210,7 @@ public class AuthenticationService {
             );
         }
 
-        militar.setCategoria(externalData.getCategoria());
+        militar.setQuadro(externalData.getQuadro());
         militar.setSecao(externalData.getSecao() != null ? externalData.getSecao() : "Não informado");
         militar.setRamal(externalData.getRamal() != null ? externalData.getRamal() : "Não informado");
         militar.setEmail(externalData.getEmail());
@@ -220,8 +220,8 @@ public class AuthenticationService {
         militar.setPostoGrad(externalData.getPostoGrad());
         militar.setSaram(externalData.getSaram());
 
-        if (externalData.getRole() != null) {
-            militar.setRole(UserRole.valueOf(externalData.getRole().toUpperCase()));
+        if (externalData.getCategoria() != null) {
+            militar.setCategoria(UserRole.valueOf(externalData.getCategoria().toUpperCase()));
         }
 
         if (rawPassword != null) {

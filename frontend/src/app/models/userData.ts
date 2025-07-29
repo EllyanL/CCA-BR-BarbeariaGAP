@@ -7,7 +7,7 @@ export interface UserData {
   email: string;
   om: string;
   cpf: string;
-  role?: string;
+  categoria?: string;
   secao: string; 
   ramal: string;
 }

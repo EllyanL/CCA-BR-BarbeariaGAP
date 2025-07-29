@@ -44,7 +44,7 @@ class LdapServiceAuthenticateRefreshTests {
         Militar existing = new Militar();
         existing.setCpf("123");
         existing.setNomeCompleto("Old");
-        existing.setRole(UserRole.GRADUADO);
+        existing.setCategoria(UserRole.GRADUADO);
 
         when(repository.findByCpf("123")).thenReturn(Optional.of(existing));
         when(repository.save(existing)).thenReturn(existing);
@@ -54,7 +54,7 @@ class LdapServiceAuthenticateRefreshTests {
         ldap.setCpf("123");
         ldap.setNomeCompleto("New Name");
         ldap.setPostoGrad("SGT");
-        ldap.setRole("GRADUADO");
+        ldap.setCategoria("GRADUADO");
 
         DirContext ctx = mock(DirContext.class);
         doReturn(ctx).when(service).createLdapContext(any());

@@ -41,7 +41,7 @@ class AuthenticationServiceSaveOrUpdateTests {
 
         Militar saved = new Militar();
         saved.setCpf("123");
-        saved.setRole(UserRole.USER);
+        saved.setCategoria(UserRole.USER);
         when(repository.save(any(Militar.class))).thenReturn(saved);
 
         UserDTO dto = new UserDTO();
@@ -52,8 +52,8 @@ class AuthenticationServiceSaveOrUpdateTests {
         dto.setNomeDeGuerra("G");
         dto.setEmail("e");
         dto.setOm("OM");
-        dto.setRole("USER");
-        dto.setCategoria("CAT");
+        dto.setCategoria("USER");
+        dto.setQuadro("CAT");
         dto.setSecao("SEC");
         dto.setRamal("RAM");
 
@@ -64,7 +64,7 @@ class AuthenticationServiceSaveOrUpdateTests {
         verify(repository).save(captor.capture());
         Militar toSave = captor.getValue();
         assertEquals("enc", toSave.getSenha());
-        assertEquals(UserRole.USER, toSave.getRole());
+        assertEquals(UserRole.USER, toSave.getCategoria());
         assertEquals("SEC", toSave.getSecao());
     }
 
@@ -73,7 +73,7 @@ class AuthenticationServiceSaveOrUpdateTests {
         Militar existing = new Militar();
         existing.setId(1L);
         existing.setCpf("123");
-        existing.setRole(UserRole.GRADUADO);
+        existing.setCategoria(UserRole.GRADUADO);
         existing.setNomeCompleto("Old");
         existing.setSenha("old");
 
@@ -90,7 +90,7 @@ class AuthenticationServiceSaveOrUpdateTests {
 
         assertSame(existing, result);
         assertEquals("Novo", existing.getNomeCompleto());
-        assertEquals(UserRole.GRADUADO, existing.getRole());
+        assertEquals(UserRole.GRADUADO, existing.getCategoria());
         assertEquals("enc", existing.getSenha());
     }
 }
