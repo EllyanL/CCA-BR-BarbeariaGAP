@@ -71,16 +71,16 @@ public class Militar implements UserDetails {
     @JsonProperty
     private String senha;
 
-    @Column(name = "categoria", length = 15)
+    @Column(name = "quadro", length = 15)
     @JsonProperty
-    private String categoria;
+    private String quadro;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", length = 10)
+    @Column(name = "categoria", length = 10)
     @JsonProperty
-    private UserRole role;
+    private UserRole categoria;
 
-    public Militar(String saram, String nomeCompleto, String postoGrad, String nomeDeGuerra, String email, String om, String cpf, UserRole role) {
+    public Militar(String saram, String nomeCompleto, String postoGrad, String nomeDeGuerra, String email, String om, String cpf, UserRole categoria) {
         this.saram = saram;
         this.nomeCompleto = nomeCompleto;
         this.postoGrad = postoGrad;
@@ -88,13 +88,13 @@ public class Militar implements UserDetails {
         this.email = email;
         this.om = om;
         this.cpf = cpf;
-        this.role = role;
+        this.categoria = categoria;
     }
 
     @Override
     @JsonProperty
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        switch (this.role) {
+        switch (this.categoria) {
             case ADMIN:
                 return List.of(
                         new SimpleGrantedAuthority("ROLE_ADMIN"),

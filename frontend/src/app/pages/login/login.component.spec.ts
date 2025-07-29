@@ -41,7 +41,7 @@ describe('LoginComponent', () => {
   });
 
   it('sanitizes CPF and calls login on valid input', () => {
-    authService.login.and.returnValue(of({ token: 't', role: 'GRADUADO' }));
+    authService.login.and.returnValue(of({ token: 't', categoria: 'GRADUADO' }));
     component.cpf = '123.456.789-10';
     component.senha = 'senha';
 
@@ -69,7 +69,7 @@ describe('LoginComponent', () => {
   });
 
   it('redirects OFICIAL users to /oficiais', () => {
-    authService.login.and.returnValue(of({ token: 't', role: 'OFICIAL', om: 'CCA-BR' }));
+    authService.login.and.returnValue(of({ token: 't', categoria: 'OFICIAL', om: 'CCA-BR' }));
     component.cpf = '1';
     component.senha = 's';
 
@@ -79,7 +79,7 @@ describe('LoginComponent', () => {
   });
 
   it('redirects GRADUADO users to /graduados', () => {
-    authService.login.and.returnValue(of({ token: 't', role: 'GRADUADO', om: 'CCA-BR' }));
+    authService.login.and.returnValue(of({ token: 't', categoria: 'GRADUADO', om: 'CCA-BR' }));
     component.cpf = '2';
     component.senha = 's';
 
@@ -89,7 +89,7 @@ describe('LoginComponent', () => {
   });
 
   it('redirects ADMIN users to /admin/dashboard', () => {
-    authService.login.and.returnValue(of({ token: 't', role: 'ADMIN', om: 'CCA-BR' }));
+    authService.login.and.returnValue(of({ token: 't', categoria: 'ADMIN', om: 'CCA-BR' }));
     component.cpf = '3';
     component.senha = 's';
 

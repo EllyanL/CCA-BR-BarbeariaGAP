@@ -64,9 +64,9 @@ public class MilitarController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    // Lista os militares de acordo com a categoria (oficial ou graduado)
-    @GetMapping("/categoria/{categoria}")
-    public List<Militar> getMilitaresByCategoria(@PathVariable String categoria) {
-        return militarService.findByCategoria(categoria);
+    // Lista os militares de acordo com o quadro (ex: QSS)
+    @GetMapping("/quadro/{quadro}")
+    public List<Militar> getMilitaresByQuadro(@PathVariable String quadro) {
+        return militarService.findByQuadro(quadro);
     }
 }

@@ -38,7 +38,7 @@ class AuthenticationServiceAuthAdminTests {
         Militar admin = new Militar();
         admin.setCpf("000");
         admin.setSenha("enc");
-        admin.setRole(UserRole.ADMIN);
+        admin.setCategoria(UserRole.ADMIN);
         when(repository.findByCpf("000")).thenReturn(Optional.of(admin));
         when(passwordEncoder.matches("senha", "enc")).thenReturn(true);
         when(tokenService.generateToken(admin)).thenReturn("tok");

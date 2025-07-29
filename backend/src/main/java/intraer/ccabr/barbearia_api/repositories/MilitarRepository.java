@@ -8,7 +8,7 @@ import java.util.Optional;
 
 /**
  * Repositório JPA para operações de CRUD na entidade Militar.
- * Fornece métodos personalizados para busca por SARAM, CPF e categoria.
+ * Fornece métodos personalizados para busca por SARAM, CPF e quadro.
  */
 public interface MilitarRepository extends JpaRepository<Militar, Long> {
 
@@ -30,11 +30,11 @@ public interface MilitarRepository extends JpaRepository<Militar, Long> {
     Optional<Militar> findByCpf(String cpf);
 
     /**
-     * Busca uma lista de militares pela categoria (ignorando maiúsculas/minúsculas).
+     * Busca uma lista de militares pelo quadro (ignorando maiúsculas/minúsculas).
      *
-     * @param categoria A categoria dos militares (ex.: "QSS").
+     * @param quadro O quadro dos militares (ex.: "QSS").
      * @return Lista de militares encontrados.
      */
-    @Query("SELECT m FROM Militar m WHERE LOWER(m.categoria) = LOWER(:categoria)")
-    List<Militar> findByCategoria(String categoria);
+    @Query("SELECT m FROM Militar m WHERE LOWER(m.quadro) = LOWER(:quadro)")
+    List<Militar> findByQuadro(String quadro);
 }

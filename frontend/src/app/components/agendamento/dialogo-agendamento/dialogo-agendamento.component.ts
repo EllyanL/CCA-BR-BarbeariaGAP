@@ -142,11 +142,11 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
         nomeDeGuerra: '',
         email: '',
         om: '',
-        categoria: '',
+        quadro: '',
         secao: '',
         ramal: '',
         cpf: '',
-        role: ''
+        categoria: ''
       };
       errorMessage: string = "";
 
@@ -187,8 +187,8 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
             this.militar.ramal = user.ramal || '';
             
             // 🚨 CORREÇÃO AQUI
-            this.militar.role = (user.role && user.role.trim() !== '') 
-              ? user.role.toUpperCase() 
+            this.militar.categoria = (user.categoria && user.categoria.trim() !== '')
+              ? user.categoria.toUpperCase()
               : this.data.categoria || 'GRADUADO';
           }
         });

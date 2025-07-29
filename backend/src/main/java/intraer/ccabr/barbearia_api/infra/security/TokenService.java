@@ -22,13 +22,13 @@ public class TokenService {
     public String generateToken(Militar user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            logger.debug("ROLE QUE VEM NO AGENDAMENTO >>>>>>>>>>>>>>>>>>>>>{}", user.getRole().name());
+            logger.debug("ROLE QUE VEM NO AGENDAMENTO >>>>>>>>>>>>>>>>>>>>>{}", user.getCategoria().name());
             return JWT.create()
                     .withIssuer("barbearia-api")
                     .withSubject(user.getCpf())
                     .withClaim("id", user.getId())
                     .withClaim("saram", user.getSaram())
-                    .withClaim("role", user.getRole().name())
+                    .withClaim("role", user.getCategoria().name())
                     .withClaim("postoGrad", user.getPostoGrad()) // 👈 Adicionado
                     .withClaim("om", user.getOm())               // 👈 Adicionado
                     .withClaim("nomeCompleto", user.getNomeCompleto()) // 👈 Novos claims

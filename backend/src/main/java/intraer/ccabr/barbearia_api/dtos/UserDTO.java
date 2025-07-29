@@ -22,10 +22,10 @@ public class UserDTO {
     private String email; // Email do militar
     private String om; // Organização militar (OM)
     private String cpf; // CPF do militar
-    private String categoria; // Restaurado
+    private String quadro; // Restaurado
     private String secao; // Seção do militar (ex.: SAI)
     private String ramal; // Ramal telefônico do militar
-    private String role; // Papel do militar (ex.: USER, GRADUADO)
+    private String categoria; // Papel do militar (ex.: USER, GRADUADO)
 
     /**
      * Construtor com os campos básicos de um usuário, utilizado para mapear dados do LDAP ou banco local.

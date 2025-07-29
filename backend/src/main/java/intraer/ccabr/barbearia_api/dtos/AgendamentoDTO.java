@@ -44,10 +44,10 @@ public class AgendamentoDTO {
                 m.getOm(),
                 m.getCpf()
             );
-            this.militar.setCategoria(m.getCategoria());
+            this.militar.setCategoria(m.getCategoria().name());
+            this.militar.setQuadro(m.getQuadro());
             this.militar.setSecao(m.getSecao());
             this.militar.setRamal(m.getRamal());
-            this.militar.setRole(m.getRole().toString());
             this.usuarioSaram = m.getSaram();
         }
     }

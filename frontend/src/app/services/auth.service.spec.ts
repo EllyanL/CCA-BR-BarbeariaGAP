@@ -29,7 +29,7 @@ describe('AuthService token decoding', () => {
     const payload = {
       sub: '123',
       saram: '456',
-      role: 'GRADUADO',
+      categoria: 'GRADUADO',
       nomeCompleto: 'Nome',
       email: 'n@example.com',
       om: 'OM',
@@ -43,7 +43,7 @@ describe('AuthService token decoding', () => {
     expect(militar).toEqual(jasmine.objectContaining({
       cpf: payload.sub,
       saram: payload.saram,
-      role: payload.role
+      categoria: payload.categoria
     }));
 
     localStorage.removeItem('barbearia-token');
@@ -54,7 +54,7 @@ describe('AuthService token decoding', () => {
       sub: '123',
       id: 99,
       saram: '456',
-      role: 'GRADUADO'
+      categoria: 'GRADUADO'
     };
     const token = createToken(payload);
     sessionStorage.setItem('barbearia-token', token);
@@ -70,7 +70,7 @@ describe('AuthService token decoding', () => {
     const payload = {
       sub: '123',
       saram: '456',
-      role: 'GRADUADO',
+      categoria: 'GRADUADO',
       nomeCompleto: 'Nome Teste',
       email: 'email@test.com'
     };

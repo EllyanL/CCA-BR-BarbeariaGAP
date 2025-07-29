@@ -60,7 +60,7 @@ export class LoginComponent {
   }
 
   private redirectUser(response: LoginResponse): void {
-    const role = response.role?.toUpperCase() || '';
+    const role = response.categoria?.toUpperCase() || '';
     const om = response.om || '';
 
     // Validação da Organização Militar

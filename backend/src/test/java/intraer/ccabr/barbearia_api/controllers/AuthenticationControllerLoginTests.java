@@ -53,7 +53,7 @@ class AuthenticationControllerLoginTests {
         Militar admin = new Militar();
         admin.setCpf("00000000000");
         admin.setSenha("enc");
-        admin.setRole(UserRole.ADMIN);
+        admin.setCategoria(UserRole.ADMIN);
         when(militarRepository.findByCpf("00000000000")).thenReturn(Optional.of(admin));
         when(passwordEncoder.matches("senha", "enc")).thenReturn(true);
         when(tokenService.generateToken(admin)).thenReturn("tok");

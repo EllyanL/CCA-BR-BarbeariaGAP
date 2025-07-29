@@ -94,7 +94,7 @@ import { UserService } from 'src/app/services/user.service';
       this.saramUsuario = this.usuarioLogado?.saram || '';
       this.cdr.detectChanges();
       const usuario = this.usuarioLogado;
-      this.isAdmin = usuario?.role?.toUpperCase() === 'ADMIN';
+      this.isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
       this.serverTimeService.getServerTime().subscribe({
         next: (res) => {
           this.timeOffsetMs = res.timestamp - Date.now();
@@ -360,7 +360,7 @@ import { UserService } from 'src/app/services/user.service';
       const usuario = this.authService.getUsuarioAutenticado();
       this.logger.log('Usuário autenticado:', usuario); // 👈 Adicione aqui
 
-      const isAdmin = usuario?.role?.toUpperCase() === 'ADMIN';
+      const isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
       if (!isAdmin) {
         this.snackBar.open(
           'Somente administradores podem disponibilizar horários. Solicite acesso ao administrador.',
@@ -678,7 +678,7 @@ import { UserService } from 'src/app/services/user.service';
         return;
       }
 
-      const isAdmin = militarAutenticado.role?.toUpperCase() === 'ADMIN';
+      const isAdmin = militarAutenticado.categoria?.toUpperCase() === 'ADMIN';
       if (isAdmin) {
         this.indisponibilizarHorario(dia, horario, this.categoriaSelecionada);
       } else {

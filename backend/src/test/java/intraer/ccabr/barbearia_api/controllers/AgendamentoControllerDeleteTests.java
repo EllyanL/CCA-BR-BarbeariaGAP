@@ -57,7 +57,7 @@ class AgendamentoControllerDeleteTests {
     private Agendamento buildAgendamento(LocalDateTime dateTime, String cpf) {
         Militar militar = new Militar();
         militar.setCpf(cpf);
-        militar.setRole(UserRole.GRADUADO);
+        militar.setCategoria(UserRole.GRADUADO);
         Agendamento ag = Agendamento.builder()
                 .id(1L)
                 .data(dateTime.toLocalDate())

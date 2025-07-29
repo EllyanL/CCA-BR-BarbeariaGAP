@@ -11,7 +11,7 @@ import lombok.Setter;
 public class LoginResponseDTO {
     private Long id;
     private String token;
-    private String role;
+    private String categoria;
     private String postoGrad;
     private String om;
     private String nomeDeGuerra;
@@ -39,13 +39,13 @@ public class LoginResponseDTO {
      * Construtor que inicializa o token e as informações do usuário.
      *
      * @param token O token gerado para o usuário.
-     * @param role O papel do usuário (ex.: USER, OFICIAL, GRADUADO, ADMIN).
+     * @param categoria A categoria do usuário (ex.: USER, OFICIAL, GRADUADO, ADMIN).
      * @param postoGrad O posto/graduação do militar.
      * @param om A organização militar do usuário.
      */
-    public LoginResponseDTO(String token, String role, String postoGrad, String om) {
+    public LoginResponseDTO(String token, String categoria, String postoGrad, String om) {
         this.token = token;
-        this.role = role;
+        this.categoria = categoria;
         this.postoGrad = postoGrad;
         this.om = om;
     }
@@ -54,14 +54,14 @@ public class LoginResponseDTO {
      * Construtor que inicializa o token e todas as informações do usuário, incluindo nomeDeGuerra.
      *
      * @param token O token gerado para o usuário.
-     * @param role O papel do usuário (ex.: USER, OFICIAL, GRADUADO, ADMIN).
+     * @param categoria A categoria do usuário (ex.: USER, OFICIAL, GRADUADO, ADMIN).
      * @param postoGrad O posto/graduação do militar.
      * @param om A organização militar do usuário.
      * @param nomeDeGuerra O nome de guerra do usuário.
      */
-    public LoginResponseDTO(String token, String role, String postoGrad, String om, String nomeDeGuerra) {
+    public LoginResponseDTO(String token, String categoria, String postoGrad, String om, String nomeDeGuerra) {
         this.token = token;
-        this.role = role;
+        this.categoria = categoria;
         this.postoGrad = postoGrad;
         this.om = om;
         this.nomeDeGuerra = nomeDeGuerra;
@@ -71,7 +71,7 @@ public class LoginResponseDTO {
      * Construtor que inicializa todas as informações do usuário, incluindo campos adicionais.
      *
      * @param token O token gerado para o usuário.
-     * @param role O papel do usuário (ex.: USER, OFICIAL, GRADUADO, ADMIN).
+     * @param categoria A categoria do usuário (ex.: USER, OFICIAL, GRADUADO, ADMIN).
      * @param postoGrad O posto/graduação do militar.
      * @param om A organização militar do usuário.
      * @param nomeDeGuerra O nome de guerra do usuário.
@@ -81,11 +81,11 @@ public class LoginResponseDTO {
      * @param secao A seção do militar.
      * @param ramal O ramal do militar.
      */
-    public LoginResponseDTO(Long id, String token, String role, String postoGrad, String om, String nomeDeGuerra,
+    public LoginResponseDTO(Long id, String token, String categoria, String postoGrad, String om, String nomeDeGuerra,
                             String saram, String nomeCompleto, String email, String secao, String ramal) {
         this.id = id;
         this.token = token;
-        this.role = role;
+        this.categoria = categoria;
         this.postoGrad = postoGrad;
         this.om = om;
         this.nomeDeGuerra = nomeDeGuerra;
