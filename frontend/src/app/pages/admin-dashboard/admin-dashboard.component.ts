@@ -24,7 +24,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Agendamento>([]);
   searchTerm = '';
   weekly: WeeklyCount[] = [];
-  displayedColumns = ['data', 'hora', 'saram', 'militar', 'categoria', 'actions'];
+  displayedColumns = ['data', 'hora', 'saram', 'postoGrad', 'nomeDeGuerra', 'categoria', 'actions'];
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
@@ -109,17 +109,21 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
       this.searchTerm = target.value.trim().toLowerCase();
     }
 
+    const sanitize = (value?: string | null) =>
+      (value ?? '').toLowerCase().trim().replace(/\s+/g, ' ');
+
     this.dataSource.filterPredicate = (ag: Agendamento, filter: string): boolean => {
       if (!filter) { return true; }
-      const f = filter.trim().toLowerCase();
+      const f = sanitize(filter);
 
-      const nome = (ag.militar?.nomeCompleto || '').toLowerCase();
-      const saram = (ag.usuarioSaram || ag.militar?.saram || '').toLowerCase();
-      const categoria = (ag.categoria || ag.militar?.categoria || '').toLowerCase();
-      const email = (ag.militar?.email || '').toLowerCase();
-      const datas = this.normalizeDateFormats(ag.data).map(d => d.toLowerCase());
+      const hora = sanitize(this.formatHora(ag.hora));
+      const saram = sanitize(ag.militar?.saram);
+      const postoGrad = sanitize(ag.militar?.postoGrad);
+      const nomeDeGuerra = sanitize(ag.militar?.nomeDeGuerra);
+      const categoria = sanitize(ag.militar?.categoria || ag.categoria);
+      const datas = this.normalizeDateFormats(ag.data).map(d => sanitize(d));
 
-      return [nome, saram, categoria, email, ...datas].some(v => v.includes(f));
+      return [hora, saram, postoGrad, nomeDeGuerra, categoria, ...datas].some(v => v.includes(f));
     };
 
     this.dataSource.filter = this.searchTerm;
