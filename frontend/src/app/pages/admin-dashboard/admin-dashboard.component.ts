@@ -168,19 +168,21 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-  formatNome(valor?: string | null): string {
-    if (!valor) {
-      return 'Não informado';
-    }
-    return valor
-      .toLowerCase()
-      .split(' ')
-      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-      .join(' ');
+  formatarCategoria(categoria: string | null | undefined): string {
+    if (!categoria) return '';
+    const cat = categoria.toUpperCase();
+    return cat === 'OFICIAL' ? 'Oficial'
+         : cat === 'GRADUADO' ? 'Graduado'
+         : categoria;
   }
 
-  formatCategoria(valor?: string | null): string {
-    return this.formatNome(valor);
+  formatarNome(nome: string | null | undefined): string {
+    if (!nome) return '';
+    return nome
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.substring(1))
+      .join(' ');
   }
 
   formatHora(hora: string): string {
