@@ -4,14 +4,14 @@
     Tem certeza que deseja desmarcar este horário?
   </p>
   <p class="confirm-dialog__info">
-    Dia: <b>{{ dados.dia | uppercase }}</b>
+    <strong>Dia:</strong> <strong>{{ dados.dia | uppercase }}</strong>
   </p>
   <p class="confirm-dialog__info">
-    Hora: <b>{{ dados.hora.substring(0,5) }}</b>
+    <strong>Hora:</strong> <strong>{{ dados.hora.substring(0,5) }}</strong>
   </p>
   <div *ngIf="dados.militar as m">
     <p class="confirm-dialog__info"><strong>SARAM:</strong> {{ m.saram }}</p>
-    <p class="confirm-dialog__info"><strong>Nome:</strong> {{ m.nomeCompleto }}</p>
+    <p class="confirm-dialog__info"><strong>Agendado por:</strong> {{ formatarNomeCompleto(m.postoGrad, m.nomeDeGuerra) }}</p>
     <p class="confirm-dialog__info"><strong>Email:</strong> {{ m.email }}</p>
     <p class="confirm-dialog__info"><strong>Seção:</strong> {{ m.secao }}</p>
     <p class="confirm-dialog__info"><strong>Ramal:</strong> {{ m.ramal }}</p>

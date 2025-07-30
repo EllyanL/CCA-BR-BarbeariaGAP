@@ -1,9 +1,11 @@
 .confirm-dialog__title {
   text-align: center;
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
 .confirm-dialog__content {
-  text-align: center;
+  text-align: left;
 }
 
 .confirm-dialog__warning-text {
@@ -13,7 +15,7 @@
 
 .confirm-dialog__actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
 }
 
