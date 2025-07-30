@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { DashboardService, DashboardStats, WeeklyCount } from 'src/app/services/dashboard.service';
 
 import { Agendamento } from 'src/app/models/agendamento';
@@ -18,7 +18,7 @@ import { Router } from '@angular/router';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.css']
 })
-export class AdminDashboardComponent implements OnInit, AfterViewInit {
+export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   stats?: DashboardStats;
   recent: Agendamento[] = [];
   dataSource = new MatTableDataSource<Agendamento>([]);
@@ -54,6 +54,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit {
     if (this.sort) {
       this.dataSource.sort = this.sort;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.weeklyChartInstance?.destroy();
   }
 
   loadStats(): void {
