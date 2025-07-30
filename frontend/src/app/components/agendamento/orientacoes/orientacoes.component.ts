@@ -53,6 +53,9 @@ import { Component } from '@angular/core';
 
     .orientacoes-card__title{
       margin-top: 10px;
+      color: var(--text-primary, #000);
+      font-weight: 600;
+      font-size: 1.25rem;
     }
 
     .orientacoes-card__list-item {
