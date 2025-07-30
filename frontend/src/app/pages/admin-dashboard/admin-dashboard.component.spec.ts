@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DatePipe } from '@angular/common';
 
 describe('AdminDashboardComponent', () => {
   let component: AdminDashboardComponent;
@@ -33,7 +34,8 @@ describe('AdminDashboardComponent', () => {
         { provide: AuthService, useValue: { logout: () => {} } },
         { provide: Router, useValue: { navigate: () => Promise.resolve(true) } },
         { provide: AgendamentoService, useValue: { deleteAgendamento: () => of(void 0) } },
-        { provide: MatSnackBar, useValue: { open: () => {} } }
+        { provide: MatSnackBar, useValue: { open: () => {} } },
+        DatePipe
       ]
     });
     fixture = TestBed.createComponent(AdminDashboardComponent);
