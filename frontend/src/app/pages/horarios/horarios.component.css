@@ -2,7 +2,7 @@
 .horarios-container {
   padding: 1.25rem; /* 20px */
   height: 100%;
-  margin-bottom: 4rem;
+  padding-bottom: 4rem;
 }
 
 /* === Cartão de horários === */
