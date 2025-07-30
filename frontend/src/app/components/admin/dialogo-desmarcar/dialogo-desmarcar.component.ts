@@ -18,6 +18,14 @@ export class DialogoDesmarcarComponent {
     private snackBar: MatSnackBar
   ) {}
 
+  formatarNomeCompleto(posto: string, nomeGuerra: string): string {
+    return `${posto} ${nomeGuerra}`
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
   desmarcar(): void {
     this.agendamentoService.deleteAgendamento(this.dados.id).subscribe({
       next: () => {
