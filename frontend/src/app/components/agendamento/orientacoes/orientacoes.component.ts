@@ -52,7 +52,7 @@ import { Component } from '@angular/core';
     }
 
     .orientacoes-card__title{
-      margin-top: 10px;
+      margin-top: 0;
       color: var(--text-primary, #000);
       font-weight: 600;
       font-size: 1.25rem;
@@ -62,7 +62,11 @@ import { Component } from '@angular/core';
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-bottom:10px;
+      margin-bottom: .5rem;
+    }
+
+    .orientacoes-card__list-item:last-child {
+      margin-bottom: 0;
     }
 
     .orientacoes-card__list-item mat-icon {
