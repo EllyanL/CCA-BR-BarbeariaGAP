@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { DashboardService, DashboardStats, WeeklyCount } from 'src/app/services/dashboard.service';
 
 import { Agendamento } from 'src/app/models/agendamento';
@@ -16,7 +17,8 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.css']
+  styleUrls: ['./admin-dashboard.component.css'],
+  providers: [DatePipe]
 })
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   stats?: DashboardStats;
@@ -37,7 +39,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     private router: Router,
     private agendamentoService: AgendamentoService,
     private snackBar: MatSnackBar,
-    private horariosService: HorariosService
+    private horariosService: HorariosService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -138,12 +141,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   private normalizeDateFormats(dateStr?: string): string[] {
     if (!dateStr) { return []; }
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) { return []; }
-    const dd = String(date.getDate()).padStart(2, '0');
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const yyyy = String(date.getFullYear());
-    return [`${dd}/${mm}/${yyyy}`, `${yyyy}-${mm}-${dd}`];
+    const formatted = this.datePipe.transform(dateStr, 'dd/MM/yyyy');
+    if (!formatted) { return []; }
+    return [formatted];
   }
   
 
