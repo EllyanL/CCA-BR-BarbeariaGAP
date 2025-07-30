@@ -59,7 +59,14 @@ import { Component } from '@angular/core';
     }
 
     .orientacoes-card__list-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom:10px;
+    }
+
+    .orientacoes-card__list-item mat-icon {
+      vertical-align: middle;
     }
 
     .orientacoes-card__header-icon mat-icon {
