@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, Input } from '@angular/core';
+import { Component, Inject, OnInit, Input, OnDestroy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
   import { Militar } from 'src/app/models/militar';
@@ -8,6 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   import { Agendamento } from 'src/app/models/agendamento'; // Adicione a interface/modelo
 import { LoggingService } from 'src/app/services/logging.service';
 import { ErrorMessagesService } from 'src/app/services/error-messages.service';
+import { Subscription } from 'rxjs';
 
     @Component({
       selector: 'app-dialogo-agendamento',
@@ -166,10 +167,11 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
         }
       `]
     })
-    export class DialogoAgendamentoComponent implements OnInit {
+    export class DialogoAgendamentoComponent implements OnInit, OnDestroy {
       @Input() opcoesPostoGrad?: string[] = [];
 
       userData: UserData[] = [];
+      private userDataSubscription?: Subscription;
       militar: Militar = {
         saram: '',
         nomeCompleto: '',
@@ -206,7 +208,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
       }
 
       setUserData() {
-        this.userService.userData$.subscribe(data => {
+        this.userDataSubscription = this.userService.userData$.subscribe(data => {
           this.logger.log('Dados recebidos do UserService:', data);
           this.userData = data;
           if (this.userData.length > 0) {
@@ -271,5 +273,9 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
           .split(' ')
           .map(p => p.charAt(0).toUpperCase() + p.slice(1))
           .join(' ');
+      }
+
+      ngOnDestroy(): void {
+        this.userDataSubscription?.unsubscribe();
       }
     }
