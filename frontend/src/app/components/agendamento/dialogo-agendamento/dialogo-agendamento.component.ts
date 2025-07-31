@@ -255,7 +255,17 @@ import { Subscription } from 'rxjs';
           },
           error => {
             this.logger.error('Erro ao criar agendamento:', error);
-            const message = error.error?.message || this.errorMessages.AGENDAMENTO_CREATE_ERROR;
+            const backendMsg: string | undefined = error.error?.mensagem || error.error?.message;
+            let message = this.errorMessages.AGENDAMENTO_CREATE_ERROR;
+
+            if (backendMsg) {
+              if (backendMsg.toLowerCase().includes('15 dias')) {
+                message = this.errorMessages.AGENDAMENTO_INTERVAL_ERROR;
+              } else {
+                message = backendMsg;
+              }
+            }
+
             this.errorMessage = message;
             this.snackBar.open(message, 'OK', { duration: 5000 });
           }
