@@ -21,4 +21,14 @@
 
 .confirm-dialog__button {
   min-width: 80px;
+ }
+
+@media (max-width: 600px) {
+  :host ::ng-deep .mat-dialog-container {
+    max-width: 95vw !important;
+  }
+  .confirm-dialog__title,
+  .confirm-dialog__content {
+    word-wrap: break-word;
+  }
 }
