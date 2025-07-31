@@ -10,9 +10,9 @@ import { LoggingService } from 'src/app/services/logging.service';
   template: `
     <h1 mat-dialog-title>Detalhes do Agendamento</h1>
     <div mat-dialog-content>
-      <p>Data: <b>{{ agendamento.data }}</b></p>
-      <p>Hora: <b>{{ agendamento.hora }}</b></p>
-      <p>Dia: <b>{{ agendamento.diaSemana | uppercase }}</b></p>
+      <p><strong>Data:</strong> {{ agendamento.data | date:'dd/MM/yyyy' }}</p>
+      <p><strong>Hora:</strong> {{ agendamento.hora | slice:0:5 }}</p>
+      <p><strong>Dia:</strong> {{ agendamento.diaSemana | titlecase }}</p>
       <div *ngIf="agendamento.militar">
         <p><strong>SARAM:</strong> {{ agendamento.militar.saram }}</p>
         <p><strong>Nome:</strong> {{ agendamento.militar.nomeCompleto }}</p>
