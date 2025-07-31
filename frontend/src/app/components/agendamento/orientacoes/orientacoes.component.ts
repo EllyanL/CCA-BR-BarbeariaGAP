@@ -5,12 +5,8 @@ import { Component } from '@angular/core';
   template: `
   <mat-card class="orientacoes-card">
   <mat-card-header class="orientacoes-card__header">
-    <div mat-card-avatar class="orientacoes-card__header-icon">
-      <mat-icon>info</mat-icon>
-    </div>
-    <mat-card-title class="orientacoes-card__title"
-      >ORIENTAÇÕES DO GAP-BR</mat-card-title
-    >
+    <mat-icon color="primary" class="mat-card-avatar">info_outline</mat-icon>
+    <mat-card-title class="orientacoes-card__title">ORIENTAÇÕES DO GAP-BR</mat-card-title>
   </mat-card-header>
   <mat-card-content class="orientacoes-card__content">
     <mat-list class="orientacoes-card__list">
@@ -45,22 +41,26 @@ import { Component } from '@angular/core';
   styles: [`
     .orientacoes-card {
       width: 100%;
-      max-width: 90vw;
-      padding: 16px 24px;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
+      max-width: 900px;
+      padding: 24px;
       white-space: normal;
-    }
-    @media (min-width: 600px) {
-      .orientacoes-card { max-width: 600px; }
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
-    .orientacoes-card__header-icon {
-      background-color: #3f51b5;
-      padding: 5px;
+    .orientacoes-card__header {
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+    }
+
+    .orientacoes-card__header .mat-card-avatar {
+      margin-right: 0;
+    }
+
+    @media (max-width: 600px) {
+      .orientacoes-card { max-width: 95vw; }
     }
 
     .orientacoes-card__title{
@@ -77,6 +77,15 @@ import { Component } from '@angular/core';
       margin-bottom: .5rem;
     }
 
+    mat-list-item {
+      white-space: normal !important;
+      align-items: center;
+    }
+
+    .mat-list-text {
+      white-space: normal !important;
+    }
+
     .orientacoes-card__list-item:last-child {
       margin-bottom: 0;
     }
@@ -85,9 +94,6 @@ import { Component } from '@angular/core';
       vertical-align: middle;
     }
 
-    .orientacoes-card__header-icon mat-icon {
-      color: white;
-    }
   `]
 })
 export class OrientacoesComponent { }
