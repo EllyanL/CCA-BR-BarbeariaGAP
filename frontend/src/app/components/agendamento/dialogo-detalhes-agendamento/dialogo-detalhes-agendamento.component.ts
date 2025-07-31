@@ -19,8 +19,8 @@ import { LoggingService } from 'src/app/services/logging.service';
         <p><strong>OM:</strong> {{ agendamento.militar.om }}</p>
       </div>
     </div>
-    <div mat-dialog-actions>
-      <button mat-button (click)="fechar()">OK</button>
+    <div mat-dialog-actions class="detalhes-dialog__actions">
+      <button mat-button (click)="fechar()">Cancelar</button>
       <button *ngIf="podeDesmarcar" mat-button color="warn" (click)="desmarcar()">
         DESMARCAR
       </button>
@@ -30,6 +30,12 @@ import { LoggingService } from 'src/app/services/logging.service';
     .detalhes-dialog__title {
       font-size: 1.5rem;
       text-align: center;
+    }
+
+    .detalhes-dialog__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
     }
   `]
 })
