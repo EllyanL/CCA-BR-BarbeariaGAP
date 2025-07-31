@@ -34,7 +34,7 @@
                     [@agendarAnimacao]
                     [disabled]="desabilitarTodosOsBotoes()"
                   >
-                    {{ status.texto.toUpperCase() }}
+                    {{ formatarStatus(status.texto) }}
                   </button>
                 </div>
 
@@ -47,7 +47,7 @@
                     [attr.title]="getTextTooltip(getAgendamentoParaDiaHora(dia, hora))"
                     [@cancelarAnimacao]
                   >
-                    {{ status.texto.toUpperCase() }}
+                    {{ formatarStatus(status.texto) }}
                   </button>
                 </div>
 
@@ -58,14 +58,14 @@
                     disabled
                     title="Horário já agendado por outro usuário"
                   >
-                    {{ status.texto.toUpperCase() }}
+                    {{ formatarStatus(status.texto) }}
                   </button>
                 </div>
 
                 <!-- Indisponivel -->
                 <div *ngSwitchDefault class="tabela-horario-indisponivel" [attr.title]="feedbackMessageTitle || 'Este horário não está disponivel nesta semana'">
                   <button mat-raised-button disabled class="tabela-botao-indisponivel">
-                    {{ status.texto }}
+                    {{ formatarStatus(status.texto) }}
                   </button>
                 </div>
               </ng-container>
