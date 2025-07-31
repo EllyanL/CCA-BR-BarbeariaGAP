@@ -45,7 +45,7 @@ import { Component } from '@angular/core';
   styles: [`
     .orientacoes-card {
       width: 100%;
-      max-width: 600px;
+      max-width: 900px;
       padding: 24px;
       white-space: normal;
       word-wrap: break-word;
