@@ -45,14 +45,15 @@ import { Component } from '@angular/core';
   styles: [`
     .orientacoes-card {
       width: 100%;
-      max-width: 90vw;
-      padding: 16px 24px;
-      overflow-wrap: break-word;
-      word-wrap: break-word;
+      max-width: 600px;
+      padding: 24px;
       white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
-    @media (min-width: 600px) {
-      .orientacoes-card { max-width: 600px; }
+
+    @media (max-width: 600px) {
+      .orientacoes-card { max-width: 95vw; }
     }
 
     .orientacoes-card__header-icon {
@@ -72,9 +73,22 @@ import { Component } from '@angular/core';
 
     .orientacoes-card__list-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 0.5rem;
       margin-bottom: .5rem;
+    }
+
+    mat-list-item {
+      white-space: normal !important;
+      align-items: flex-start;
+    }
+
+    .mat-list-text {
+      white-space: normal !important;
+    }
+
+    mat-icon {
+      margin-right: 8px;
     }
 
     .orientacoes-card__list-item:last-child {
