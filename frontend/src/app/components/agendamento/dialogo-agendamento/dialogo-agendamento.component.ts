@@ -17,7 +17,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
       <div class="agendar-corte-dialog__date-time">
         <span class="agendar-corte-dialog__date">
-          {{ data.data | date:'EEEE, d \'de\' MMMM \'de\' y':'pt-BR' }}
+        {{ data.data | date:"EEEE, d 'de' MMMM 'de' y":"pt-BR" }}
         </span>
         <span class="agendar-corte-dialog__decorator"></span>
         <span class="agendar-corte-dialog__time"><b>Hora: {{ data.hora }}</b></span>

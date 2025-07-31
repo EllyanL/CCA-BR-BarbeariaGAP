@@ -257,7 +257,7 @@ public class AgendamentoService {
         // 1. Agendamento só é permitido a partir de segunda às 09:10
         LocalDate hoje = LocalDate.now();
         LocalDate segundaDaSemana = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, LocalTime.of(9, 10));
+        LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, LocalTime.of(8, 10));
 
         if (LocalDateTime.now().isBefore(inicioDaSemana)) {
             throw new IllegalArgumentException("Agendamentos só são permitidos a partir de segunda às 09:10.");
@@ -266,7 +266,7 @@ public class AgendamentoService {
         // 2. Horários válidos somente de segunda a sexta entre 09:10 e 18:10
         DayOfWeek dia = agendamento.getData().getDayOfWeek();
         LocalTime hora = agendamento.getHora();
-        LocalTime inicio = LocalTime.of(9, 00);
+        LocalTime inicio = LocalTime.of(8, 00);
         LocalTime fim = LocalTime.of(18, 10);
 
         if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY || hora.isBefore(inicio) || hora.isAfter(fim)) {
