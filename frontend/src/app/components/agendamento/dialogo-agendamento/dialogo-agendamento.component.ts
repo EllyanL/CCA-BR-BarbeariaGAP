@@ -15,10 +15,13 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
     <h1 mat-dialog-title class="agendar-corte-dialog__title">Agendar Corte</h1>
     <div mat-dialog-content class="agendar-corte-dialog__content">
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
-      <p class="agendar-corte-dialog__info">
-        Data: <b>{{ data.diaSemana | uppercase }} </b>
-      </p>
-      <p class="agendar-corte-dialog__info">Hora: <b>{{ data.hora }}</b></p>
+      <div class="agendar-corte-dialog__date-time">
+        <span class="agendar-corte-dialog__date">
+          {{ data.data | date:"EEEE, d 'de' MMMM 'de' y":"pt-BR" }}
+        </span>
+        <span class="agendar-corte-dialog__decorator"></span>
+        <span class="agendar-corte-dialog__time"><b>Hora: {{ data.hora }}</b></span>
+      </div>
       <!-- SARAM -->
       <mat-form-field class="agendar-corte-dialog__form-field">
         <mat-label>SARAM</mat-label>
@@ -35,13 +38,14 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
         <mat-label>Nome Completo</mat-label>
         <input
           matInput
+          class="no-transform"
           [(ngModel)]="militar.nomeCompleto"
           maxlength="50"
           [disabled]="true"
         />
       </mat-form-field>
       <!-- POSTO/GRADUAÇÃO -->
-      <mat-form-field class="agendar-corte-dialog__form-field">
+      <mat-form-field class="agendar-corte-dialog__form-field no-overflow">
         <mat-label>Graduação / Posto</mat-label>
         <mat-select [(ngModel)]="militar.postoGrad" [disabled]="true">
           <mat-option *ngFor="let opcao of opcoesPostoGrad" [value]="opcao">
@@ -64,6 +68,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
         <mat-label>Email</mat-label>
         <input
           matInput
+          class="no-transform"
           [(ngModel)]="militar.email"
           maxlength="50"
           [disabled]="true"
@@ -115,12 +120,42 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
     </div>
       `,
       styles: [`
+        .agendar-corte-dialog__title {
+          text-align: center;
+          font-size: 1.75rem;
+        }
+
+        .agendar-corte-dialog__date-time {
+          display: flex;
+          align-items: center;
+        }
+
+        .agendar-corte-dialog__decorator {
+          flex: 1;
+          border-bottom: 1px dotted rgba(0, 0, 0, 0.3);
+          margin: 0 8px;
+        }
+
+        .agendar-corte-dialog__actions {
+          display: flex;
+          justify-content: space-between;
+        }
+
         .agendar-corte-dialog__form-field {
           width: 100%;
         }
 
         .agendar-corte-dialog__form-field input {
           text-transform: uppercase;
+        }
+
+        .no-transform {
+          text-transform: none !important;
+        }
+
+        .no-overflow .mat-select-value-text {
+          overflow: visible;
+          white-space: normal;
         }
 
         .error-message {
@@ -177,7 +212,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
           if (this.userData.length > 0) {
             const user = this.userData[0];
             this.militar.saram = user.saram || '';
-            this.militar.nomeCompleto = user.nomeCompleto || '';
+            this.militar.nomeCompleto = this.formatarNome(user.nomeCompleto || '');
             this.militar.postoGrad = user.postoGrad || '';
             this.militar.nomeDeGuerra = user.nomeDeGuerra || '';
             this.militar.email = user.email || '';
@@ -228,5 +263,13 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
       validateNumericInput(event: any): void {
         const input = event.target as HTMLInputElement;
         input.value = input.value.replace(/[^0-9]/g, '');
+      }
+
+      formatarNome(nome: string): string {
+        return nome
+          .toLowerCase()
+          .split(' ')
+          .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+          .join(' ');
       }
     }
