@@ -17,7 +17,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
       <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
       <div class="agendar-corte-dialog__date-time">
         <span class="agendar-corte-dialog__date">
-          {{ data.data | date:'EEEE, d \'de\' MMMM \'de\' y':'pt-BR' }}
+          {{ data.data | date:"EEEE, d 'de' MMMM 'de' y":"pt-BR" }}
         </span>
         <span class="agendar-corte-dialog__decorator"></span>
         <span class="agendar-corte-dialog__time"><b>Hora: {{ data.hora }}</b></span>
@@ -212,7 +212,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
           if (this.userData.length > 0) {
             const user = this.userData[0];
             this.militar.saram = user.saram || '';
-            this.militar.nomeCompleto = user.nomeCompleto || '';
+            this.militar.nomeCompleto = this.formatarNome(user.nomeCompleto || '');
             this.militar.postoGrad = user.postoGrad || '';
             this.militar.nomeDeGuerra = user.nomeDeGuerra || '';
             this.militar.email = user.email || '';
@@ -263,5 +263,13 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
       validateNumericInput(event: any): void {
         const input = event.target as HTMLInputElement;
         input.value = input.value.replace(/[^0-9]/g, '');
+      }
+
+      formatarNome(nome: string): string {
+        return nome
+          .toLowerCase()
+          .split(' ')
+          .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+          .join(' ');
       }
     }
