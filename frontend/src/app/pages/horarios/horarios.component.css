@@ -327,3 +327,7 @@ mat-icon {
   color: white;
   font-size: 1rem;
 }
+.tabela-footer-padding {
+  height: 2rem;
+  background-color:#ffff !important;
+}

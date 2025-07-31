@@ -44,24 +44,23 @@ import { Component } from '@angular/core';
   `,
   styles: [`
     .orientacoes-card {
-      width: 100%;
-      max-width: 600px;
-      padding: 24px;
-      white-space: normal;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
+  max-width: 900px;
+  padding: 24px;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
 
-    .orientacoes-card__header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-    }
+.orientacoes-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
 
-    .orientacoes-card__header .mat-card-avatar {
-      margin-right: 0;
-    }
+.orientacoes-card__header .mat-card-avatar {
+  margin-right: 0;
+}
 
     @media (max-width: 600px) {
       .orientacoes-card { max-width: 95vw; }
