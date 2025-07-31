@@ -8,7 +8,7 @@ import { LoggingService } from 'src/app/services/logging.service';
 @Component({
   selector: 'app-dialogo-detalhes-agendamento',
   template: `
-    <h1 mat-dialog-title>Detalhes do Agendamento</h1>
+    <h1 mat-dialog-title class="detalhes-dialog__title">Detalhes do Agendamento</h1>
     <div mat-dialog-content>
       <p><strong>Data:</strong> {{ agendamento.data | date:'dd/MM/yyyy' }}</p>
       <p><strong>Hora:</strong> {{ agendamento.hora | slice:0:5 }}</p>
@@ -26,6 +26,12 @@ import { LoggingService } from 'src/app/services/logging.service';
       </button>
     </div>
   `,
+  styles: [`
+    .detalhes-dialog__title {
+      font-size: 1.5rem;
+      text-align: center;
+    }
+  `]
 })
 export class DialogoDetalhesAgendamentoComponent {
   agendamento: Agendamento;
