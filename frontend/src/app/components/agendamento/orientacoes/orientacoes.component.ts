@@ -43,6 +43,11 @@ import { Component } from '@angular/core';
 </mat-card>
   `,
   styles: [`
+    .orientacoes-card {
+      max-width: 500px;
+      width: 90%;
+    }
+
     .orientacoes-card__header-icon {
       background-color: #3f51b5;
       padding: 5px;
