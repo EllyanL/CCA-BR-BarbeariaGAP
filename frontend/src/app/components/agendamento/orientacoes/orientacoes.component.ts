@@ -44,8 +44,15 @@ import { Component } from '@angular/core';
   `,
   styles: [`
     .orientacoes-card {
-      max-width: 500px;
-      width: 90%;
+      width: 100%;
+      max-width: 90vw;
+      padding: 16px 24px;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+      white-space: normal;
+    }
+    @media (min-width: 600px) {
+      .orientacoes-card { max-width: 600px; }
     }
 
     .orientacoes-card__header-icon {
