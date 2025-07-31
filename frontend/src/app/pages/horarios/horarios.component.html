@@ -62,7 +62,7 @@
                 <div class="circulo primary"></div><span>Disponível</span>
               </div>
               <div class="legenda-item">
-                <div class="circulo warn"></div><span>Indisponivel</span>
+                <div class="circulo warn"></div><span>Indisponível</span>
               </div>
               <div class="legenda-item">
                 <div class="circulo accent"></div><span>Agendado</span>
@@ -110,7 +110,7 @@
                     <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
                       <button *ngIf="agendamento" (click)="abrirModalAgendamento(agendamento)" mat-raised-button class="botao-hora-agendado">
                         <mat-icon>lock</mat-icon>
-                        AGENDADO
+                        {{ formatarStatus('AGENDADO') }}
                       </button>
                     </ng-container>
                   </ng-container>
@@ -132,7 +132,7 @@
                         [disabled]="!isAgendamentoDoMilitarLogado(agendamento) || !isAgendamentoDesmarcavel(agendamento)"
                         (click)="handleClick(agendamento)">
                   <mat-icon>lock</mat-icon>
-                  Agendado
+                  {{ formatarStatus('AGENDADO') }}
                 </button>
               </ng-container>
 

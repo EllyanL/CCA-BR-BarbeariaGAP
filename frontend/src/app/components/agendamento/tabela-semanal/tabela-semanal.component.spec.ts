@@ -167,7 +167,7 @@ describe('TabelaSemanalComponent', () => {
     fixture.detectChanges();
 
     botao = fixture.debugElement.query(By.css('button.botao-agendado'));
-    expect(botao.nativeElement.textContent.trim().toUpperCase()).toBe('AGENDADO');
+    expect(botao.nativeElement.textContent.trim()).toBe('Agendado');
     expect(botao.nativeElement.disabled).toBeFalse();
 
     component.agendamentos = [{

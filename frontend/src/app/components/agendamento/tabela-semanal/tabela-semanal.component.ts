@@ -561,6 +561,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return { cor: "disabled", texto: "Indisponivel", acao: "nenhuma" };
   }
 
+  formatarStatus(texto: string): string {
+    if (!texto) return '';
+    const lower = texto.toLowerCase();
+    if (lower === 'disponivel') return 'Disponível';
+    if (lower === 'indisponivel') return 'Indisponível';
+    if (lower === 'agendado') return 'Agendado';
+    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  }
+
 
   private loadMilitares(categoria: string) {
     this.militarService.getMilitaresByCategoria(categoria).subscribe(data => {
