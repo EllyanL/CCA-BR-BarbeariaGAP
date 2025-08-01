@@ -27,6 +27,26 @@ export class AgendamentoService {
     );
   }
 
+  getAgendamentosAdmin(
+    categoria?: string,
+    inicio?: string,
+    fim?: string
+  ): Observable<Agendamento[]> {
+    let params: any = {};
+    if (categoria) params.categoria = categoria;
+    if (inicio) params.inicio = inicio;
+    if (fim) params.fim = fim;
+    return this.http
+      .get<Agendamento[] | null>(`${this.apiUrl}/admin`, { params })
+      .pipe(
+        map(res => res ?? []),
+        catchError(error => {
+          this.logger.error('Erro ao obter agendamentos admin:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   getAgendamentoPorHorario(data: string, hora: string, dia: string, categoria: string): Observable<Agendamento> {
     const params = { data, hora, dia, categoria };
     return this.http.get<Agendamento>(`${this.apiUrl}/check`, { params }).pipe(
