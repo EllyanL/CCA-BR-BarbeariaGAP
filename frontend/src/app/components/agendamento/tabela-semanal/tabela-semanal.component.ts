@@ -314,8 +314,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       })
     ).subscribe(result => {
       if (result && agendamento.id) {
-        this.agendamentoService.deleteAgendamento(agendamento.id).subscribe(() => {
-          this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
+        this.agendamentoService.cancelarAgendamento(agendamento.id, false).subscribe(() => {
+          const idx = this.agendamentos.findIndex(a => a.id === agendamento.id);
+          if (idx !== -1) {
+            this.agendamentos[idx] = {
+              ...this.agendamentos[idx],
+              status: 'CANCELADO',
+              canceladoPor: 'USUARIO'
+            };
+          }
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
           const diaSemanaFormatado = agendamento.diaSemana.toLowerCase();
           if (this.horariosPorDia[diaSemanaFormatado]) {

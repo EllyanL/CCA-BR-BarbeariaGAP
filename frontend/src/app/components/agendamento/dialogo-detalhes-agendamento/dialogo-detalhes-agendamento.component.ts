@@ -62,7 +62,7 @@ export class DialogoDetalhesAgendamentoComponent {
     if (!this.podeDesmarcar || !this.agendamento.id) {
       return;
     }
-    this.agendamentoService.deleteAgendamento(this.agendamento.id).subscribe({
+    this.agendamentoService.cancelarAgendamento(this.agendamento.id, false).subscribe({
       next: () => {
         this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
         this.dialogRef.close(true);

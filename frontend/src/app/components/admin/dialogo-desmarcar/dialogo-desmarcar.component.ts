@@ -27,7 +27,7 @@ export class DialogoDesmarcarComponent {
   }
 
   desmarcar(): void {
-    this.agendamentoService.deleteAgendamento(this.dados.id).subscribe({
+    this.agendamentoService.cancelarAgendamento(this.dados.id, true).subscribe({
       next: () => {
         this.snackBar.open("Horário desmarcado com sucesso.", "Ciente", { duration: 3000 });
         this.dialogRef.close(true);

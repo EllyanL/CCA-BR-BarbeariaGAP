@@ -786,12 +786,19 @@ import { UserService } from 'src/app/services/user.service';
     desmarcarAgendamento(agendamento: Agendamento): void {
       if (!agendamento?.id) return;
     
-      this.agendamentoService.deleteAgendamento(agendamento.id).subscribe({
+      this.agendamentoService.cancelarAgendamento(agendamento.id, false).subscribe({
         next: () => {
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
           const dia = agendamento.diaSemana;
           const hora = agendamento.hora.slice(0, 5); // garante formato HH:mm
-          this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
+          const idx = this.agendamentos.findIndex(a => a.id === agendamento.id);
+          if (idx !== -1) {
+            this.agendamentos[idx] = {
+              ...this.agendamentos[idx],
+              status: 'CANCELADO',
+              canceladoPor: 'USUARIO'
+            };
+          }
 
           const diaKey = dia.toLowerCase();
           if (this.horariosPorDia[diaKey]) {
