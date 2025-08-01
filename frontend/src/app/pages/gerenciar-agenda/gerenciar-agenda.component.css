@@ -1,0 +1,45 @@
+.gerenciar-container {
+  height: 100%;
+}
+
+.gerenciar-content {
+  padding: 1rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-field {
+  flex: 1 1 200px;
+}
+
+.date-field {
+  width: 200px;
+}
+
+.export-container {
+  text-align: right;
+  margin-bottom: 0.5rem;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem 0;
+  color: #666;
+}
+
+.status-agendado {
+  color: green;
+}
+
+.status-cancelado {
+  color: red;
+}
+
+.status-indisponivel {
+  color: orange;
+}

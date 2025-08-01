@@ -46,6 +46,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { MatTabsModule } from '@angular/material/tabs';
 import { NgModule, LOCALE_ID } from '@angular/core';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { NotAuthorizedComponent } from './pages/not-authorized/not-authorized.component';
@@ -118,6 +119,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     MatDatepickerModule,
     MatProgressSpinnerModule,
     MatProgressBarModule,
+    MatTabsModule,
     MatNativeDateModule,
     NgxMaterialTimepickerModule,
   ],
