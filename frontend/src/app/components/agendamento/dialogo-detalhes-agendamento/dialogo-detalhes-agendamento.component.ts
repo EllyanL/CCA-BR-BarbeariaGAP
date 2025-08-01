@@ -34,7 +34,7 @@ import { LoggingService } from 'src/app/services/logging.service';
 
     .detalhes-dialog__actions {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       gap: 8px;
     }
   `]
