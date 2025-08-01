@@ -15,7 +15,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       <p><strong>Dia:</strong> {{ agendamento.diaSemana | titlecase }}</p>
       <div *ngIf="agendamento.militar">
         <p><strong>SARAM:</strong> {{ agendamento.militar.saram }}</p>
-        <p><strong>Nome:</strong> {{ agendamento.militar.nomeCompleto }}</p>
+        <p><strong>Nome:</strong> {{ formatarNomeCompleto(agendamento.militar.nomeCompleto) }}</p>
         <p><strong>OM:</strong> {{ agendamento.militar.om }}</p>
       </div>
     </div>
@@ -73,6 +73,14 @@ export class DialogoDetalhesAgendamentoComponent {
       this.dialogRef.close(false);
     },
     });
+  }
+
+  formatarNomeCompleto(nome: string): string {
+    return nome
+      .toLowerCase()
+      .split(' ')
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .join(' ');
   }
 
   // edição desabilitada
