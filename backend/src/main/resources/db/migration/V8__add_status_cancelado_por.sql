@@ -1,0 +1,3 @@
+ALTER TABLE agendamentos
+    ADD COLUMN status VARCHAR(20) DEFAULT 'AGENDADO',
+    ADD COLUMN cancelado_por VARCHAR(20);
