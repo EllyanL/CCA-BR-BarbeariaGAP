@@ -66,7 +66,7 @@ export class GerenciarAgendaComponent implements OnInit, AfterViewInit {
     const fim = this.dataFinal ? this.formatDate(this.dataFinal) : undefined;
 
     this.agendamentoService
-      .getAgendamentosAdmin('GRADUADO', inicio, fim)
+      .listarFiltrado('GRADUADO', inicio, fim)
       .subscribe({
         next: data => {
           this.dataSourceGraduados.data = data;
@@ -76,7 +76,7 @@ export class GerenciarAgendaComponent implements OnInit, AfterViewInit {
       });
 
     this.agendamentoService
-      .getAgendamentosAdmin('OFICIAL', inicio, fim)
+      .listarFiltrado('OFICIAL', inicio, fim)
       .subscribe({
         next: data => {
           this.dataSourceOficiais.data = data;
