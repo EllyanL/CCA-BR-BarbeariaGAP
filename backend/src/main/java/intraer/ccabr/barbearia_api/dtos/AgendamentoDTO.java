@@ -16,6 +16,8 @@ public class AgendamentoDTO {
     private LocalTime hora;
     private String diaSemana;
     private String categoria;
+    private String status;
+    private String canceladoPor;
     private UserDTO militar;
     private String usuarioSaram;
     private Long timestamp;
@@ -26,6 +28,8 @@ public class AgendamentoDTO {
         this.hora = agendamento.getHora();
         this.diaSemana = agendamento.getDiaSemana();
         this.categoria = agendamento.getCategoria();
+        this.status = agendamento.getStatus();
+        this.canceladoPor = agendamento.getCanceladoPor();
         this.timestamp = LocalDateTime.of(agendamento.getData(), agendamento.getHora())
                 .atZone(ZoneId.of("America/Sao_Paulo"))
                 .toInstant()

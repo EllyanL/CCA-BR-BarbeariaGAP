@@ -51,6 +51,12 @@ public class Agendamento {
     @Column(length = 15, nullable = false)
     private String categoria;
 
+    @Column(length = 20, nullable = false)
+    private String status = "AGENDADO";
+
+    @Column(name = "cancelado_por", length = 20)
+    private String canceladoPor;
+
     @Override
     public String toString() {
         return "Agendamento{" +
@@ -60,6 +66,8 @@ public class Agendamento {
                 ", diaSemana='" + diaSemana + '\'' +
                 ", militar=" + (militar != null ? militar.toString() : "null") +
                 ", categoria='" + categoria + '\'' +
+                ", status='" + status + '\'' +
+                ", canceladoPor='" + canceladoPor + '\'' +
                 '}';
     }
 }
