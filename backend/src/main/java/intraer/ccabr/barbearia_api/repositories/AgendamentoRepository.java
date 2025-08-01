@@ -94,4 +94,17 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Object[]> countByDataSince(@Param("startDate") LocalDate startDate);
 
     List<Agendamento> findTop5ByOrderByDataDescHoraDesc();
+
+    @Query("""
+            SELECT a FROM Agendamento a JOIN FETCH a.militar
+            WHERE (:categoria IS NULL OR a.categoria = :categoria)
+              AND (:inicio IS NULL OR a.data >= :inicio)
+              AND (:fim IS NULL OR a.data <= :fim)
+            ORDER BY a.data, a.hora
+            """)
+    List<Agendamento> findByCategoriaAndPeriodo(
+            @Param("categoria") String categoria,
+            @Param("inicio") LocalDate inicio,
+            @Param("fim") LocalDate fim
+    );
 }

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import intraer.ccabr.barbearia_api.dtos.AgendamentoDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
+import intraer.ccabr.barbearia_api.dtos.AgendamentoAdminDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoCreateDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.models.Agendamento;
@@ -159,6 +160,25 @@ public class AgendamentoController {
             .toList();
 
     return new ResponseEntity<>(agendamentoDTOs, HttpStatus.OK);
+    }
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AgendamentoAdminDTO>> findForAdmin(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fim
+    ) {
+        List<Agendamento> agendamentos = agendamentoService.findByCategoriaAndPeriodo(categoria, inicio, fim);
+        if (agendamentos.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        List<AgendamentoAdminDTO> dtos = agendamentos.stream()
+                .map(AgendamentoAdminDTO::new)
+                .toList();
+
+        return new ResponseEntity<>(dtos, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
