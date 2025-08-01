@@ -151,10 +151,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (!a.id) { return; }
     const confirmado = confirm('Deseja realmente excluir este agendamento?');
     if (!confirmado) { return; }
-    this.agendamentoService.deleteAgendamento(a.id).subscribe({
+    this.agendamentoService.cancelarAgendamento(a.id, true).subscribe({
       next: () => {
         this.snackBar.open('Agendamento removido com sucesso.', 'Ciente', { duration: 3000 });
-        this.recent = this.recent.filter(r => r.id !== a.id);
+        const idx = this.recent.findIndex(r => r.id === a.id);
+        if (idx !== -1) {
+          this.recent[idx] = {
+            ...this.recent[idx],
+            status: 'CANCELADO',
+            canceladoPor: 'ADMIN'
+          };
+        }
         this.dataSource.data = this.recent;
         this.applyFilters();
         this.horariosService.disponibilizarHorario(a.hora.slice(0,5), a.diaSemana, a.categoria)

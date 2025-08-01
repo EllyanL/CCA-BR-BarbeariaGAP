@@ -52,6 +52,13 @@ export class AgendamentoService {
     );
   }
 
+  cancelarAgendamento(id: number, porAdmin: boolean): Observable<Agendamento> {
+    const params = { porAdmin: porAdmin.toString() };
+    return this.http.put<Agendamento>(`${this.apiUrl}/${id}/cancelar`, {}, { params }).pipe(
+      catchError(error => throwError(() => error))
+    );
+  }
+
   updateAgendamento(id: number, dados: Partial<Agendamento>): Observable<Agendamento> {
     const headers = this.getAuthHeaders();
     return this.http.put<Agendamento>(`${this.apiUrl}/${id}`, dados, { headers }).pipe(

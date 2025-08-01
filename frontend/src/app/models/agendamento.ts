@@ -12,4 +12,6 @@ export interface Agendamento {
   usuarioSaram?: string;
   disponivel?: boolean;
   timestamp?: number;
+  status?: string;
+  canceladoPor?: string;
 }
