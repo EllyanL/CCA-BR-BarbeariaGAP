@@ -1,6 +1,7 @@
 package intraer.ccabr.barbearia_api.services;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -46,5 +47,25 @@ class AgendamentoServiceFifteenDaysRuleTests {
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+    }
+
+    @Test
+    void validarRegrasDeNegocioNaoLancaExcecaoQuandoUltimoAgendamentoCancelado() {
+        Militar m = new Militar();
+        m.setSaram("123");
+        Agendamento ag = new Agendamento();
+        ag.setData(LocalDate.now().plusDays(1));
+        ag.setHora(LocalTime.of(8, 0));
+        ag.setDiaSemana("segunda");
+        ag.setCategoria("GRADUADO");
+        ag.setMilitar(m);
+
+        Agendamento ultimo = new Agendamento();
+        ultimo.setData(LocalDate.now());
+        ultimo.setStatus("CANCELADO");
+        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.of(ultimo));
+        when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
+
+        assertDoesNotThrow(() -> service.validarRegrasDeNegocio(ag));
     }
 }

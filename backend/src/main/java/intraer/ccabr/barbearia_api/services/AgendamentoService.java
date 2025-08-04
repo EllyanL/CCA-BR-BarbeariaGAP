@@ -86,7 +86,8 @@ public class AgendamentoService {
 
     public boolean podeAgendar15Dias(String saram, LocalDate dataNova) {
         return agendamentoRepository.findUltimoAgendamentoBySaram(saram)
-                .map(ultimo -> ChronoUnit.DAYS.between(ultimo.getData(), dataNova) >= 15)
+                .map(ultimo -> "CANCELADO".equals(ultimo.getStatus()) ||
+                        ChronoUnit.DAYS.between(ultimo.getData(), dataNova) >= 15)
                 .orElse(true);
     }
 
