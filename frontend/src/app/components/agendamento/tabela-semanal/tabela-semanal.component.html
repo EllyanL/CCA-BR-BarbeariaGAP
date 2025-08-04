@@ -109,6 +109,7 @@
                 </ng-template>
               </td>
               <td>
+                <mat-icon matTooltip="Cancelamentos devem ser feitos com antecedência mínima de 30 minutos">info</mat-icon>
                 <button mat-icon-button color="warn"
                         *ngIf="isAgendamentoDoMilitarLogado(agendamento)"
                         (click)="desmarcarAgendamento(agendamento)">

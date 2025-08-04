@@ -7,6 +7,7 @@ export interface DialogData {
   diaSemana: string;
   hora: string;
   usuarioId?: number;
+  data: string;
 }
 
 @Component({
@@ -54,6 +55,14 @@ export class DialogoCancelamentoComponent {
   }
 
   onYesClick(): void {
+    if (!this.canCancel()) {
+      this.snackBar.open('Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.', 'Ciente', {
+        duration: 3000,
+      });
+      this.dialogRef.close(false);
+      return;
+    }
+
     const autorizado = this.verifySaram();
     if (autorizado) {
       this.dialogRef.close({ dia: this.data.diaSemana, hora: this.data.hora, usuarioId: this.data.usuarioId });
@@ -63,6 +72,16 @@ export class DialogoCancelamentoComponent {
       });
       this.dialogRef.close(false);
     }
+  }
+
+  private canCancel(): boolean {
+    if (!this.data?.data || !this.data?.hora) {
+      return true;
+    }
+    const horaFormatada = this.data.hora.substring(0, 5);
+    const agendamentoDate = new Date(`${this.data.data}T${horaFormatada}`);
+    const diffMs = agendamentoDate.getTime() - Date.now();
+    return diffMs >= 30 * 60 * 1000;
   }
 
   verifySaram(): boolean {

@@ -71,23 +71,24 @@ class AgendamentoControllerCancelTests {
 
     @Test
     @WithMockUser(username = "123456789", roles = "GRADUADO")
-    void cancelAgendamentoMenosDe15Minutos() throws Exception {
-        LocalDateTime future = LocalDateTime.now().plusMinutes(10);
+    void cancelAgendamentoMenosDe30MinutosRetornaForbidden() throws Exception {
+        LocalDateTime future = LocalDateTime.now().plusMinutes(20);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/agendamentos/{id}/cancelar", 1L))
-                .andExpect(MockMvcResultMatchers.status().isNoContent());
+                .andExpect(MockMvcResultMatchers.status().isForbidden())
+                .andExpect(MockMvcResultMatchers.content().string("Cancelamentos devem ser feitos com antecedência mínima de 30 minutos."));
 
-        verify(agendamentoService).cancelarAgendamento(anyLong(), any());
+        verify(agendamentoService, never()).cancelarAgendamento(anyLong(), any());
     }
 
     @Test
     @WithMockUser(username = "123456789", roles = "GRADUADO")
-    void cancelMoreThan15MinutesAheadSucceedsAndUpdatesHorario() throws Exception {
-        LocalDateTime future = LocalDateTime.now().plusMinutes(20);
+    void cancelMoreThan30MinutesAheadSucceedsAndUpdatesHorario() throws Exception {
+        LocalDateTime future = LocalDateTime.now().plusMinutes(40);
         Agendamento agendamento = buildAgendamento(future, "123456789");
         Horario horario = new Horario("segunda", agendamento.getHora().toString(), "GRADUADO", HorarioStatus.AGENDADO);
 
@@ -109,7 +110,7 @@ class AgendamentoControllerCancelTests {
     @Test
     @WithMockUser(username = "000000000", roles = "GRADUADO")
     void cancelOthersAgendamentoReturnsForbidden() throws Exception {
-        LocalDateTime future = LocalDateTime.now().plusMinutes(20);
+        LocalDateTime future = LocalDateTime.now().plusMinutes(40);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
@@ -125,7 +126,7 @@ class AgendamentoControllerCancelTests {
     @Test
     @WithMockUser(username = "111111111", roles = "ADMIN")
     void adminCanCancelAnyAgendamento() throws Exception {
-        LocalDateTime future = LocalDateTime.now().plusMinutes(20);
+        LocalDateTime future = LocalDateTime.now().plusMinutes(40);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));

@@ -295,18 +295,28 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  desmarcarAgendamento(agendamento: Agendamento) { //	Chama service para deletar agendamento.
+  desmarcarAgendamento(agendamento: Agendamento) { //   Chama service para deletar agendamento.
     if (!agendamento.militar || agendamento.militar?.id !== this.idMilitarLogado) {
       this.snackBar.open('Você não tem permissão para cancelar este agendamento.', 'Ciente', { duration: 3000 });
       return;
     }
 
+    if (agendamento.data) {
+      const horaFormatada = agendamento.hora.substring(0, 5);
+      const agendamentoDate = new Date(`${agendamento.data}T${horaFormatada}`);
+      const agora = new Date(Date.now() + this.timeOffsetMs);
+      const diffMs = agendamentoDate.getTime() - agora.getTime();
+      if (diffMs < 30 * 60 * 1000) {
+        this.snackBar.open('Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.', 'Ciente', { duration: 3000 });
+        return;
+      }
+    }
+
     const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
       width: '300px',
-      data: { diaSemana: agendamento.diaSemana, hora: agendamento.hora, usuarioId: agendamento.militar?.id },
+      data: { diaSemana: agendamento.diaSemana, hora: agendamento.hora, usuarioId: agendamento.militar?.id, data: agendamento.data },
       autoFocus: true
     });
-
     dialogRef.afterClosed().pipe(
       catchError(error => {
         this.logger.error('Erro ao processar cancelamento:', error);
