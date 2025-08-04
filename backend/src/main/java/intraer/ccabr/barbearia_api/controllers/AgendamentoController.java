@@ -13,7 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,7 +39,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.services.AgendamentoService;
-import intraer.ccabr.barbearia_api.services.HorarioService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -58,20 +56,17 @@ public class AgendamentoController {
 
     private final HorarioRepository horarioRepository;
 
-    private final HorarioService horarioService;
 
     public AgendamentoController(
         AgendamentoService agendamentoService,
         AgendamentoRepository agendamentoRepository,
         MilitarRepository militarRepository,
-        HorarioRepository horarioRepository,
-        HorarioService horarioService
+        HorarioRepository horarioRepository
     ) {
         this.agendamentoService = agendamentoService;
         this.agendamentoRepository = agendamentoRepository;
         this.militarRepository = militarRepository;
         this.horarioRepository = horarioRepository;
-        this.horarioService = horarioService;
     }
 
     @PostMapping
@@ -237,9 +232,9 @@ public class AgendamentoController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping("/{id}/cancelar")
     @PreAuthorize("hasAnyRole('ADMIN', 'GRADUADO', 'OFICIAL')")
-    public ResponseEntity<String> delete(@PathVariable Long id, org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<String> cancelar(@PathVariable Long id, org.springframework.security.core.Authentication authentication) {
         Optional<Agendamento> agendamentoOpt = agendamentoService.findById(id);
 
         if (agendamentoOpt.isPresent()) {
@@ -269,12 +264,8 @@ public class AgendamentoController {
                         .body("Não é possível desmarcar um agendamento que já ocorreu.");
             }
 
-
-            agendamentoService.delete(id);
-            horarioService.disponibilizarHorario(
-                    agendamento.getDiaSemana(),
-                    agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm")),
-                    agendamento.getCategoria());
+            String canceladoPor = isAdmin ? "ADMIN" : "USUARIO";
+            agendamentoService.cancelarAgendamento(id, canceladoPor);
             return ResponseEntity.noContent().build();
         }
 

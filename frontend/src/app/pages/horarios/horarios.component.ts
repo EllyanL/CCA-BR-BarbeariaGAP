@@ -786,7 +786,7 @@ import { UserService } from 'src/app/services/user.service';
     desmarcarAgendamento(agendamento: Agendamento): void {
       if (!agendamento?.id) return;
     
-      this.agendamentoService.cancelarAgendamento(agendamento.id, false).subscribe({
+      this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe({
         next: () => {
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
           const dia = agendamento.diaSemana;

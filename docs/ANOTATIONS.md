@@ -69,7 +69,7 @@ Os horários agendados têm um tratamento especial para visualização e intera�
     - Adicione um botão "Desmarcar" no diálogo:
       ```typescript
       desmarcarAgendamento(id: number) {
-        this.agendamentoService.deleteAgendamento(id).subscribe(() => {
+        this.agendamentoService.cancelarAgendamento(id).subscribe(() => {
           this.snackBar.open('Horário desmarcado com sucesso!', 'OK', { duration: 3000 });
           this.atualizarHorarios();
         });
@@ -79,7 +79,7 @@ Os horários agendados têm um tratamento especial para visualização e intera�
   - **Backend**: 
     - Endpoint para remover o agendamento:
       ```
-      DELETE /api/agendamentos/{id}
+      PUT /api/agendamentos/{id}/cancelar
       ```
 
 ---

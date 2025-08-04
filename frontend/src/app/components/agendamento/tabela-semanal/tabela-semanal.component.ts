@@ -314,7 +314,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       })
     ).subscribe(result => {
       if (result && agendamento.id) {
-        this.agendamentoService.cancelarAgendamento(agendamento.id, false).subscribe(() => {
+        this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe(() => {
           const idx = this.agendamentos.findIndex(a => a.id === agendamento.id);
           if (idx !== -1) {
             this.agendamentos[idx] = {

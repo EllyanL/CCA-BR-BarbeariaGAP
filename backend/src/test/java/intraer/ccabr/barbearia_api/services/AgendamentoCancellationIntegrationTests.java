@@ -23,13 +23,10 @@ import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @Transactional
-class AgendamentoDeletionIntegrationTests {
+class AgendamentoCancellationIntegrationTests {
 
     @Autowired
     private AgendamentoService agendamentoService;
-
-    @Autowired
-    private HorarioService horarioService;
 
     @Autowired
     private AgendamentoRepository agendamentoRepository;
@@ -41,7 +38,7 @@ class AgendamentoDeletionIntegrationTests {
     private MilitarRepository militarRepository;
 
     @Test
-    void deletingAgendamentoFreesHorario() {
+    void cancellingAgendamentoFreesHorario() {
         Militar m = new Militar();
         m.setCpf("123");
         m.setCategoria(UserRole.GRADUADO);
@@ -58,15 +55,14 @@ class AgendamentoDeletionIntegrationTests {
         ag.setMilitar(m);
         agendamentoRepository.save(ag);
 
-        agendamentoService.delete(ag.getId());
-        horarioService.disponibilizarHorario("segunda", "08:00", "GRADUADO");
+        agendamentoService.cancelarAgendamento(ag.getId(), "USUARIO");
 
-        boolean exists = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
-                LocalTime.parse("08:00"), "segunda", "GRADUADO");
+        Agendamento atualizado = agendamentoRepository.findById(ag.getId()).orElseThrow();
         Horario updated = horarioRepository.findByDiaAndHorarioAndCategoria(
                 "segunda", "08:00", "GRADUADO").orElseThrow();
 
-        assertFalse(exists);
+        assertEquals("CANCELADO", atualizado.getStatus());
+        assertEquals("USUARIO", atualizado.getCanceladoPor());
         assertEquals(HorarioStatus.DISPONIVEL, updated.getStatus());
     }
 }
