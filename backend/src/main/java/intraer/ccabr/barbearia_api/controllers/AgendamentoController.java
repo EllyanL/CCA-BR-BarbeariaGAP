@@ -264,6 +264,12 @@ public class AgendamentoController {
                         .body("Não é possível desmarcar um agendamento que já ocorreu.");
             }
 
+            LocalDateTime dataHoraAgendamento = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+            if (dataHoraAgendamento.isBefore(LocalDateTime.now().plusMinutes(30))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.");
+            }
+
             String canceladoPor = isAdmin ? "ADMIN" : "USUARIO";
             agendamentoService.cancelarAgendamento(id, canceladoPor);
             return ResponseEntity.noContent().build();
