@@ -134,26 +134,107 @@ export class GerenciarAgendaComponent implements OnInit, AfterViewInit {
         : this.dataSourceOficiais.filteredData;
 
     import('jspdf')
-      .then(jsPDF => {
-        const doc = new jsPDF.jsPDF();
-        let y = 10;
-        rows.forEach(r => {
-          const line =
-            `${r.data} ${r.hora} ${r.diaSemana} ` +
-            `${this.formatName(r.militar?.nomeCompleto)} ` +
-            `${r.militar?.postoGrad ?? ''} ${r.militar?.email ?? ''} ` +
-            `${r.militar?.secao ?? ''} ${r.categoria ?? ''} ` +
-            `${r.status ?? ''} ${r.canceladoPor ?? ''}`;
-          doc.text(line, 10, y);
-          y += 10;
-          if (y > 280) {
-            doc.addPage();
-            y = 10;
-          }
-        });
-        doc.save('agendamentos.pdf');
-      })
+      .then(jsPDF =>
+        import('jspdf-autotable').then(() => {
+          const doc = new jsPDF.jsPDF();
+          const pageWidth = doc.internal.pageSize.getWidth();
+
+          // Title
+          doc.setFontSize(16);
+          doc.text('Barbearia GAP - Registros', pageWidth / 2, 14, {
+            align: 'center'
+          });
+
+          // Subtitle with date range
+          const dataIni = this.formatDateBr(this.dataInicial);
+          const dataFim = this.formatDateBr(this.dataFinal);
+          doc.setFontSize(11);
+          doc.text(
+            `Intervalo de Busca: ${dataIni} À ${dataFim}`,
+            pageWidth / 2,
+            22,
+            { align: 'center' }
+          );
+
+          // Table
+          (doc as any).autoTable({
+            startY: 28,
+            head: [
+              [
+                'DATA',
+                'HORA',
+                'POSTO',
+                'NOME DE GUERRA',
+                'SEÇÃO',
+                'EMAIL',
+                'STATUS',
+                'CANCELADO POR'
+              ]
+            ],
+            body: rows.map(r => [
+              this.toBrDate(r.data),
+              this.toTime(r.hora),
+              r.militar?.postoGrad ?? '',
+              this.capitalizeFirst(r.militar?.nomeDeGuerra),
+              r.militar?.secao ?? '',
+              r.militar?.email ?? '',
+              this.mapStatus(r.status, r.canceladoPor),
+              r.canceladoPor ?? ''
+            ]),
+            styles: { fontSize: 10, cellPadding: 3 },
+            headStyles: { fillColor: [220, 220, 220] }
+          });
+
+          doc.save('registros.pdf');
+        })
+      )
       .catch(err => this.logger.error('Erro ao exportar PDF:', err));
+  }
+
+  private formatDateBr(d?: Date | null): string {
+    if (!d) {
+      return '-';
+    }
+    const day = `${d.getDate()}`.padStart(2, '0');
+    const month = `${d.getMonth() + 1}`.padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  private toBrDate(dateStr?: string): string {
+    if (!dateStr) {
+      return '';
+    }
+    const d = new Date(dateStr);
+    const day = `${d.getDate()}`.padStart(2, '0');
+    const month = `${d.getMonth() + 1}`.padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+    
+  }
+
+  private toTime(time?: string): string {
+    if (!time) {
+      return '';
+    }
+    return time.substring(0, 5);
+  }
+
+  private capitalizeFirst(nome?: string | null): string {
+    if (!nome) {
+      return '';
+    }
+    const lower = nome.toLowerCase();
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  }
+
+  private mapStatus(status?: string, canceladoPor?: string): string {
+    const s = (status || '').toUpperCase();
+    const cancel = (canceladoPor || '').toUpperCase();
+    if (s === 'CANCELADO') {
+      return cancel === 'ADMIN' ? 'Admin: Cancelado' : 'Cancelado';
+    }
+    return 'Efetuado';
   }
 
   private formatDate(d: Date): string {
