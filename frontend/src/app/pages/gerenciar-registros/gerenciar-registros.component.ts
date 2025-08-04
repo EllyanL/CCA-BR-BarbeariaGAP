@@ -7,11 +7,11 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { LoggingService } from '../../services/logging.service';
 
 @Component({
-  selector: 'app-gerenciar-agenda',
-  templateUrl: './gerenciar-agenda.component.html',
-  styleUrls: ['./gerenciar-agenda.component.css']
+  selector: 'app-gerenciar-registros',
+  templateUrl: './gerenciar-registros.component.html',
+  styleUrls: ['./gerenciar-registros.component.css']
 })
-export class GerenciarAgendaComponent implements OnInit, AfterViewInit {
+export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   displayedColumns = [
     'data',
     'hora',
