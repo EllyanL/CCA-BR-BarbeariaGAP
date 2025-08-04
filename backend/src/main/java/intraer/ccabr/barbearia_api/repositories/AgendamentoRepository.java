@@ -36,6 +36,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("diaSemana") String diaSemana,
             @Param("categoria") String categoria
     );
+
+    List<Agendamento> findByStatus(String status);
         
 
     @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram AND a.status <> 'CANCELADO' ORDER BY a.data DESC")
