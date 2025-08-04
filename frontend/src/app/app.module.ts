@@ -57,7 +57,7 @@ import { OrientacoesComponent } from './components/agendamento/orientacoes/orien
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/tabela-semanal.component';
-import { GerenciarAgendaComponent } from './pages/gerenciar-agenda/gerenciar-agenda.component';
+import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenciar-registros.component';
 
 registerLocaleData(ptBrLocale, 'pt-BR');
 
@@ -87,7 +87,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     SidebarComponent,
     UsuariosComponent,
     AdminNavbarComponent,
-    GerenciarAgendaComponent,
+    GerenciarRegistrosComponent,
   ],
   imports: [
     BrowserModule,
