@@ -34,7 +34,7 @@ import intraer.ccabr.barbearia_api.services.AgendamentoService;
 
 @WebMvcTest(AgendamentoController.class)
 @AutoConfigureMockMvc(addFilters = false)
-class AgendamentoControllerDeleteTests {
+class AgendamentoControllerCancelTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -71,22 +71,22 @@ class AgendamentoControllerDeleteTests {
 
     @Test
     @WithMockUser(username = "123456789", roles = "GRADUADO")
-    void deleteLessThan15MinutesAheadReturnsForbidden() throws Exception {
+    void cancelAgendamentoMenosDe15Minutos() throws Exception {
         LocalDateTime future = LocalDateTime.now().plusMinutes(10);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/agendamentos/{id}", 1L))
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/agendamentos/{id}/cancelar", 1L))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
-        verify(agendamentoService).delete(anyLong());
+        verify(agendamentoService).cancelarAgendamento(anyLong(), any());
     }
 
     @Test
     @WithMockUser(username = "123456789", roles = "GRADUADO")
-    void deleteMoreThan15MinutesAheadSucceedsAndUpdatesHorario() throws Exception {
+    void cancelMoreThan15MinutesAheadSucceedsAndUpdatesHorario() throws Exception {
         LocalDateTime future = LocalDateTime.now().plusMinutes(20);
         Agendamento agendamento = buildAgendamento(future, "123456789");
         Horario horario = new Horario("segunda", agendamento.getHora().toString(), "GRADUADO", HorarioStatus.AGENDADO);
@@ -94,46 +94,46 @@ class AgendamentoControllerDeleteTests {
         doAnswer(invocation -> {
             horario.setStatus(HorarioStatus.DISPONIVEL);
             return null;
-        }).when(agendamentoService).marcarHorarioComoDisponivel(any(Agendamento.class));
+        }).when(agendamentoService).cancelarAgendamento(anyLong(), any());
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/agendamentos/{id}", 1L))
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/agendamentos/{id}/cancelar", 1L))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
-        verify(agendamentoService).delete(1L);
+        verify(agendamentoService).cancelarAgendamento(1L, "USUARIO");
         org.junit.jupiter.api.Assertions.assertEquals(HorarioStatus.DISPONIVEL, horario.getStatus());
     }
 
     @Test
     @WithMockUser(username = "000000000", roles = "GRADUADO")
-    void deleteOthersAgendamentoReturnsForbidden() throws Exception {
+    void cancelOthersAgendamentoReturnsForbidden() throws Exception {
         LocalDateTime future = LocalDateTime.now().plusMinutes(20);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/agendamentos/{id}", 1L))
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/agendamentos/{id}/cancelar", 1L))
                 .andExpect(MockMvcResultMatchers.status().isForbidden())
                 .andExpect(MockMvcResultMatchers.content().string("Você só pode desmarcar seus próprios agendamentos."));
 
-        verify(agendamentoService, never()).delete(anyLong());
+        verify(agendamentoService, never()).cancelarAgendamento(anyLong(), any());
     }
 
     @Test
     @WithMockUser(username = "111111111", roles = "ADMIN")
-    void adminCanDeleteAnyAgendamento() throws Exception {
+    void adminCanCancelAnyAgendamento() throws Exception {
         LocalDateTime future = LocalDateTime.now().plusMinutes(20);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/agendamentos/{id}", 1L))
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/agendamentos/{id}/cancelar", 1L))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
-        verify(agendamentoService).delete(1L);
+        verify(agendamentoService).cancelarAgendamento(1L, "ADMIN");
     }
 }

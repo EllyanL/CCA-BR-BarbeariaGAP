@@ -66,8 +66,13 @@ public class AgendamentoService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        agendamentoRepository.findById(id).ifPresent(agendamentoRepository::delete);
+    public void cancelarAgendamento(Long id, String canceladoPor) {
+        agendamentoRepository.findById(id).ifPresent(agendamento -> {
+            agendamento.setStatus("CANCELADO");
+            agendamento.setCanceladoPor(canceladoPor);
+            agendamentoRepository.save(agendamento);
+            marcarHorarioComoDisponivel(agendamento);
+        });
     }
 
     public boolean isAgendamentoDisponivel(LocalDate data, LocalTime hora, String diaSemana, String categoria) {

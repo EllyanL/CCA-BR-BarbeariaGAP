@@ -86,15 +86,8 @@ export class AgendamentoService {
   }
   
 
-  deleteAgendamento(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
-      catchError(error => throwError(() => error))
-    );
-  }
-
-  cancelarAgendamento(id: number, porAdmin: boolean): Observable<Agendamento> {
-    const params = { porAdmin: porAdmin.toString() };
-    return this.http.put<Agendamento>(`${this.apiUrl}/${id}/cancelar`, {}, { params }).pipe(
+  cancelarAgendamento(id: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/cancelar`, {}).pipe(
       catchError(error => throwError(() => error))
     );
   }
