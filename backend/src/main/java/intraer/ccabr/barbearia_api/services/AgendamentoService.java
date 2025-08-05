@@ -83,6 +83,7 @@ public class AgendamentoService {
     }
 
     public boolean isAgendamentoDisponivel(LocalDate data, LocalTime hora, String diaSemana, String categoria) {
+        // A consulta abaixo considera apenas agendamentos ativos (status = 'AGENDADO')
         return !agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(data, hora, diaSemana, categoria);
     }
 
