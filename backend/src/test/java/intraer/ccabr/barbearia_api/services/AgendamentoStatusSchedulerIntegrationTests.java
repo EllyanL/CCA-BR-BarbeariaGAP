@@ -40,7 +40,7 @@ class AgendamentoStatusSchedulerIntegrationTests {
 
         Agendamento passado = new Agendamento();
         passado.setData(LocalDate.now().minusDays(1));
-        passado.setHora(LocalTime.of(8, 0));
+        passado.setHora(LocalTime.of(9, 10));
         passado.setDiaSemana("ontem");
         passado.setCategoria("GRADUADO");
         passado.setMilitar(m);
@@ -48,7 +48,7 @@ class AgendamentoStatusSchedulerIntegrationTests {
 
         Agendamento futuro = new Agendamento();
         futuro.setData(LocalDate.now().plusDays(1));
-        futuro.setHora(LocalTime.of(9, 0));
+        futuro.setHora(LocalTime.of(10, 10));
         futuro.setDiaSemana("amanha");
         futuro.setCategoria("GRADUADO");
         futuro.setMilitar(m);
@@ -56,7 +56,7 @@ class AgendamentoStatusSchedulerIntegrationTests {
 
         Agendamento cancelado = new Agendamento();
         cancelado.setData(LocalDate.now().minusDays(1));
-        cancelado.setHora(LocalTime.of(10, 0));
+        cancelado.setHora(LocalTime.of(11, 10));
         cancelado.setDiaSemana("ontem");
         cancelado.setCategoria("GRADUADO");
         cancelado.setStatus("CANCELADO");

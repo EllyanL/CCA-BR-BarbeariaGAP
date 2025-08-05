@@ -50,7 +50,7 @@ class AgendamentoServiceTimeWindowTests {
         m.setSaram("123");
         Agendamento ag = new Agendamento();
         ag.setData(LocalDate.now().plusDays(1));
-        ag.setHora(LocalTime.of(8, 0));
+        ag.setHora(LocalTime.of(9, 0));
         ag.setDiaSemana("segunda");
         ag.setCategoria("GRADUADO");
         ag.setMilitar(m);
