@@ -3,6 +3,8 @@ import { forkJoin } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { LoggingService } from '../../services/logging.service';
@@ -122,62 +124,70 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         ? this.dataSourceGraduados.filteredData
         : this.dataSourceOficiais.filteredData;
 
-    import('jspdf')
-      .then(jsPDF =>
-        import('jspdf-autotable').then(() => {
-          const doc = new jsPDF.jsPDF();
-          const pageWidth = doc.internal.pageSize.getWidth();
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
 
-          // Title
-          doc.setFontSize(16);
-          doc.text('Barbearia GAP - Registros', pageWidth / 2, 14, {
-            align: 'center'
-          });
+      // Header
+      doc.setFontSize(16);
+      doc.text('Barbearia GAP - Registros', pageWidth / 2, 15, {
+        align: 'center'
+      });
 
-          // Subtitle with date range
-          const dataIni = this.formatDateBr(this.dataInicial);
-          const dataFim = this.formatDateBr(this.dataFinal);
-          doc.setFontSize(11);
-          doc.text(
-            `Intervalo de Busca: ${dataIni} À ${dataFim}`,
-            pageWidth / 2,
-            22,
-            { align: 'center' }
-          );
+      const dataIni = this.formatDateBr(this.dataInicial);
+      const dataFim = this.formatDateBr(this.dataFinal);
+      doc.setFontSize(11);
+      doc.text(
+        `Intervalo de Busca: ${dataIni} À ${dataFim}`,
+        pageWidth / 2,
+        22,
+        { align: 'center' }
+      );
 
-          // Table
-          (doc as any).autoTable({
-            startY: 28,
-            head: [
-              [
-                'DATA',
-                'HORA',
-                'POSTO/GRADUAÇÃO',
-                'NOME DE GUERRA',
-                'SEÇÃO',
-                'EMAIL',
-                'STATUS',
-                'CANCELADO POR'
-              ]
-            ],
-            body: rows.map(r => [
-              this.toBrDate(r.data),
-              this.toTime(r.hora),
-              r.militar?.postoGrad ?? '',
-              this.formatName(r.militar?.nomeDeGuerra),
-              r.militar?.secao ?? '',
-              r.militar?.email ?? '',
-              this.mapStatus(r.status, r.canceladoPor),
-              r.canceladoPor ?? ''
-            ]),
-            styles: { fontSize: 10, cellPadding: 3 },
-            headStyles: { fillColor: [220, 220, 220] }
-          });
+      // Table
+      autoTable(doc, {
+        startY: 30,
+        head: [
+          [
+            'DATA',
+            'HORA',
+            'SARAM',
+            'POSTO/GRAD',
+            'NOME DE GUERRA',
+            'STATUS',
+            'CANCELADO POR'
+          ]
+        ],
+        body: rows.map(r => [
+          this.toBrDate(r.data),
+          this.toTime(r.hora),
+          r.militar?.saram ?? '',
+          r.militar?.postoGrad ?? '',
+          this.formatName(r.militar?.nomeDeGuerra),
+          this.formatarStatus(r.status ?? ''),
+          this.formatName(r.canceladoPor)
+        ]),
+        styles: { fontSize: 10, cellPadding: 3 },
+        headStyles: { fillColor: [220, 220, 220] }
+      });
 
-          doc.save('registros.pdf');
-        })
-      )
-      .catch(err => this.logger.error('Erro ao exportar PDF:', err));
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(9);
+        doc.text(
+          `Página ${i} de ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+      }
+
+      doc.save('registros.pdf');
+    } catch (err) {
+      this.logger.error('Erro ao exportar PDF:', err);
+    }
   }
 
   private formatDateBr(d?: Date | null): string {
@@ -193,22 +203,6 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       return '';
     }
     return time.substring(0, 5);
-  }
-
-  private mapStatus(status?: string, canceladoPor?: string): string {
-    const s = (status || '').toUpperCase();
-    switch (s) {
-      case 'AGENDADO':
-        return this.formatName('agendado');
-      case 'REALIZADO':
-        return this.formatName('realizado');
-      case 'CANCELADO':
-        return canceladoPor
-          ? `${this.formatName(canceladoPor)}: ${this.formatName('cancelado')}`
-          : this.formatName('cancelado');
-      default:
-        return '';
-    }
   }
 
   private formatDate(d: Date): string {
