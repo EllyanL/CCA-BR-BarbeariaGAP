@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -63,25 +64,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     const inicio = this.dataInicial ? this.formatDate(this.dataInicial) : undefined;
     const fim = this.dataFinal ? this.formatDate(this.dataFinal) : undefined;
 
-    this.agendamentoService
-      .listarFiltrado('GRADUADO', inicio, fim)
-      .subscribe({
-        next: data => {
-          this.dataSourceGraduados.data = data;
-          this.applyFilter();
-        },
-        error: err => this.logger.error('Erro ao carregar graduados:', err)
-      });
-
-    this.agendamentoService
-      .listarFiltrado('OFICIAL', inicio, fim)
-      .subscribe({
-        next: data => {
-          this.dataSourceOficiais.data = data;
-          this.applyFilter();
-        },
-        error: err => this.logger.error('Erro ao carregar oficiais:', err)
-      });
+    forkJoin({
+      graduados: this.agendamentoService.listarFiltrado('GRADUADO', inicio, fim),
+      oficiais: this.agendamentoService.listarFiltrado('OFICIAL', inicio, fim)
+    }).subscribe({
+      next: ({ graduados, oficiais }) => {
+        this.dataSourceGraduados.data = graduados;
+        this.dataSourceOficiais.data = oficiais;
+        this.applyFilter();
+      },
+      error: err => this.logger.error('Erro ao carregar agendamentos:', err)
+    });
   }
 
   applyFilter(event?: Event): void {
@@ -93,7 +86,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     const predicate = (a: Agendamento, filter: string): boolean => {
       const f = filter.trim().toLowerCase();
       return [
-        a.data,
+        a.data ? new Date(a.data).toLocaleDateString('pt-BR') : '',
         a.hora,
         a.militar?.postoGrad,
         a.militar?.nomeDeGuerra,
@@ -188,25 +181,11 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   private formatDateBr(d?: Date | null): string {
-    if (!d) {
-      return '-';
-    }
-    const day = `${d.getDate()}`.padStart(2, '0');
-    const month = `${d.getMonth() + 1}`.padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
+    return d ? d.toLocaleDateString('pt-BR') : '-';
   }
 
-  private toBrDate(dateStr?: string): string {
-    if (!dateStr) {
-      return '';
-    }
-    const d = new Date(dateStr);
-    const day = `${d.getDate()}`.padStart(2, '0');
-    const month = `${d.getMonth() + 1}`.padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}/${month}/${year}`;
-    
+  toBrDate(dateStr?: string): string {
+    return dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '';
   }
 
   private toTime(time?: string): string {
@@ -233,10 +212,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   private formatDate(d: Date): string {
-    const y = d.getFullYear();
-    const m = `${d.getMonth() + 1}`.padStart(2, '0');
-    const day = `${d.getDate()}`.padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    return d.toISOString().split('T')[0];
   }
 
   formatName(nome?: string | null): string {
