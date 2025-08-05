@@ -358,7 +358,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       tap(agendamentos => {
         if (agendamentos && agendamentos.length > 0) {
           const agendamentosFiltrados = agendamentos.filter(agendamento =>
-            this.isAgendamentoDoMilitarLogado(agendamento)
+            this.isAgendamentoDoMilitarLogado(agendamento) &&
+            agendamento.status === 'AGENDADO'
           );
 
           this.agendamentos = agendamentosFiltrados.map(agendamento => ({

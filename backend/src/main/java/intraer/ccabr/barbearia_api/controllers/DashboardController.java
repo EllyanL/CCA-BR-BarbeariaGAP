@@ -53,7 +53,7 @@ public class DashboardController {
 
     @GetMapping("/recent")
     public List<AgendamentoDTO> getRecentAgendamentos() {
-        List<Agendamento> recentes = agendamentoRepository.findTop5ByOrderByDataDescHoraDesc();
+        List<Agendamento> recentes = agendamentoRepository.findTop5ByStatusOrderByDataDescHoraDesc("AGENDADO");
         return recentes.stream().map(AgendamentoDTO::new).toList();
     }
 

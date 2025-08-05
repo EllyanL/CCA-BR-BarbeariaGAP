@@ -77,8 +77,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.dashboardService.getRecent().subscribe({
       next: data => {
         this.logger.log('Dados recentes recebidos:', data);
-        this.recent = data;
-        this.dataSource.data = data;
+        this.recent = data.filter(a => a.status === 'AGENDADO');
+        this.dataSource.data = this.recent;
         this.applyFilters();
       },
       error: err => this.logger.error('Erro ao carregar recentes', err)
@@ -156,14 +156,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         this.snackBar.open('Agendamento removido com sucesso.', 'Ciente', { duration: 3000 });
         const idx = this.recent.findIndex(r => r.id === a.id);
         if (idx !== -1) {
-          this.recent[idx] = {
-            ...this.recent[idx],
-            status: 'CANCELADO',
-            canceladoPor: 'ADMIN'
-          };
+          this.recent.splice(idx, 1);
+          this.dataSource.data = this.recent;
+          this.applyFilters();
         }
-        this.dataSource.data = this.recent;
-        this.applyFilters();
         this.horariosService.disponibilizarHorario(a.hora.slice(0,5), a.diaSemana, a.categoria)
           .subscribe({
             next: () => {
