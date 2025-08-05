@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.Militar;
+import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
 
@@ -19,12 +20,15 @@ class AgendamentoServiceTimeWindowTests {
     private AgendamentoService service;
     private AgendamentoRepository repo;
     private HorarioRepository horarioRepo;
+    private ConfiguracaoAgendamentoService configService;
 
     @BeforeEach
     void setup() {
         repo = mock(AgendamentoRepository.class);
         horarioRepo = mock(HorarioRepository.class);
-        service = new AgendamentoService(repo, horarioRepo);
+        configService = mock(ConfiguracaoAgendamentoService.class);
+        when(configService.buscarConfiguracao()).thenReturn(new ConfiguracaoAgendamento(1L, LocalTime.of(9,10), LocalTime.of(18,10), null));
+        service = new AgendamentoService(repo, horarioRepo, configService);
     }
 
     @Test
