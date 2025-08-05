@@ -52,16 +52,16 @@ describe('TabelaSemanalComponent', () => {
     beforeEach(() => {
       component.diasDaSemana = ['segunda'];
       component.diasComData = ['segunda - 01/01'];
-      component.horariosBaseSemana = ['08:00'];
+      component.horariosBaseSemana = ['09:10'];
       fixture.detectChanges();
     });
 
     it('retorna status disponivel quando horário está livre', () => {
       component.horariosPorDia = {
-        segunda: [{ horario: '08:00', status: 'DISPONIVEL' }]
+        segunda: [{ horario: '09:10', status: 'DISPONIVEL' }]
       } as any;
 
-      const status = component.getHorarioStatus('segunda', '08:00');
+      const status = component.getHorarioStatus('segunda', '09:10');
       expect(status).toEqual({ cor: 'primary', texto: 'DISPONIVEL', acao: 'agendar' });
     });
 
@@ -70,13 +70,13 @@ describe('TabelaSemanalComponent', () => {
       component.agendamentos = [{
         id: 1,
         data: '',
-        hora: '08:00',
+        hora: '09:10',
         diaSemana: 'segunda',
         categoria: '',
-        militar: { id: 1, saram: '123', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
+        militar: { id: 1, saram: '123', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' }
       }];
 
-      const status = component.getHorarioStatus('segunda', '08:00');
+      const status = component.getHorarioStatus('segunda', '09:10');
       expect(status).toEqual({ cor: 'accent', texto: 'Agendado', acao: 'cancelar' });
     });
 
@@ -85,32 +85,32 @@ describe('TabelaSemanalComponent', () => {
       component.agendamentos = [{
         id: 1,
         data: '',
-        hora: '08:00',
+        hora: '09:10',
         diaSemana: 'segunda',
         categoria: '',
-        militar: { id: 2, saram: '999', cpf: '999', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
+        militar: { id: 2, saram: '999', cpf: '999', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' }
       }];
 
-      const status = component.getHorarioStatus('segunda', '08:00');
+      const status = component.getHorarioStatus('segunda', '09:10');
       expect(status).toEqual({ cor: 'basic', texto: 'Agendado', acao: 'ocupado' });
     });
 
     it('retorna cancelar quando usuarioId do horario pertence ao militar logado', () => {
       component.agendamentos = [];
       component.horariosPorDia = {
-        segunda: [{ horario: '08:00', status: 'AGENDADO', usuarioId: 1 }]
+        segunda: [{ horario: '09:10', status: 'AGENDADO', usuarioId: 1 }]
       } as any;
 
-      const status = component.getHorarioStatus('segunda', '08:00');
+      const status = component.getHorarioStatus('segunda', '09:10');
       expect(status).toEqual({ cor: 'accent', texto: 'Agendado', acao: 'cancelar' });
     });
 
     it('retorna status indisponivel quando horário não existe', () => {
       component.horariosPorDia = {
-        segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }]
+        segunda: [{ horario: '09:10', status: 'INDISPONIVEL' }]
       } as any;
 
-      const status = component.getHorarioStatus('segunda', '08:00');
+      const status = component.getHorarioStatus('segunda', '09:10');
       expect(status).toEqual({ cor: 'disabled', texto: 'Indisponivel', acao: 'nenhuma' });
     });
 
@@ -118,13 +118,13 @@ describe('TabelaSemanalComponent', () => {
       component.idMilitarLogado = 1;
       component.horariosPorDia = {
         segunda: [
-          { horario: '08:00', status: 'AGENDADO', usuarioId: 1 },
-          { horario: '09:00', status: 'AGENDADO', usuarioId: 2 }
+          { horario: '09:10', status: 'AGENDADO', usuarioId: 1 },
+          { horario: '10:10', status: 'AGENDADO', usuarioId: 2 }
         ]
       } as any;
 
-      const podeCancelar = component.isAgendamentoDesmarcavel(undefined, 'segunda', '08:00');
-      const naoPodeCancelar = component.isAgendamentoDesmarcavel(undefined, 'segunda', '09:00');
+      const podeCancelar = component.isAgendamentoDesmarcavel(undefined, 'segunda', '09:10');
+      const naoPodeCancelar = component.isAgendamentoDesmarcavel(undefined, 'segunda', '10:10');
 
       expect(podeCancelar).toBeTrue();
       expect(naoPodeCancelar).toBeFalse();
@@ -133,10 +133,10 @@ describe('TabelaSemanalComponent', () => {
     it('detecta agendamento do usuário via id', () => {
       component.idMilitarLogado = 7;
       const agendamento = {
-        hora: '08:00',
+        hora: '09:10',
         diaSemana: 'segunda',
         categoria: '',
-        militar: { id: 7, saram: '999' }
+        militar: { id: 7, saram: '999', quadro: '' }
       } as any;
       const result = component.isAgendamentoDoMilitarLogado(agendamento);
       expect(result).toBeTrue();
@@ -146,9 +146,9 @@ describe('TabelaSemanalComponent', () => {
   it('atualiza cor do botão conforme status', () => {
     component.diasDaSemana = ['segunda'];
     component.diasComData = ['segunda - 01/01'];
-    component.horariosBaseSemana = ['08:00'];
+    component.horariosBaseSemana = ['09:10'];
     component.horariosPorDia = {
-      segunda: [{ horario: '08:00', status: 'DISPONIVEL' }]
+      segunda: [{ horario: '09:10', status: 'DISPONIVEL' }]
     } as any;
     fixture.detectChanges();
 
@@ -159,10 +159,10 @@ describe('TabelaSemanalComponent', () => {
     component.agendamentos = [{
       id: 1,
       data: '',
-      hora: '08:00',
+      hora: '09:10',
       diaSemana: 'segunda',
       categoria: '',
-      militar: { id: 1, saram: '123', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
+      militar: { id: 1, saram: '123', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' }
     }];
     fixture.detectChanges();
 
@@ -173,10 +173,10 @@ describe('TabelaSemanalComponent', () => {
     component.agendamentos = [{
       id: 1,
       data: '',
-      hora: '08:00',
+      hora: '09:10',
       diaSemana: 'segunda',
       categoria: '',
-      militar: { id: 2, saram: '999', cpf: '999', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '' }
+      militar: { id: 2, saram: '999', cpf: '999', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' }
     }];
     fixture.detectChanges();
 
@@ -217,8 +217,8 @@ describe('TabelaSemanalComponent', () => {
       expect(component.feedbackMessageTitle).toBe('');
     });
 
-    it('bloqueia agendamento na segunda-feira às 8h', () => {
-      const mondayMorning = new Date('2023-01-02T08:00:00');
+    it('bloqueia agendamento na segunda-feira às 9h', () => {
+      const mondayMorning = new Date('2023-01-02T09:00:00');
       jasmine.clock().install();
       jasmine.clock().mockDate(mondayMorning);
 

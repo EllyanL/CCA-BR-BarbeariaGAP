@@ -8,6 +8,7 @@ import { UserService } from '../../../services/user.service';
 import { AgendamentoService } from '../../../services/agendamento.service';
 import { LoggingService } from '../../../services/logging.service';
 import { ErrorMessagesService } from '../../../services/error-messages.service';
+import { Agendamento } from '../../../models/agendamento';
 
 describe('DialogoAgendamentoComponent', () => {
   let component: DialogoAgendamentoComponent;
@@ -18,7 +19,7 @@ describe('DialogoAgendamentoComponent', () => {
   beforeEach(() => {
     userSubject = new ReplaySubject(1);
     const userServiceStub = { userData$: userSubject.asObservable() } as Partial<UserService>;
-    const agendamentoServiceStub = { createAgendamento: () => of({}) } as Partial<AgendamentoService>;
+    const agendamentoServiceStub = { createAgendamento: () => of({} as Agendamento) } as Partial<AgendamentoService>;
     TestBed.configureTestingModule({
       imports: [MatDialogModule, MatSnackBarModule, FormsModule],
       declarations: [DialogoAgendamentoComponent],
