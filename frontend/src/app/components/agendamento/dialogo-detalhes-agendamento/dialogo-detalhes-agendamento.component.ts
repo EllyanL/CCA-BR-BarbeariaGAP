@@ -15,7 +15,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       <p><strong>Dia:</strong> {{ agendamento.diaSemana | titlecase }}</p>
       <div *ngIf="agendamento.militar">
         <p><strong>SARAM:</strong> {{ agendamento.militar.saram }}</p>
-        <p><strong>Nome:</strong> {{ formatarNomeCompleto(agendamento.militar.nomeCompleto) }}</p>
+        <p><strong>Nome:</strong> {{ formatarNome(agendamento.militar.nomeDeGuerra) }}</p>
         <p><strong>OM:</strong> {{ agendamento.militar.om }}</p>
       </div>
     </div>
@@ -75,7 +75,7 @@ export class DialogoDetalhesAgendamentoComponent {
     });
   }
 
-  formatarNomeCompleto(nome: string): string {
+  formatarNome(nome: string): string {
     return nome
       .toLowerCase()
       .split(' ')

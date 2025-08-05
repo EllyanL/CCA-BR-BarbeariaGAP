@@ -15,12 +15,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   displayedColumns = [
     'data',
     'hora',
-    'diaSemana',
-    'nome',
     'postoGrad',
-    'email',
+    'nomeDeGuerra',
     'secao',
-    'categoria',
+    'email',
     'status',
     'canceladoPor'
   ];
@@ -97,12 +95,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       return [
         a.data,
         a.hora,
-        a.diaSemana,
-        a.militar?.nomeCompleto,
         a.militar?.postoGrad,
-        a.militar?.email,
+        a.militar?.nomeDeGuerra,
         a.militar?.secao,
-        a.categoria,
+        a.militar?.email,
         a.status,
         a.canceladoPor
       ]
@@ -163,7 +159,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
               [
                 'DATA',
                 'HORA',
-                'POSTO',
+                'POSTO/GRADUAÇÃO',
                 'NOME DE GUERRA',
                 'SEÇÃO',
                 'EMAIL',
@@ -175,7 +171,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
               this.toBrDate(r.data),
               this.toTime(r.hora),
               r.militar?.postoGrad ?? '',
-              this.capitalizeFirst(r.militar?.nomeDeGuerra),
+              this.formatName(r.militar?.nomeDeGuerra),
               r.militar?.secao ?? '',
               r.militar?.email ?? '',
               this.mapStatus(r.status, r.canceladoPor),
@@ -220,21 +216,20 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     return time.substring(0, 5);
   }
 
-  private capitalizeFirst(nome?: string | null): string {
-    if (!nome) {
-      return '';
-    }
-    const lower = nome.toLowerCase();
-    return lower.charAt(0).toUpperCase() + lower.slice(1);
-  }
-
   private mapStatus(status?: string, canceladoPor?: string): string {
     const s = (status || '').toUpperCase();
-    const cancel = (canceladoPor || '').toUpperCase();
-    if (s === 'CANCELADO') {
-      return cancel === 'ADMIN' ? 'Admin: Cancelado' : 'Cancelado';
+    switch (s) {
+      case 'AGENDADO':
+        return this.formatName('agendado');
+      case 'REALIZADO':
+        return this.formatName('realizado');
+      case 'CANCELADO':
+        return canceladoPor
+          ? `${this.formatName(canceladoPor)}: ${this.formatName('cancelado')}`
+          : this.formatName('cancelado');
+      default:
+        return '';
     }
-    return 'Efetuado';
   }
 
   private formatDate(d: Date): string {
