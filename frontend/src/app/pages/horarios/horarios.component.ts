@@ -10,6 +10,7 @@ import { catchError, take, timeout } from 'rxjs/operators';
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
+import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from '../../services/configuracoes-agendamento.service';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -46,6 +47,7 @@ import { UserService } from 'src/app/services/user.service';
     cpfUsuario: string = '';
     saramUsuario: string = '';
     timeOffsetMs: number = 0;
+    configuracao?: ConfiguracaoAgendamento;
     private userDataSubscription?: Subscription;
     private horariosSub?: Subscription;
     private storageKey: string = '';
@@ -61,7 +63,8 @@ import { UserService } from 'src/app/services/user.service';
       private agendamentoService: AgendamentoService,
       private userService: UserService,
       private serverTimeService: ServerTimeService,
-      private logger: LoggingService
+      private logger: LoggingService,
+      private configuracoesService: ConfiguracoesAgendamentoService
     ) {}
 
     private saveAgendamentos(): void {
@@ -213,23 +216,44 @@ import { UserService } from 'src/app/services/user.service';
         });
     }
     carregarHorariosBase(): void {
-      this.horariosService.getHorariosBase().subscribe(
-        (horarios: string[]) => {
-          this.horariosBaseSemana = horarios;
-          this.ordenarHorarios();
-          this.cdr.detectChanges();
-        },
-        (error: any) => {
-          this.logger.error('Erro ao carregar os horários base:', error);
-          this.snackBar.open(
-            'Não foi possível carregar os horários padrão. Recarregue a página.',
-            'Ciente',
-            {
-              duration: 3000,
+      this.configuracoesService.getConfig().subscribe({
+        next: config => {
+          this.configuracao = config;
+          this.horariosService.getHorariosBase().subscribe(
+            (horarios: string[]) => {
+              const filtrados = horarios.filter(h => this.isHorarioDentroIntervalo(h));
+              if (filtrados.length !== horarios.length) {
+                this.snackBar.open(
+                  'Horários fora da janela configurada foram ignorados.',
+                  'Ciente',
+                  { duration: 3000 }
+                );
+              }
+              this.horariosBaseSemana = filtrados;
+              this.ordenarHorarios();
+              this.cdr.detectChanges();
+            },
+            (error: any) => {
+              this.logger.error('Erro ao carregar os horários base:', error);
+              this.snackBar.open(
+                'Não foi possível carregar os horários padrão. Recarregue a página.',
+                'Ciente',
+                {
+                  duration: 3000,
+                }
+              );
             }
           );
+        },
+        error: err => {
+          this.logger.error('Erro ao carregar configurações de agendamento:', err);
+          this.snackBar.open(
+            'Não foi possível carregar as configurações de horários. Recarregue a página.',
+            'Ciente',
+            { duration: 3000 }
+          );
         }
-      );
+      });
     }
 
     private ordenarHorarios(): void {
@@ -240,6 +264,18 @@ import { UserService } from 'src/app/services/user.service';
         };
         return getTimeValue(a) - getTimeValue(b);
       });
+    }
+
+    private isHorarioDentroIntervalo(horario: string): boolean {
+      if (!this.configuracao) return true;
+      const toMinutes = (h: string) => {
+        const [hh, mm] = h.slice(0, 5).split(':').map(Number);
+        return hh * 60 + mm;
+      };
+      const valor = toMinutes(horario);
+      const inicio = toMinutes(this.configuracao.horarioInicio);
+      const fim = toMinutes(this.configuracao.horarioFim);
+      return valor >= inicio && valor <= fim;
     }
 
     validarHorario(): void {
@@ -262,6 +298,10 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       const horario = this.horarioPersonalizado;
+      if (!this.isHorarioDentroIntervalo(horario)) {
+        this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
+        return;
+      }
       const categoria = this.categoriaSelecionada;
       const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
 
@@ -316,6 +356,10 @@ import { UserService } from 'src/app/services/user.service';
     adicionarHorarioDia(): void {
       if (this.horarioValido && this.horarioPersonalizado) {
         const horario = this.horarioPersonalizado;
+        if (!this.isHorarioDentroIntervalo(horario)) {
+          this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
+          return;
+        }
         const dia = this.diaSelecionado;
         const categoria = this.categoriaSelecionada;
 
@@ -371,6 +415,10 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       const diasAlvo = dia === 'todos' || this.diaSelecionado === 'todos' ? this.diasDaSemana : [dia];
+      if (!this.isHorarioDentroIntervalo(horario)) {
+        this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
+        return;
+      }
 
       this.horariosService
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
@@ -427,6 +475,10 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     adicionarHorarioIndividual(dia: string, horario: string, categoria: string): void { //Adiciona horário fixo na base
+      if (!this.isHorarioDentroIntervalo(horario)) {
+        this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
+        return;
+      }
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: (response) => {
           // Atualiza localmente o horário no dia especificado
