@@ -23,8 +23,10 @@ import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Militar;
+import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
 
 @Service
 @Transactional
@@ -36,9 +38,14 @@ public class AgendamentoService {
 
     private final HorarioRepository horarioRepository;
 
-    public AgendamentoService(AgendamentoRepository agendamentoRepository, HorarioRepository horarioRepository) {
+    private final ConfiguracaoAgendamentoService configuracaoAgendamentoService;
+
+    public AgendamentoService(AgendamentoRepository agendamentoRepository,
+                              HorarioRepository horarioRepository,
+                              ConfiguracaoAgendamentoService configuracaoAgendamentoService) {
         this.agendamentoRepository = agendamentoRepository;
         this.horarioRepository = horarioRepository;
+        this.configuracaoAgendamentoService = configuracaoAgendamentoService;
     }
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
@@ -265,23 +272,29 @@ public class AgendamentoService {
     }
 
     public void validarRegrasDeNegocio(Agendamento agendamento) {
-        // 1. Agendamento só é permitido a partir de segunda às 09:10
+        ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
+
+        // 1. Agendamento só é permitido a partir de segunda às horárioInicio configurado
         LocalDate hoje = LocalDate.now();
         LocalDate segundaDaSemana = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, LocalTime.of(9, 10));
+        LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getHorarioInicio());
 
         if (LocalDateTime.now().isBefore(inicioDaSemana)) {
-            throw new IllegalArgumentException("Agendamentos só são permitidos a partir de segunda às 09:10.");
+            throw new IllegalArgumentException(
+                "Agendamentos só são permitidos a partir de segunda às " +
+                config.getHorarioInicio().format(TIME_FORMATTER) + ".");
         }
 
-        // 2. Horários válidos somente de segunda a sexta entre 09:10 e 18:10
+        // 2. Horários válidos somente de segunda a sexta entre horárioInicio e horárioFim configurados
         DayOfWeek dia = agendamento.getData().getDayOfWeek();
         LocalTime hora = agendamento.getHora();
-        LocalTime inicio = LocalTime.of(9, 10);
-        LocalTime fim = LocalTime.of(18, 10);
+        LocalTime inicio = config.getHorarioInicio();
+        LocalTime fim = config.getHorarioFim();
 
         if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY || hora.isBefore(inicio) || hora.isAfter(fim)) {
-            throw new IllegalArgumentException("Agendamentos são permitidos apenas de segunda a sexta das 09:10 às 18:10.");
+            throw new IllegalArgumentException(
+                "Agendamentos são permitidos apenas de segunda a sexta das " +
+                inicio.format(TIME_FORMATTER) + " às " + fim.format(TIME_FORMATTER) + ".");
         }
 
         // bloqueia agendamentos em datas/horas já passadas
