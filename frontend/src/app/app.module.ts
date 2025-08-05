@@ -58,8 +58,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/tabela-semanal.component';
 import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenciar-registros.component';
-import { GerenciarHorariosComponent } from './pages/gerenciar-horarios/gerenciar-horarios.component';
 import { ConfiguracoesAgendamentoService } from './services/configuracoes-agendamento.service';
+import { DialogoGerenciarHorariosComponent } from './components/dialogo-gerenciar-horarios/dialogo-gerenciar-horarios.component';
 
 registerLocaleData(ptBrLocale, 'pt-BR');
 
@@ -90,7 +90,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     UsuariosComponent,
     AdminNavbarComponent,
     GerenciarRegistrosComponent,
-    GerenciarHorariosComponent,
+    DialogoGerenciarHorariosComponent,
   ],
   imports: [
     BrowserModule,
