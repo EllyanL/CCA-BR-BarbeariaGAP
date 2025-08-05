@@ -250,6 +250,15 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       .join(' ');
   }
 
+  formatarStatus(texto: string): string {
+    if (!texto) return '';
+    const lower = texto.toLowerCase();
+    if (lower === 'disponivel') return 'Disponível';
+    if (lower === 'indisponivel') return 'Indisponível';
+    if (lower === 'agendado') return 'Agendado';
+    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  }
+
   statusClass(status?: string): string {
     const s = (status || '').toUpperCase();
     return (
