@@ -1,0 +1,12 @@
+<div class="gerenciar-horarios-container">
+  <label>
+    Início:
+    <input type="time" [(ngModel)]="horarioInicio" />
+  </label>
+  <label>
+    Fim:
+    <input type="time" [(ngModel)]="horarioFim" />
+  </label>
+  <button mat-raised-button color="primary" (click)="salvar()">Salvar</button>
+</div>
+
