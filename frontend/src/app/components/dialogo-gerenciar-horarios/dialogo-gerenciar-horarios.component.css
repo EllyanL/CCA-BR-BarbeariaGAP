@@ -1,0 +1,11 @@
+.acoes {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+}

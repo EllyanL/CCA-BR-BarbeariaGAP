@@ -14,8 +14,6 @@ import { OficiaisComponent } from './pages/oficiais/oficiais.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenciar-registros.component';
 import { OficialGuard } from './guards/oficial.guard';
-import { UserGuard } from './guards/user.guard';
-import { GerenciarHorariosComponent } from './pages/gerenciar-horarios/gerenciar-horarios.component';
 
 const routes: Routes = [
     { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
@@ -26,7 +24,6 @@ const routes: Routes = [
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
     { path: 'admin/dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard Admin' }, canActivate: [AdminGuard] },
     { path: 'admin/usuarios', component: UsuariosComponent, data: { title: 'Usuários' }, canActivate: [AdminGuard] },
-    { path: 'admin/gerenciar_horarios', component: GerenciarHorariosComponent, canActivate: [AdminGuard], data: { title: 'Gerenciar Horários' } },
     { path: 'admin/gerenciar_registros', component: GerenciarRegistrosComponent, canActivate: [AdminGuard], data: { title: 'Gerenciar Registros' } },
     { path: 'not-authorized', component: NotAuthorizedComponent, data: { title: 'Acesso não autorizado' } },
     { path: '**', component: NotFoundComponent, data: { title: 'Página não encontrada' } }

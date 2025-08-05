@@ -5,6 +5,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AdminNavbarComponent', () => {
   let component: AdminNavbarComponent;
@@ -13,7 +15,7 @@ describe('AdminNavbarComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       declarations: [AdminNavbarComponent],
-      imports: [MatSidenavModule, MatListModule, MatIconModule, MatButtonModule],
+      imports: [MatSidenavModule, MatListModule, MatIconModule, MatButtonModule, MatDialogModule, BrowserAnimationsModule],
       providers: [
         { provide: AuthService, useValue: { isAdmin: () => true, logout: () => {} } }
       ]
