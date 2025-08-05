@@ -58,6 +58,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/tabela-semanal.component';
 import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenciar-registros.component';
+import { GerenciarHorariosComponent } from './pages/gerenciar-horarios/gerenciar-horarios.component';
+import { ConfiguracoesAgendamentoService } from './services/configuracoes-agendamento.service';
 
 registerLocaleData(ptBrLocale, 'pt-BR');
 
@@ -88,6 +90,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     UsuariosComponent,
     AdminNavbarComponent,
     GerenciarRegistrosComponent,
+    GerenciarHorariosComponent,
   ],
   imports: [
     BrowserModule,
@@ -126,7 +129,8 @@ registerLocaleData(ptBrLocale, 'pt-BR');
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
     { provide: LOCALE_ID, useValue: 'pt-BR' },
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    ConfiguracoesAgendamentoService
   ],
   exports: [AdminNavbarComponent],
   bootstrap: [AppComponent]
