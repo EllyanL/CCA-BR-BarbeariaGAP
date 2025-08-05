@@ -6,6 +6,7 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { HorariosComponent } from './horarios.component';
 import { HorariosService } from '../../services/horarios.service';
+import { ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Militar } from '../../models/militar';
@@ -19,11 +20,14 @@ describe('HorariosComponent', () => {
   let agendamentoService: jasmine.SpyObj<AgendamentoService>;
   let authService: jasmine.SpyObj<AuthService>;
   let snack: jasmine.SpyObj<MatSnackBar>;
+  let configService: jasmine.SpyObj<ConfiguracoesAgendamentoService>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios'], { horariosPorDia$: of({}) });
-    agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos']);
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias'], { horariosPorDia$: of({}) });
+    agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos', 'createAgendamento']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
+    configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
+    configService.getConfig.and.returnValue(of({horarioInicio: '09:00', horarioFim: '18:00'}));
 
     const userService = { userData$: of([{ cpf: '123', saram: '1' }]) } as Partial<UserService>;
     const route = { queryParams: of({}) } as Partial<ActivatedRoute>;
@@ -41,7 +45,8 @@ describe('HorariosComponent', () => {
         { provide: ActivatedRoute, useValue: route },
         { provide: MatDialog, useValue: dialog },
         { provide: MatSnackBar, useValue: snack },
-        { provide: Router, useValue: router }
+        { provide: Router, useValue: router },
+        { provide: ConfiguracoesAgendamentoService, useValue: configService }
       ]
     });
     fixture = TestBed.createComponent(HorariosComponent);
@@ -186,6 +191,31 @@ describe('HorariosComponent', () => {
     const dia = `segunda - ${past.getDate().toString().padStart(2, '0')}/${(past.getMonth()+1).toString().padStart(2, '0')}`;
     component.agendarHorario(dia, '09:10');
     expect(agendamentoService.createAgendamento).not.toHaveBeenCalled();
+    expect(snack.open).toHaveBeenCalled();
+  });
+
+  it('carregarHorariosBase ignora horários fora da configuração', () => {
+    configService.getConfig.and.returnValue(of({horarioInicio: '09:00', horarioFim: '10:00'}));
+    horariosService.getHorariosBase.and.returnValue(of(['08:00', '09:30', '10:00']));
+    component.carregarHorariosBase();
+    expect(component.horariosBaseSemana).toEqual(['09:30', '10:00']);
+  });
+
+  it('adicionarHorarioBase bloqueia horários fora da configuração', () => {
+    component.configuracao = {horarioInicio: '09:00', horarioFim: '18:00'};
+    component.horarioPersonalizado = '07:00';
+    component.horarioValido = true;
+    component.diaSelecionado = 'segunda';
+    component.adicionarHorarioBase();
+    expect(horariosService.adicionarHorarioBase).not.toHaveBeenCalled();
+    expect(snack.open).toHaveBeenCalled();
+  });
+
+  it('disponibilizarHorario bloqueia horários fora da configuração', () => {
+    authService.getUsuarioAutenticado.and.returnValue({categoria: 'ADMIN'} as Militar);
+    component.configuracao = {horarioInicio: '09:00', horarioFim: '18:00'};
+    component.disponibilizarHorario('segunda', '07:00', 'GRADUADO');
+    expect(horariosService.alterarDisponibilidadeEmDias).not.toHaveBeenCalled();
     expect(snack.open).toHaveBeenCalled();
   });
 });

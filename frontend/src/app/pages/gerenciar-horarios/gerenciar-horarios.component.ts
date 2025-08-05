@@ -26,6 +26,20 @@ export class GerenciarHorariosComponent implements OnInit {
   }
 
   salvar(): void {
+    const regex = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!regex.test(this.horarioInicio) || !regex.test(this.horarioFim)) {
+      this.snackBar.open('Informe horários válidos (HH:mm).', 'Ciente', { duration: 3000 });
+      return;
+    }
+    const toMinutes = (h: string) => {
+      const [hh, mm] = h.split(':').map(Number);
+      return hh * 60 + mm;
+    };
+    if (toMinutes(this.horarioInicio) >= toMinutes(this.horarioFim)) {
+      this.snackBar.open('Horário inicial deve ser menor que o final.', 'Ciente', { duration: 3000 });
+      return;
+    }
+
     const configuracao: ConfiguracaoAgendamento = {
       horarioInicio: this.horarioInicio,
       horarioFim: this.horarioFim

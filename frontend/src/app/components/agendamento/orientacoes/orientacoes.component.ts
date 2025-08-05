@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from 'src/app/services/configuracoes-agendamento.service';
 
 @Component({
   selector: 'app-orientacoes',
@@ -16,7 +17,7 @@ import { Component } from '@angular/core';
           </mat-list-item>
           <mat-list-item class="orientacoes-card__list-item">
             <mat-icon matListIcon>schedule</mat-icon>
-            Os agendamentos estão disponíveis diariamente das 09:10 às 18:00.
+            Os agendamentos estão disponíveis diariamente das {{horarioInicio}} às {{horarioFim}}.
           </mat-list-item>
           <mat-list-item class="orientacoes-card__list-item">
             <mat-icon matListIcon>repeat</mat-icon>
@@ -93,4 +94,16 @@ import { Component } from '@angular/core';
     }
   `]
 })
-export class OrientacoesComponent { }
+export class OrientacoesComponent implements OnInit {
+  horarioInicio?: string;
+  horarioFim?: string;
+
+  constructor(private configService: ConfiguracoesAgendamentoService) {}
+
+  ngOnInit(): void {
+    this.configService.getConfig().subscribe((config: ConfiguracaoAgendamento) => {
+      this.horarioInicio = config.horarioInicio?.slice(0,5);
+      this.horarioFim = config.horarioFim?.slice(0,5);
+    });
+  }
+}
