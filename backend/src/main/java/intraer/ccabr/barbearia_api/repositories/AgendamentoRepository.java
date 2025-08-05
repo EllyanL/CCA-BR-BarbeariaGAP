@@ -21,13 +21,13 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("categoria") String categoria
     );
 
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria")
-        boolean existsByDataAndHoraAndDiaSemanaAndCategoria(
-        @Param("data") LocalDate data,
-        @Param("hora") LocalTime hora,    
-        @Param("diaSemana") String diaSemana,
-        @Param("categoria") String categoria
-        );
+    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria AND a.status = 'AGENDADO'")
+    boolean existsByDataAndHoraAndDiaSemanaAndCategoria(
+            @Param("data") LocalDate data,
+            @Param("hora") LocalTime hora,
+            @Param("diaSemana") String diaSemana,
+            @Param("categoria") String categoria
+    );
 
     @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria")
     Optional<Agendamento> findByDataAndHoraAndDiaSemanaAndCategoria(
@@ -62,7 +62,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("DELETE FROM Agendamento a WHERE a.hora = :hora")
     void deleteByHora(@Param("hora") LocalTime hora);
 
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria")
+    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria AND a.status = 'AGENDADO'")
     boolean existsByHoraAndDiaSemanaAndCategoria(
             @Param("hora") LocalTime hora,
             @Param("diaSemana") String diaSemana,

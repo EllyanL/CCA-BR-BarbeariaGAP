@@ -177,13 +177,13 @@ public class HorarioService {
         LocalTime horaConvertida = LocalTime.parse(horario);
         validarHorarioDentroIntervalo(horaConvertida);
 
-        boolean hasAgendamento = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+        boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horaConvertida,
                 dia,
                 categoria
         );
-    
-        if (hasAgendamento) {
+
+        if (hasAgendamentoAtivo) {
             h.setStatus(HorarioStatus.INDISPONIVEL);
         } else {
             h.setStatus(HorarioStatus.DISPONIVEL);
@@ -198,14 +198,14 @@ public class HorarioService {
 
         LocalTime horaConvertida = LocalTime.parse(horario);
         validarHorarioDentroIntervalo(horaConvertida);
-        boolean hasAgendamento = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+        boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horaConvertida,
                 dia,
                 categoria
         );
 
-        if (hasAgendamento) {
-            throw new IllegalArgumentException("Já existe agendamento para este horário.");
+        if (hasAgendamentoAtivo) {
+            throw new IllegalArgumentException("Já existe agendamento ativo para este horário.");
         }
 
         h.setStatus(HorarioStatus.INDISPONIVEL);
@@ -229,7 +229,7 @@ public class HorarioService {
             })
             .toList();
 
-        boolean hasAgendamentos = horariosValidos.stream().anyMatch(horario ->
+        boolean hasAgendamentosAtivos = horariosValidos.stream().anyMatch(horario ->
             agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 LocalTime.parse(horario),
                 dia,
@@ -237,7 +237,7 @@ public class HorarioService {
             )
         );
 
-        if (hasAgendamentos) {
+        if (hasAgendamentosAtivos) {
             throw new IllegalArgumentException("Existem horários agendados. Não é possível disponibilizar todos.");
         }
 
