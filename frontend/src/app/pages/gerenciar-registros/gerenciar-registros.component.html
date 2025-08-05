@@ -27,7 +27,7 @@
         <table mat-table [dataSource]="dataSourceGraduados" matSort class="mat-elevation-z8">
           <ng-container matColumnDef="data">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
-            <td mat-cell *matCellDef="let a">{{ a.data }}</td>
+            <td mat-cell *matCellDef="let a">{{ toBrDate(a.data) }}</td>
           </ng-container>
           <ng-container matColumnDef="hora">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
@@ -78,7 +78,7 @@
         <table mat-table [dataSource]="dataSourceOficiais" matSort class="mat-elevation-z8">
           <ng-container matColumnDef="data">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
-            <td mat-cell *matCellDef="let a">{{ a.data }}</td>
+            <td mat-cell *matCellDef="let a">{{ toBrDate(a.data) }}</td>
           </ng-container>
           <ng-container matColumnDef="hora">
             <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
