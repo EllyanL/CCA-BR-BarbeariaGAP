@@ -48,7 +48,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.cpf = :cpf AND a.categoria = :categoria")
     List<Agendamento> findByMilitarCpfAndCategoria(@Param("cpf") String cpf, @Param("categoria") String categoria);
 
-    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.cpf = :cpf AND a.categoria = :categoria AND a.data >= :data ORDER BY a.data")
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.cpf = :cpf AND a.categoria = :categoria AND a.data >= :data AND a.status = 'AGENDADO' ORDER BY a.data")
     List<Agendamento> findByMilitarCpfAndCategoriaAndDataAfter(
             @Param("cpf") String cpf,
             @Param("categoria") String categoria,
@@ -95,7 +95,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a.data, COUNT(a) FROM Agendamento a WHERE a.data >= :startDate GROUP BY a.data ORDER BY a.data")
     List<Object[]> countByDataSince(@Param("startDate") LocalDate startDate);
 
-    List<Agendamento> findTop5ByOrderByDataDescHoraDesc();
+    List<Agendamento> findTop5ByStatusOrderByDataDescHoraDesc(String status);
 
     @Query("""
             SELECT a FROM Agendamento a JOIN FETCH a.militar
