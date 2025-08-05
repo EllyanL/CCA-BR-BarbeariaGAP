@@ -512,7 +512,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return "";
     }
     return `SARAM: ${agendamento.militar?.saram || 'Não informado'}\n` +
-           `Nome: ${agendamento.militar?.nomeCompleto || 'Não informado'}\n` +
+           `Nome: ${agendamento.militar?.nomeDeGuerra || 'Não informado'}\n` +
            `Email: ${agendamento.militar?.email || 'Não informado'}\n` +
            `OM: ${agendamento.militar?.om || 'Não informado'}\n` +
            `Seção: ${agendamento.militar?.secao || 'Não informado'}\n` +

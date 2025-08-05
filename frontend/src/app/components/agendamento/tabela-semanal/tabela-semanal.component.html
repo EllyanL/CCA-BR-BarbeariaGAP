@@ -99,7 +99,7 @@
               <td>
                 <div *ngIf="agendamento.militar; else noMilitar">
                   <strong>SARAM:</strong> {{ agendamento.militar.saram || 'Não informado' }}<br>
-                  <strong>Nome:</strong> {{ agendamento.militar.nomeCompleto || 'Não informado' }}<br>
+                  <strong>Nome:</strong> {{ agendamento.militar.nomeDeGuerra || 'Não informado' }}<br>
                   <strong>Email:</strong> {{ agendamento.militar.email || 'Não informado' }}<br>
                   <strong>Seção:</strong> {{ agendamento.militar.secao || 'Não informado' }}<br>
                   <strong>Ramal:</strong> {{ agendamento.militar.ramal || 'Não informado' }}
