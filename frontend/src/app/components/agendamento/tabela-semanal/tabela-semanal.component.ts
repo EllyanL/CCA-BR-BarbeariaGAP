@@ -19,6 +19,7 @@ import { MilitarService } from 'src/app/services/militar.service';
 import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
+import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -85,7 +86,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     private serverTimeService: ServerTimeService,
     private authService: AuthService,
     private logger: LoggingService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private configuracoesService: ConfiguracoesAgendamentoService
   ) {}
 
   private saveAgendamentos(): void {
@@ -392,15 +394,29 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   loadHorariosBase(): void {
-    this.horariosService.getHorariosBase().subscribe(
-      (horarios) => {
-        this.horariosBaseSemana = horarios;
+    this.configuracoesService.getConfig().subscribe({
+      next: config => {
+        const [inicioHora, inicioMin] = config.horarioInicio.split(':').map(Number);
+        const [fimHora, fimMin] = config.horarioFim.split(':').map(Number);
+        const inicio = new Date();
+        inicio.setHours(inicioHora, inicioMin, 0, 0);
+        const fim = new Date();
+        fim.setHours(fimHora, fimMin, 0, 0);
+
+        const slots: string[] = [];
+        for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 10 * 60 * 1000)) {
+          const hh = t.getHours().toString().padStart(2, '0');
+          const mm = t.getMinutes().toString().padStart(2, '0');
+          slots.push(`${hh}:${mm}`);
+        }
+
+        this.horariosBaseSemana = slots;
         this.ordenarHorarios();
       },
-      (error) => {
-        this.logger.error('Erro ao carregar os horários base:', error);
+      error: err => {
+        this.logger.error('Erro ao carregar os horários base:', err);
       }
-    );
+    });
   }
 
   private ordenarHorarios(): void {

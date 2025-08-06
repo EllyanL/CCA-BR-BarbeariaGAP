@@ -6,6 +6,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { TabelaSemanalComponent } from './tabela-semanal.component';
+import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { of } from 'rxjs';
 
 describe('TabelaSemanalComponent', () => {
@@ -28,7 +29,11 @@ describe('TabelaSemanalComponent', () => {
         },
         { provide: AuthService, useValue: { getUsuarioAutenticado: () => ({ id: 1 }) } },
         { provide: MatDialog, useValue: dialogSpy },
-        { provide: MatSnackBar, useValue: snackSpy }
+        { provide: MatSnackBar, useValue: snackSpy },
+        {
+          provide: ConfiguracoesAgendamentoService,
+          useValue: { getConfig: () => of({ horarioInicio: '08:00', horarioFim: '09:00' }) }
+        }
       ]
     });
     fixture = TestBed.createComponent(TabelaSemanalComponent);

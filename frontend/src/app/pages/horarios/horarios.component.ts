@@ -219,31 +219,24 @@ import { UserService } from 'src/app/services/user.service';
       this.configuracoesService.getConfig().subscribe({
         next: config => {
           this.configuracao = config;
-          this.horariosService.getHorariosBase().subscribe(
-            (horarios: string[]) => {
-              const filtrados = horarios.filter(h => this.isHorarioDentroIntervalo(h));
-              if (filtrados.length !== horarios.length) {
-                this.snackBar.open(
-                  'Horários fora da janela configurada foram ignorados.',
-                  'Ciente',
-                  { duration: 3000 }
-                );
-              }
-              this.horariosBaseSemana = filtrados;
-              this.ordenarHorarios();
-              this.cdr.detectChanges();
-            },
-            (error: any) => {
-              this.logger.error('Erro ao carregar os horários base:', error);
-              this.snackBar.open(
-                'Não foi possível carregar os horários padrão. Recarregue a página.',
-                'Ciente',
-                {
-                  duration: 3000,
-                }
-              );
-            }
-          );
+
+          const [inicioHora, inicioMin] = config.horarioInicio.split(':').map(Number);
+          const [fimHora, fimMin] = config.horarioFim.split(':').map(Number);
+          const inicio = new Date();
+          inicio.setHours(inicioHora, inicioMin, 0, 0);
+          const fim = new Date();
+          fim.setHours(fimHora, fimMin, 0, 0);
+
+          const slots: string[] = [];
+          for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 10 * 60 * 1000)) {
+            const hh = t.getHours().toString().padStart(2, '0');
+            const mm = t.getMinutes().toString().padStart(2, '0');
+            slots.push(`${hh}:${mm}`);
+          }
+
+          this.horariosBaseSemana = slots;
+          this.ordenarHorarios();
+          this.cdr.detectChanges();
         },
         error: err => {
           this.logger.error('Erro ao carregar configurações de agendamento:', err);

@@ -194,11 +194,11 @@ describe('HorariosComponent', () => {
     expect(snack.open).toHaveBeenCalled();
   });
 
-  it('carregarHorariosBase ignora horários fora da configuração', () => {
+  it('carregarHorariosBase gera horários conforme configuração', () => {
     configService.getConfig.and.returnValue(of({horarioInicio: '09:00', horarioFim: '10:00'}));
-    horariosService.getHorariosBase.and.returnValue(of(['08:00', '09:30', '10:00']));
     component.carregarHorariosBase();
-    expect(component.horariosBaseSemana).toEqual(['09:30', '10:00']);
+    expect(component.horariosBaseSemana[0]).toBe('09:00');
+    expect(component.horariosBaseSemana[component.horariosBaseSemana.length - 1]).toBe('10:00');
   });
 
   it('adicionarHorarioBase bloqueia horários fora da configuração', () => {
