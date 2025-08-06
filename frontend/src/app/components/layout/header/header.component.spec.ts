@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { UserService } from '../../../services/user.service';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
@@ -18,7 +19,7 @@ describe('HeaderComponent', () => {
     const userServiceStub = { userData$: userSubject.asObservable() } as Partial<UserService>;
     TestBed.configureTestingModule({
       declarations: [HeaderComponent],
-      imports: [MatIconModule, MatMenuModule],
+      imports: [MatIconModule, MatMenuModule, RouterTestingModule],
       providers: [
         { provide: UserService, useValue: userServiceStub },
         { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of() }) } },
