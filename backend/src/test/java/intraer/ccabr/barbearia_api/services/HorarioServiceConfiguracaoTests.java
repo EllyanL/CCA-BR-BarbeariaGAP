@@ -2,6 +2,7 @@ package intraer.ccabr.barbearia_api.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalTime;
@@ -46,5 +47,27 @@ class HorarioServiceConfiguracaoTests {
 
         List<String> result = service.getHorariosUnicos();
         assertEquals(List.of("10:00"), result);
+    }
+
+    @Test
+    void disponibilizarHorarioInexistenteRetornaNull() {
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+                .thenReturn(java.util.Optional.empty());
+
+        Horario result = service.disponibilizarHorario("segunda", "10:00", "GRADUADO");
+
+        assertNull(result);
+        verify(horarioRepo, never()).save(any());
+    }
+
+    @Test
+    void indisponibilizarHorarioInexistenteRetornaNull() {
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+                .thenReturn(java.util.Optional.empty());
+
+        Horario result = service.indisponibilizarHorario("segunda", "10:00", "GRADUADO");
+
+        assertNull(result);
+        verify(horarioRepo, never()).save(any());
     }
 }

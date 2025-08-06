@@ -88,17 +88,17 @@ public class HorarioController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
     }
-    Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
-            horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
-    Map<String, Object> response = new HashMap<>();
-    if (horarioIndisponibilizado != null) {
+        Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
+                horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+        if (horarioIndisponibilizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensagem", "Horário não encontrado."));
+        }
+        Map<String, Object> response = new HashMap<>();
         response.put("mensagem", "Horário indisponibilizado com sucesso para " + horarioDTO.getCategoria());
         response.put("horario", horarioIndisponibilizado);
-    } else {
-        response.put("mensagem", "Nenhum horário encontrado para indisponibilizar.");
+        return ResponseEntity.ok(response);
     }
-    return ResponseEntity.ok(response);
-}
     @PostMapping("/disponibilizar")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> disponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
@@ -110,6 +110,10 @@ public class HorarioController {
         }
         Horario horarioDisponibilizado = horarioService.disponibilizarHorario(
                 horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+        if (horarioDisponibilizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensagem", "Horário não encontrado."));
+        }
         Map<String, Object> response = new HashMap<>();
         response.put("mensagem", "Horário disponibilizado com sucesso para " + horarioDTO.getCategoria());
         response.put("horario", horarioDisponibilizado);
