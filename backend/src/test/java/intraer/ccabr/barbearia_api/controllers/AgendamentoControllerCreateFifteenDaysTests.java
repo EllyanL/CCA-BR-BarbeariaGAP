@@ -56,7 +56,7 @@ class AgendamentoControllerCreateFifteenDaysTests {
     void createAgendamentoWithin15DaysReturnsConflict() throws Exception {
         AgendamentoCreateDTO dto = new AgendamentoCreateDTO();
         dto.setData(LocalDate.now().plusDays(1));
-        dto.setHora(LocalTime.of(9, 10));
+        dto.setHora(LocalTime.of(9, 0));
         dto.setDiaSemana("segunda");
         dto.setCategoria("GRADUADO");
 
@@ -65,8 +65,8 @@ class AgendamentoControllerCreateFifteenDaysTests {
         militar.setCategoria(UserRole.GRADUADO);
         when(militarRepository.findByCpf("111")).thenReturn(Optional.of(militar));
 
-        Horario horario = new Horario("segunda", "09:10", "GRADUADO", HorarioStatus.DISPONIVEL);
-        when(horarioRepository.findByDiaAndHorarioAndCategoria("segunda", "09:10", "GRADUADO"))
+        Horario horario = new Horario("segunda", "09:00", "GRADUADO", HorarioStatus.DISPONIVEL);
+        when(horarioRepository.findByDiaAndHorarioAndCategoria("segunda", "09:00", "GRADUADO"))
             .thenReturn(Optional.of(horario));
 
         when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any()))
