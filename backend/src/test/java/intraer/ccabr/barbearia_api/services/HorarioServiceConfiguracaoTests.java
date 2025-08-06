@@ -1,8 +1,6 @@
 package intraer.ccabr.barbearia_api.services;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalTime;
@@ -69,5 +67,43 @@ class HorarioServiceConfiguracaoTests {
 
         assertNull(result);
         verify(horarioRepo, never()).save(any());
+    }
+
+    @Test
+    void removerHorarioPersonalizadoExistenteDeletaRegistro() {
+        Horario h = new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL);
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+                .thenReturn(java.util.Optional.of(h));
+
+        boolean result = service.removerHorarioPersonalizado("segunda", "10:00", "GRADUADO");
+
+        assertTrue(result);
+        verify(horarioRepo).delete(h);
+    }
+
+    @Test
+    void removerHorarioPersonalizadoInexistenteRetornaFalse() {
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+                .thenReturn(java.util.Optional.empty());
+
+        boolean result = service.removerHorarioPersonalizado("segunda", "10:00", "GRADUADO");
+
+        assertFalse(result);
+        verify(horarioRepo, never()).delete(any());
+    }
+
+    @Test
+    void indisponibilizarHorarioAlteraStatusParaIndisponivel() {
+        Horario h = new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL);
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+                .thenReturn(java.util.Optional.of(h));
+        when(agendamentoRepo.existsByHoraAndDiaSemanaAndCategoria(LocalTime.parse("10:00"), "segunda", "GRADUADO"))
+                .thenReturn(false);
+        when(horarioRepo.save(any(Horario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Horario result = service.indisponibilizarHorario("segunda", "10:00", "GRADUADO");
+
+        assertEquals(HorarioStatus.INDISPONIVEL, result.getStatus());
+        verify(horarioRepo, never()).delete(any());
     }
 }

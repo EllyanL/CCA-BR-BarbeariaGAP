@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/horarios")
@@ -66,9 +65,8 @@ public class HorarioController {
         String dia = request.get("dia");
         String categoria = request.get("categoria");
 
-        Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
-        existente.ifPresent(horarioRepository::delete);
-        String mensagem = existente.isPresent() ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
+        boolean removido = horarioService.removerHorarioPersonalizado(dia, horario, categoria);
+        String mensagem = removido ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
         return ResponseEntity.ok(mensagem);
     }
     @GetMapping("/{dia}")

@@ -103,6 +103,9 @@ export class HorariosService {
     return this.http.post(`${this.apiUrl}/adicionar`, payload, { headers: this.getAuthHeaders() });
   }
 
+  /**
+   * Remove definitivamente um horário base via endpoint `/remover`.
+   */
   removerHorarioBase(horario: string, dia: string, categoria: string): Observable<boolean> {
     const url = `${this.apiUrl}/remover`;
     const body = { horario, dia, categoria };

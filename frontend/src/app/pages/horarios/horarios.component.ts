@@ -477,6 +477,7 @@ import { UserService } from 'src/app/services/user.service';
       });
     } 
     
+    // Remove horário definitivamente usando o endpoint `/remover`
     removerHorarioBase(): void {
       if (!this.diaSelecionado || !this.horarioPersonalizado) {
         this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: 3000 });
