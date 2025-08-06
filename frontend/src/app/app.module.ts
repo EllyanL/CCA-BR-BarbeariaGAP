@@ -60,6 +60,7 @@ import { TabelaSemanalComponent } from './components/agendamento/tabela-semanal/
 import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenciar-registros.component';
 import { ConfiguracoesAgendamentoService } from './services/configuracoes-agendamento.service';
 import { DialogoGerenciarHorariosComponent } from './components/dialogo-gerenciar-horarios/dialogo-gerenciar-horarios.component';
+import { MeusAgendamentosComponent } from './pages/meus-agendamentos/meus-agendamentos.component';
 
 registerLocaleData(ptBrLocale, 'pt-BR');
 
@@ -91,6 +92,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     AdminNavbarComponent,
     GerenciarRegistrosComponent,
     DialogoGerenciarHorariosComponent,
+    MeusAgendamentosComponent,
   ],
   imports: [
     BrowserModule,

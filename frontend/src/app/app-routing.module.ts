@@ -14,12 +14,15 @@ import { OficiaisComponent } from './pages/oficiais/oficiais.component';
 import { UsuariosComponent } from './pages/usuarios/usuarios.component';
 import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenciar-registros.component';
 import { OficialGuard } from './guards/oficial.guard';
+import { MeusAgendamentosComponent } from './pages/meus-agendamentos/meus-agendamentos.component';
+import { UserGuard } from './guards/user.guard';
 
 const routes: Routes = [
     { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
     { path: 'auth/login', component: LoginComponent, data: { title: 'Login' } },
     { path: 'oficiais', component: OficiaisComponent, data: { title: 'BARBEARIA - OFICIAIS' }, canActivate: [OficialGuard] },
     { path: 'graduados', component: GraduadosComponent, data: { title: 'BARBEARIA - GRADUADOS' }, canActivate: [GraduadoGuard] },
+    { path: 'meus-agendamentos', component: MeusAgendamentosComponent, canActivate: [UserGuard] },
     { path: 'admin', component: AdminComponent, data: { title: 'Admin' }, canActivate: [AdminGuard] },
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
     { path: 'admin/dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard Admin' }, canActivate: [AdminGuard] },

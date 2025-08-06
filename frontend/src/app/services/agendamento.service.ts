@@ -104,7 +104,17 @@ export class AgendamentoService {
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
-    });
-  }  
+      });
+  }
+
+  getMeusAgendamentos(): Observable<Agendamento[]> {
+    return this.http.get<Agendamento[] | null>(`${this.apiUrl}/meus`).pipe(
+      map(res => res ?? []),
+      catchError(error => {
+        this.logger.error('Erro ao obter meus agendamentos:', error);
+        return throwError(() => error);
+      })
+    );
+  }
   
 }

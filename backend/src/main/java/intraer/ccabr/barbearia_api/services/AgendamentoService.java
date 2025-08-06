@@ -64,6 +64,11 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
+    public List<Agendamento> findByMilitarId(Long militarId) {
+        return agendamentoRepository.findByMilitarId(militarId);
+    }
+
+    @Transactional(readOnly = true)
     public List<Agendamento> findByCategoriaAndPeriodo(String categoria, LocalDate inicio, LocalDate fim) {
         return agendamentoRepository.findByCategoriaAndPeriodo(categoria, inicio, fim);
     }
