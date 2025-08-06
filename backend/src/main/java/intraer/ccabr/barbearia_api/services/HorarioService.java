@@ -171,7 +171,10 @@ public class HorarioService {
     @Transactional
     public Horario disponibilizarHorario(String dia, String horario, String categoria) {
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
-        Horario h = horarioOpt.orElseGet(() -> new Horario(dia, horario, categoria, HorarioStatus.DISPONIVEL));
+        if (horarioOpt.isEmpty()) {
+            return null;
+        }
+        Horario h = horarioOpt.get();
 
         // ⚠️ Converter String para LocalTime
         LocalTime horaConvertida = LocalTime.parse(horario);
@@ -190,11 +193,14 @@ public class HorarioService {
         }
         return horarioRepository.save(h);
     }
-    
+
     @Transactional
     public Horario indisponibilizarHorario(String dia, String horario, String categoria) {
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
-        Horario h = horarioOpt.orElseGet(() -> new Horario(dia, horario, categoria, HorarioStatus.INDISPONIVEL));
+        if (horarioOpt.isEmpty()) {
+            return null;
+        }
+        Horario h = horarioOpt.get();
 
         LocalTime horaConvertida = LocalTime.parse(horario);
         validarHorarioDentroIntervalo(horaConvertida);
