@@ -6,4 +6,4 @@ CREATE TABLE configuracoes_agendamento (
 );
 
 INSERT INTO configuracoes_agendamento (id, horario_inicio, horario_fim)
-VALUES (1, '09:10', '18:10');
+VALUES (1, '08:00', '18:00');
