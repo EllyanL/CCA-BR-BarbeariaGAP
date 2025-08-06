@@ -158,7 +158,7 @@ public class AgendamentoController {
     }
 
     @GetMapping("/meus")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GRADUADO', 'OFICIAL')")
+    @PreAuthorize("hasAnyRole('GRADUADO','OFICIAL','ADMIN')")
     public ResponseEntity<List<AgendamentoDTO>> findByMilitar(Authentication authentication) {
         String userCpf = authentication.getName();
         Optional<Militar> militarOpt = militarRepository.findByCpf(userCpf);
