@@ -51,9 +51,8 @@ public class HorarioController {
             return ResponseEntity.badRequest().body("Campos obrigatórios: horario, dia, categoria.");
         }
 
-        Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
-        if (existente.isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Horário já existente.");
+        if (horarioRepository.existsByDiaAndHorarioAndCategoria(dia, horario, categoria)) {
+            return ResponseEntity.ok("Horário já existente, nenhuma ação realizada.");
         }
 
         Horario novo = new Horario(dia, horario, categoria, HorarioStatus.DISPONIVEL);
@@ -68,12 +67,9 @@ public class HorarioController {
         String categoria = request.get("categoria");
 
         Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
-        if (existente.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Horário não encontrado.");
-        }
-
-        horarioRepository.delete(existente.get()); // <-- REMOVE DO BANCO
-        return ResponseEntity.ok("Horário removido com sucesso.");
+        existente.ifPresent(horarioRepository::delete);
+        String mensagem = existente.isPresent() ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
+        return ResponseEntity.ok(mensagem);
     }
     @GetMapping("/{dia}")
     public List<Horario> getHorariosPorDiaECategoria(@PathVariable String dia, @RequestParam String categoria) {
