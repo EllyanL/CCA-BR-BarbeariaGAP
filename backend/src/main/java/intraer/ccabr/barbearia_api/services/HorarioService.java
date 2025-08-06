@@ -195,6 +195,13 @@ public class HorarioService {
     }
 
     @Transactional
+    public boolean removerHorarioPersonalizado(String dia, String horario, String categoria) {
+        Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
+        existente.ifPresent(horarioRepository::delete);
+        return existente.isPresent();
+    }
+
+    @Transactional
     public Horario indisponibilizarHorario(String dia, String horario, String categoria) {
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
         if (horarioOpt.isEmpty()) {
