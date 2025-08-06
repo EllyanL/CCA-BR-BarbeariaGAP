@@ -228,7 +228,7 @@ import { UserService } from 'src/app/services/user.service';
           fim.setHours(fimHora, fimMin, 0, 0);
 
           const slots: string[] = [];
-          for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 10 * 60 * 1000)) {
+          for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
             const hh = t.getHours().toString().padStart(2, '0');
             const mm = t.getMinutes().toString().padStart(2, '0');
             slots.push(`${hh}:${mm}`);

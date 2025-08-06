@@ -404,7 +404,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         fim.setHours(fimHora, fimMin, 0, 0);
 
         const slots: string[] = [];
-        for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 10 * 60 * 1000)) {
+        for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
           const hh = t.getHours().toString().padStart(2, '0');
           const mm = t.getMinutes().toString().padStart(2, '0');
           slots.push(`${hh}:${mm}`);
@@ -622,9 +622,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const minutes = now.getMinutes();
 
     const startHour = 9;
-    const startMinute = 10;
+    const startMinute = 0;
     const endHour = 18;
-    const endMinute = 10;
+    const endMinute = 0;
 
     const INICIO_EXPEDIENTE = startHour * 60 + startMinute;
     const FIM_EXPEDIENTE = endHour * 60 + endMinute;
@@ -648,7 +648,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     this.feedbackMessageTitle =
-      'Só é possível agendar entre 9h10 e 18h10 de segunda a sexta. Aguarde!';
+      'Só é possível agendar entre 9h e 18h de segunda a sexta. Aguarde!';
     return true;
   }
 

@@ -11,7 +11,7 @@ describe('OrientacoesComponent', () => {
 
   beforeEach(() => {
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
-    configService.getConfig.and.returnValue(of({horarioInicio: '09:10', horarioFim: '18:00'}));
+    configService.getConfig.and.returnValue(of({horarioInicio: '09:00', horarioFim: '18:00'}));
 
     TestBed.configureTestingModule({
       declarations: [OrientacoesComponent],
@@ -30,6 +30,6 @@ describe('OrientacoesComponent', () => {
 
   it('exibe horários configurados', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('das 09:10 às 18:00');
+    expect(compiled.textContent).toContain('das 09:00 às 18:00');
   });
 });

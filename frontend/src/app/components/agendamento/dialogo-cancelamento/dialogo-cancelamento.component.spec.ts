@@ -14,7 +14,7 @@ describe('DialogoCancelamentoComponent', () => {
       declarations: [DialogoCancelamentoComponent],
       providers: [
         { provide: MatDialogRef, useValue: {} },
-        { provide: MAT_DIALOG_DATA, useValue: { diaSemana: 'segunda', hora: '09:10', usuarioId: 1, data: '2024-01-01' } }
+        { provide: MAT_DIALOG_DATA, useValue: { diaSemana: 'segunda', hora: '09:00', usuarioId: 1, data: '2024-01-01' } }
       ]
     });
     fixture = TestBed.createComponent(DialogoCancelamentoComponent);
