@@ -10,6 +10,10 @@ import java.time.LocalTime;
 @Service
 public class ConfiguracaoAgendamentoService {
 
+    private static final Long CONFIG_ID = 1L;
+    private static final LocalTime DEFAULT_INICIO = LocalTime.of(8, 0);
+    private static final LocalTime DEFAULT_FIM = LocalTime.of(18, 0);
+
     private final ConfiguracaoAgendamentoRepository repository;
 
     public ConfiguracaoAgendamentoService(ConfiguracaoAgendamentoRepository repository) {
@@ -17,12 +21,13 @@ public class ConfiguracaoAgendamentoService {
     }
 
     public ConfiguracaoAgendamento buscarConfiguracao() {
-        return repository.findById(1L).orElseGet(() ->
-                repository.save(new ConfiguracaoAgendamento(1L, LocalTime.of(9,10), LocalTime.of(18,10), LocalDateTime.now())));
+        return repository.findById(CONFIG_ID)
+                .orElse(new ConfiguracaoAgendamento(CONFIG_ID, DEFAULT_INICIO, DEFAULT_FIM, null));
     }
 
     public ConfiguracaoAgendamento atualizar(LocalTime inicio, LocalTime fim) {
-        ConfiguracaoAgendamento configuracao = buscarConfiguracao();
+        ConfiguracaoAgendamento configuracao = repository.findById(CONFIG_ID)
+                .orElse(new ConfiguracaoAgendamento(CONFIG_ID, inicio, fim, LocalDateTime.now()));
         configuracao.setHorarioInicio(inicio);
         configuracao.setHorarioFim(fim);
         return repository.save(configuracao);
