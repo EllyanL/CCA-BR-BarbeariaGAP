@@ -154,7 +154,28 @@ public class AgendamentoController {
             .map(AgendamentoDTO::new)
             .toList();
 
-    return new ResponseEntity<>(agendamentoDTOs, HttpStatus.OK);
+        return new ResponseEntity<>(agendamentoDTOs, HttpStatus.OK);
+    }
+
+    @GetMapping("/meus")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GRADUADO', 'OFICIAL')")
+    public ResponseEntity<List<AgendamentoDTO>> findByMilitar(Authentication authentication) {
+        String userCpf = authentication.getName();
+        Optional<Militar> militarOpt = militarRepository.findByCpf(userCpf);
+        if (militarOpt.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<Agendamento> agendamentos = agendamentoService.findByMilitarId(militarOpt.get().getId());
+        if (agendamentos.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+
+        List<AgendamentoDTO> dtos = agendamentos.stream()
+                .map(AgendamentoDTO::new)
+                .toList();
+
+        return new ResponseEntity<>(dtos, HttpStatus.OK);
     }
 
     @GetMapping("/admin")
