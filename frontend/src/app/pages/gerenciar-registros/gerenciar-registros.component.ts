@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { forkJoin } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -12,7 +13,8 @@ import { LoggingService } from '../../services/logging.service';
 @Component({
   selector: 'app-gerenciar-registros',
   templateUrl: './gerenciar-registros.component.html',
-  styleUrls: ['./gerenciar-registros.component.css']
+  styleUrls: ['./gerenciar-registros.component.css'],
+  providers: [DatePipe]
 })
 export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   displayedColumns = [
@@ -40,7 +42,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
   constructor(
     private agendamentoService: AgendamentoService,
-    private logger: LoggingService
+    private logger: LoggingService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit(): void {
@@ -160,7 +163,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
           ]
         ],
         body: rows.map(r => [
-          this.toBrDate(r.data),
+          this.datePipe.transform(r.data, 'dd/MM/yyyy', 'pt-BR') ?? '',
           this.toTime(r.hora),
           r.militar?.saram ?? '',
           r.militar?.postoGrad ?? '',
@@ -191,11 +194,11 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   private formatDateBr(d?: Date | null): string {
-    return d ? d.toLocaleDateString('pt-BR') : '-';
+    return d ? this.datePipe.transform(d, 'dd/MM/yyyy', 'pt-BR') ?? '-' : '-';
   }
 
   toBrDate(dateStr?: string): string {
-    return dateStr ? new Date(dateStr).toLocaleDateString('pt-BR') : '';
+    return dateStr ? this.datePipe.transform(dateStr, 'dd/MM/yyyy', 'pt-BR') ?? '' : '';
   }
 
   private toTime(time?: string): string {
