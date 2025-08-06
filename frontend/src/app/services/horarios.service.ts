@@ -1,7 +1,7 @@
-import { BehaviorSubject, Observable, Subscription, forkJoin, interval, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, forkJoin, interval, throwError, from, of } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { catchError, map, startWith, switchMap, tap } from 'rxjs/operators';
+import { catchError, map, startWith, switchMap, tap, mergeMap, toArray } from 'rxjs/operators';
 
 import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
@@ -88,8 +88,15 @@ export class HorariosService {
   adicionarHorarioBase(horario: string, dia: string, categoria: string): Observable<any> {
     const novoHorario = { horario, dia, categoria };
     const headers = this.getAuthHeaders();
-    return this.http.post(`${this.apiUrl}/adicionar`, novoHorario, { headers });
-  }  
+    return this.http.post(`${this.apiUrl}/adicionar`, novoHorario, { headers }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404 || error.status === 409) {
+          return of(null);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
 
   adicionarHorarioDia(horario: string, dia: string, categoria: string): Observable<any> {
     const payload = { horario, dia, categoria };
@@ -103,6 +110,9 @@ export class HorariosService {
       map(response => response.toLowerCase().includes('sucesso')),
       catchError((error: HttpErrorResponse | ProgressEvent) => {
         if (error instanceof HttpErrorResponse) {
+          if (error.status === 404 || error.status === 409) {
+            return of(true);
+          }
           this.logger.error('Erro HTTP ao remover horário:', error.status, error.message);
           const errorMessage = error.error || error.message;
           return throwError(() => new Error(errorMessage));
@@ -115,13 +125,31 @@ export class HorariosService {
   }
 
   adicionarHorarioBaseEmDias(horario: string, dias: string[], categoria: string): Observable<any[]> {
-    const requests = dias.map(d => this.adicionarHorarioBase(horario, d, categoria));
-    return forkJoin(requests);
+    return from(dias).pipe(
+      mergeMap(d => this.adicionarHorarioBase(horario, d, categoria).pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404 || error.status === 409) {
+            return of(null);
+          }
+          return throwError(() => error);
+        })
+      )),
+      toArray()
+    );
   }
 
   removerHorarioBaseEmDias(horario: string, dias: string[], categoria: string): Observable<any[]> {
-    const requests = dias.map(d => this.removerHorarioBase(horario, d, categoria));
-    return forkJoin(requests);
+    return from(dias).pipe(
+      mergeMap(d => this.removerHorarioBase(horario, d, categoria).pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404 || error.status === 409) {
+            return of(true);
+          }
+          return throwError(() => error);
+        })
+      )),
+      toArray()
+    );
   }
 
   getHorariosDisponiveis(): Observable<HorariosPorDiaECategoria> {
