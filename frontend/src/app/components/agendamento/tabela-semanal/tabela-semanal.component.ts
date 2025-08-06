@@ -282,7 +282,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.agendamentos = [...this.agendamentos];
         this.logger.log('Agendamentos atualizados:', this.agendamentos);
         this.saveAgendamentos();
-        this.snackBar.open('Agendamento salvo com sucesso!', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Agendamento realizado', '', { duration: 3000 });
         if (this.horariosPorDia[diaSemanaFormatado]) {
           const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === hora);
           if (horarioIndex !== -1) {
