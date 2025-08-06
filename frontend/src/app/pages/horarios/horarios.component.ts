@@ -771,8 +771,8 @@ import { UserService } from 'src/app/services/user.service';
       this.agendamentoService.createAgendamento(agendamento).subscribe({
         next: (res: Agendamento) => {
           const novoAgendamento = res;
-          this.snackBar.open(`Horário ${horario} agendado com sucesso.`, 'Ciente', { duration: 3000 });
-    
+          this.snackBar.open('Agendamento realizado', '', { duration: 3000 });
+
           // Atualiza status local
           const diaKey = agendamento.diaSemana;
           const horariosDoDia = this.horariosPorDia[diaKey] || [];

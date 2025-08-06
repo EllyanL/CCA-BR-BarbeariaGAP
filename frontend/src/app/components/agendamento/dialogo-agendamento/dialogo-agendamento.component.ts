@@ -250,7 +250,6 @@ import { Subscription } from 'rxjs';
             this.logger.log('Agendamento criado:', response);
             this.errorMessage = "";
             this.militar = response.militar || this.militar;
-            this.snackBar.open('Agendamento salvo com sucesso.', 'OK', { duration: 3000 });
             this.dialogRef.close(response);
           },
           error => {
