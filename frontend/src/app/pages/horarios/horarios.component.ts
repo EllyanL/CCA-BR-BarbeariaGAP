@@ -259,18 +259,6 @@ import { UserService } from 'src/app/services/user.service';
       });
     }
 
-    private isHorarioDentroIntervalo(horario: string): boolean {
-      if (!this.configuracao) return true;
-      const toMinutes = (h: string) => {
-        const [hh, mm] = h.slice(0, 5).split(':').map(Number);
-        return hh * 60 + mm;
-      };
-      const valor = toMinutes(horario);
-      const inicio = toMinutes(this.configuracao.horarioInicio);
-      const fim = toMinutes(this.configuracao.horarioFim);
-      return valor >= inicio && valor <= fim;
-    }
-
     validarHorario(): void {
       const value = this.horarioPersonalizado
         ? this.horarioPersonalizado.trim()
@@ -291,10 +279,6 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       const horario = this.horarioPersonalizado;
-      if (!this.isHorarioDentroIntervalo(horario)) {
-        this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
-        return;
-      }
       const categoria = this.categoriaSelecionada;
       const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
 
@@ -349,10 +333,6 @@ import { UserService } from 'src/app/services/user.service';
     adicionarHorarioDia(): void {
       if (this.horarioValido && this.horarioPersonalizado) {
         const horario = this.horarioPersonalizado;
-        if (!this.isHorarioDentroIntervalo(horario)) {
-          this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
-          return;
-        }
         const dia = this.diaSelecionado;
         const categoria = this.categoriaSelecionada;
 
@@ -408,10 +388,6 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       const diasAlvo = dia === 'todos' || this.diaSelecionado === 'todos' ? this.diasDaSemana : [dia];
-      if (!this.isHorarioDentroIntervalo(horario)) {
-        this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
-        return;
-      }
 
       this.horariosService
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
@@ -468,10 +444,6 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     adicionarHorarioIndividual(dia: string, horario: string, categoria: string): void { //Adiciona horário fixo na base
-      if (!this.isHorarioDentroIntervalo(horario)) {
-        this.snackBar.open('Horário fora da janela permitida.', 'Ciente', { duration: 3000 });
-        return;
-      }
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: (response) => {
           // Atualiza localmente o horário no dia especificado
