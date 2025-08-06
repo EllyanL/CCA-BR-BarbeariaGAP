@@ -110,6 +110,6 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("fim") LocalDate fim
     );
 
-    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.id = :militarId ORDER BY a.data DESC, a.hora DESC")
-    List<Agendamento> findByMilitarId(@Param("militarId") Long militarId);
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.id = :id ORDER BY a.data DESC, a.hora DESC")
+    List<Agendamento> findByMilitarId(@Param("id") Long id);
 }

@@ -64,8 +64,8 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
-    public List<Agendamento> findByMilitarId(Long militarId) {
-        return agendamentoRepository.findByMilitarId(militarId);
+    public List<Agendamento> findByMilitarId(Long id) {
+        return agendamentoRepository.findByMilitarId(id);
     }
 
     @Transactional(readOnly = true)
