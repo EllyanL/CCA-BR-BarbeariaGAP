@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Agendamento } from '../../models/agendamento';
@@ -43,7 +44,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   constructor(
     private agendamentoService: AgendamentoService,
     private logger: LoggingService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -122,6 +124,12 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   exportarPdf(): void {
+    if (!this.dataInicial || !this.dataFinal) {
+      this.snackBar.open('Selecione o intervalo de datas antes de exportar.', 'Fechar', {
+        duration: 3000
+      });
+      return;
+    }
     const rows =
       this.currentTab === 0
         ? this.dataSourceGraduados.filteredData

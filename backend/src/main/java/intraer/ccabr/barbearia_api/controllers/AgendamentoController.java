@@ -180,11 +180,14 @@ public class AgendamentoController {
 
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<AgendamentoAdminDTO>> findForAdmin(
+    public ResponseEntity<?> findForAdmin(
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate inicio,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fim
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate inicio,
+            @RequestParam @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate fim
     ) {
+        if (inicio == null || fim == null) {
+            return buildResponse("Os parâmetros 'inicio' e 'fim' são obrigatórios.", HttpStatus.BAD_REQUEST);
+        }
         List<Agendamento> agendamentos = agendamentoService.findByCategoriaAndPeriodo(categoria, inicio, fim);
         if (agendamentos.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
