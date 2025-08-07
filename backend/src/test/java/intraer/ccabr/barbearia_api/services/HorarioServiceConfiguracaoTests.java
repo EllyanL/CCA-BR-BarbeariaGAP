@@ -37,14 +37,14 @@ class HorarioServiceConfiguracaoTests {
     }
 
     @Test
-    void getHorariosUnicosFiltraForaDoIntervalo() {
+    void getHorariosUnicosRespeitaHorarioInicioConfigurado() {
         when(horarioRepo.findAll()).thenReturn(List.of(
             new Horario("segunda", "08:00", "GRADUADO", HorarioStatus.DISPONIVEL),
             new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL)
         ));
 
         List<String> result = service.getHorariosUnicos();
-        assertEquals(List.of("10:00"), result);
+        assertEquals(List.of("09:00", "09:30", "10:00", "10:30", "11:00"), result);
     }
 
     @Test

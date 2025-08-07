@@ -220,8 +220,8 @@ import { UserService } from 'src/app/services/user.service';
         next: config => {
           this.configuracao = config;
 
-          const [inicioHora, inicioMin] = config.horarioInicio.split(':').map(Number);
-          const [fimHora, fimMin] = config.horarioFim.split(':').map(Number);
+          const [inicioHora, inicioMin] = (config.horarioInicio ?? '08:00').split(':').map(Number);
+          const [fimHora, fimMin] = (config.horarioFim ?? '18:00').split(':').map(Number);
           const inicio = new Date();
           inicio.setHours(inicioHora, inicioMin, 0, 0);
           const fim = new Date();

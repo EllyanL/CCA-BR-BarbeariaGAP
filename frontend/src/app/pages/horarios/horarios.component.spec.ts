@@ -27,7 +27,7 @@ describe('HorariosComponent', () => {
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos', 'createAgendamento']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
-    configService.getConfig.and.returnValue(of({horarioInicio: '09:00', horarioFim: '18:00'}));
+    configService.getConfig.and.returnValue(of({horarioInicio: '08:00', horarioFim: '18:00'}));
 
     const userService = { userData$: of([{ cpf: '123', saram: '1' }]) } as Partial<UserService>;
     const route = { queryParams: of({}) } as Partial<ActivatedRoute>;
@@ -59,19 +59,19 @@ describe('HorariosComponent', () => {
 
   it('carregarAgendamentos seguido de carregarHorariosDaSemana marca horarios reservados como AGENDADO', () => {
     component.saramUsuario = '1';
-    const agendamentos: Agendamento[] = [
-      {
-        hora: '09:00',
-        diaSemana: 'segunda',
-        categoria: 'GRADUADO',
-        militar: { saram: '1', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' }
-      }
-    ];
+      const agendamentos: Agendamento[] = [
+        {
+          hora: '08:00',
+          diaSemana: 'segunda',
+          categoria: 'GRADUADO',
+          militar: { saram: '1', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' }
+        }
+      ];
 
-    const horarios = {
-      segunda: [{ horario: '09:00', status: 'DISPONIVEL' }],
-      terça: [], quarta: [], quinta: [], sexta: []
-    };
+      const horarios = {
+        segunda: [{ horario: '08:00', status: 'DISPONIVEL' }],
+        terça: [], quarta: [], quinta: [], sexta: []
+      };
 
     agendamentoService.getAgendamentos.and.returnValue(of(agendamentos));
     horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
@@ -93,14 +93,14 @@ describe('HorariosComponent', () => {
     component.carregarAgendamentos();
     component.carregarHorariosDaSemana();
 
-  const status = component.getHorarioStatus('segunda', '09:00').status;
+    const status = component.getHorarioStatus('segunda', '08:00').status;
   expect(status).toBe('AGENDADO');
 });
 
  it('isAgendamentoDesmarcavel sempre retorna true', () => {
    const inTenMinutes = Date.now() + 10 * 60 * 1000;
-   const agendamento: Agendamento = {
-     hora: '09:00',
+      const agendamento: Agendamento = {
+        hora: '08:00',
      diaSemana: 'segunda',
      categoria: 'GRADUADO',
      timestamp: inTenMinutes
@@ -117,30 +117,30 @@ describe('HorariosComponent', () => {
     const pastTimestamp = now - 60 * 60 * 1000; // uma hora atrás
     const futureTimestamp = now + 60 * 60 * 1000; // uma hora a frente
 
-    const agendamentos: Agendamento[] = [
-      {
-        hora: '09:00',
-        diaSemana: 'segunda',
-        categoria: 'GRADUADO',
-        militar: { saram: '1', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' },
-        timestamp: pastTimestamp
-      },
-      {
-        hora: '10:00',
-        diaSemana: 'segunda',
-        categoria: 'GRADUADO',
-        militar: { saram: '1', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' },
-        timestamp: futureTimestamp
-      }
-    ];
+      const agendamentos: Agendamento[] = [
+        {
+          hora: '08:00',
+          diaSemana: 'segunda',
+          categoria: 'GRADUADO',
+          militar: { saram: '1', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' },
+          timestamp: pastTimestamp
+        },
+        {
+          hora: '09:00',
+          diaSemana: 'segunda',
+          categoria: 'GRADUADO',
+          militar: { saram: '1', cpf: '123', nomeCompleto: '', postoGrad: '', nomeDeGuerra: '', email: '', om: '', categoria: '', secao: '', ramal: '', quadro: '' },
+          timestamp: futureTimestamp
+        }
+      ];
 
-    const horarios = {
-      segunda: [
-        { horario: '09:00', status: 'DISPONIVEL' },
-        { horario: '10:00', status: 'DISPONIVEL' }
-      ],
-      terça: [], quarta: [], quinta: [], sexta: []
-    };
+      const horarios = {
+        segunda: [
+          { horario: '08:00', status: 'DISPONIVEL' },
+          { horario: '09:00', status: 'DISPONIVEL' }
+        ],
+        terça: [], quarta: [], quinta: [], sexta: []
+      };
 
     agendamentoService.getAgendamentos.and.returnValue(of(agendamentos));
     horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
@@ -162,8 +162,8 @@ describe('HorariosComponent', () => {
     component.carregarAgendamentos();
     component.carregarHorariosDaSemana();
 
-    const statusPassado = component.getHorarioStatus('segunda', '09:00').status;
-    const statusFuturo = component.getHorarioStatus('segunda', '10:00').status;
+      const statusPassado = component.getHorarioStatus('segunda', '08:00').status;
+      const statusFuturo = component.getHorarioStatus('segunda', '09:00').status;
 
     expect(statusPassado).not.toBe('AGENDADO');
     expect(statusFuturo).toBe('AGENDADO');
@@ -173,7 +173,7 @@ describe('HorariosComponent', () => {
     component.timeOffsetMs = 5 * 60 * 1000; // servidor 5 minutos à frente
     const inEighteenMinutes = Date.now() + 18 * 60 * 1000;
     const agendamento: Agendamento = {
-      hora: '09:00',
+      hora: '08:00',
       diaSemana: 'segunda',
       categoria: 'GRADUADO',
       timestamp: inEighteenMinutes
@@ -189,20 +189,20 @@ describe('HorariosComponent', () => {
     spyOn(snack, 'open');
     const past = new Date(Date.now() - 60 * 60 * 1000);
     const dia = `segunda - ${past.getDate().toString().padStart(2, '0')}/${(past.getMonth()+1).toString().padStart(2, '0')}`;
-    component.agendarHorario(dia, '09:00');
+      component.agendarHorario(dia, '08:00');
     expect(agendamentoService.createAgendamento).not.toHaveBeenCalled();
     expect(snack.open).toHaveBeenCalled();
   });
 
   it('carregarHorariosBase gera horários conforme configuração', () => {
-    configService.getConfig.and.returnValue(of({horarioInicio: '09:00', horarioFim: '10:00'}));
+    configService.getConfig.and.returnValue(of({horarioInicio: '08:00', horarioFim: '09:00'}));
     component.carregarHorariosBase();
-    expect(component.horariosBaseSemana[0]).toBe('09:00');
-    expect(component.horariosBaseSemana[component.horariosBaseSemana.length - 1]).toBe('10:00');
+    expect(component.horariosBaseSemana[0]).toBe('08:00');
+    expect(component.horariosBaseSemana[component.horariosBaseSemana.length - 1]).toBe('09:00');
   });
 
   it('adicionarHorarioBase bloqueia horários fora da configuração', () => {
-    component.configuracao = {horarioInicio: '09:00', horarioFim: '18:00'};
+      component.configuracao = {horarioInicio: '08:00', horarioFim: '18:00'};
     component.horarioPersonalizado = '07:00';
     component.horarioValido = true;
     component.diaSelecionado = 'segunda';
@@ -213,7 +213,7 @@ describe('HorariosComponent', () => {
 
   it('disponibilizarHorario bloqueia horários fora da configuração', () => {
     authService.getUsuarioAutenticado.and.returnValue({categoria: 'ADMIN'} as Militar);
-    component.configuracao = {horarioInicio: '09:00', horarioFim: '18:00'};
+      component.configuracao = {horarioInicio: '08:00', horarioFim: '18:00'};
     component.disponibilizarHorario('segunda', '07:00', 'GRADUADO');
     expect(horariosService.alterarDisponibilidadeEmDias).not.toHaveBeenCalled();
     expect(snack.open).toHaveBeenCalled();
