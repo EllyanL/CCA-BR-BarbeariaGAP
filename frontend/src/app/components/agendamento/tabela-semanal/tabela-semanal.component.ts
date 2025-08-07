@@ -8,7 +8,6 @@ import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { DialogoAgendamentoComponent } from '../dialogo-agendamento/dialogo-agendamento.component';
-import { DialogoCancelamentoComponent } from '../dialogo-cancelamento/dialogo-cancelamento.component';
 import { DialogoDetalhesAgendamentoComponent } from '../dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
 import { Horario } from 'src/app/models/horario';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -293,64 +292,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
             this.horariosPorDia = { ...this.horariosPorDia };
           }
         }
-      }
-    });
-  }
-
-  desmarcarAgendamento(agendamento: Agendamento) { //   Chama service para deletar agendamento.
-    if (!agendamento.militar || agendamento.militar?.id !== this.idMilitarLogado) {
-      this.snackBar.open('Você não tem permissão para cancelar este agendamento.', 'Ciente', { duration: 3000 });
-      return;
-    }
-
-    if (agendamento.data) {
-      const horaFormatada = agendamento.hora.substring(0, 5);
-      const agendamentoDate = new Date(`${agendamento.data}T${horaFormatada}`);
-      const agora = new Date(Date.now() + this.timeOffsetMs);
-      const diffMs = agendamentoDate.getTime() - agora.getTime();
-      if (diffMs < 30 * 60 * 1000) {
-        this.snackBar.open('Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.', 'Ciente', { duration: 3000 });
-        return;
-      }
-    }
-
-    const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
-      width: '300px',
-      data: { diaSemana: agendamento.diaSemana, hora: agendamento.hora, usuarioId: agendamento.militar?.id, data: agendamento.data },
-      autoFocus: true
-    });
-    dialogRef.afterClosed().pipe(
-      catchError(error => {
-        this.logger.error('Erro ao processar cancelamento:', error);
-        return of(null);
-      })
-    ).subscribe(result => {
-      if (result && agendamento.id) {
-        this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe(() => {
-          const idx = this.agendamentos.findIndex(a => a.id === agendamento.id);
-          if (idx !== -1) {
-            this.agendamentos[idx] = {
-              ...this.agendamentos[idx],
-              status: 'CANCELADO',
-              canceladoPor: 'USUARIO'
-            };
-          }
-          this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
-          const diaSemanaFormatado = agendamento.diaSemana.toLowerCase();
-          if (this.horariosPorDia[diaSemanaFormatado]) {
-            const horaFormatada = agendamento.hora.slice(0, 5);
-            const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === horaFormatada);
-          if (horarioIndex !== -1) {
-            this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'DISPONIVEL';
-            this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = undefined;
-            this.horariosPorDia = { ...this.horariosPorDia };
-          }
-        }
-        this.saveAgendamentos();
-      }, error => {
-          this.logger.error('Erro ao desmarcar agendamento:', error);
-          this.snackBar.open(error.error || 'Erro ao desmarcar o agendamento', 'Ciente', { duration: 3000 });
-        });
       }
     });
   }
@@ -743,10 +684,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   trackByDia(_index: number, dia: string): string {
     return dia;
-  }
-
-  trackByAgendamento(_index: number, agendamento: Agendamento): any {
-    return agendamento.id ?? `${agendamento.diaSemana}-${agendamento.hora}`;
   }
 
   ngOnDestroy(): void {
