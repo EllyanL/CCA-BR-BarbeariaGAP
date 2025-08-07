@@ -21,7 +21,7 @@
             <div class="horario-actions">
               <mat-form-field appearance="fill" class="dia-field">
                 <mat-label>Dia da Semana</mat-label>
-                <mat-select [(ngModel)]="diaSelecionado" name="diaSelecionado">
+                <mat-select [(ngModel)]="diaSelecionado" name="diaSelecionado" (selectionChange)="onDiaChange()">
                   <mat-option *ngFor="let dia of diasParaSelecao; trackBy: trackByDia" [value]="dia">
                     {{ dia === 'todos' ? 'Todos os dias' : (dia | titlecase) }}
                   </mat-option>
@@ -151,9 +151,9 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="!horariosBaseSemana.length">
+          <tr *ngIf="!horariosBaseSemana.length || isHorariosEmpty()">
             <td [colSpan]="diasDaSemana.length" class="no-horarios">
-              Nenhum horário base disponivel.
+              Nenhum horário encontrado
             </td>
           </tr>
         </tbody>
