@@ -48,6 +48,12 @@ class HorarioServiceConfiguracaoTests {
     }
 
     @Test
+    void adicionarHorarioBaseParaTodosComIncrementoInvalidoLancaExcecao() {
+        assertThrows(IllegalArgumentException.class,
+            () -> service.adicionarHorarioBaseParaTodos("10:15"));
+    }
+
+    @Test
     void disponibilizarHorarioInexistenteRetornaNull() {
         when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
                 .thenReturn(java.util.Optional.empty());

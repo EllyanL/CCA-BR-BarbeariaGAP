@@ -48,6 +48,12 @@ public class HorarioService {
         }
     }
 
+    private void validarIncrementoMeiaHora(LocalTime hora) {
+        if (hora.getMinute() % 30 != 0) {
+            throw new IllegalArgumentException("Horário deve ser múltiplo de 30 minutos.");
+        }
+    }
+
     private boolean horarioDentroIntervalo(LocalTime hora, ConfiguracaoAgendamento config) {
         return !hora.isBefore(config.getHorarioInicio()) && !hora.isAfter(config.getHorarioFim());
     }
@@ -156,6 +162,7 @@ public class HorarioService {
     public List<Horario> adicionarHorarioBaseParaTodos(String novoHorario) {
         LocalTime hora = LocalTime.parse(novoHorario);
         validarHorarioDentroIntervalo(hora);
+        validarIncrementoMeiaHora(hora);
 
         List<String> dias = List.of("segunda", "terça", "quarta", "quinta", "sexta");
         List<String> categorias = List.of("GRADUADO", "OFICIAL");
@@ -177,6 +184,7 @@ public class HorarioService {
     public Horario salvarHorario(Horario horario) {
         LocalTime hora = LocalTime.parse(horario.getHorario());
         validarHorarioDentroIntervalo(hora);
+        validarIncrementoMeiaHora(hora);
         return horarioRepository.save(horario);
     }
 
@@ -196,6 +204,7 @@ public class HorarioService {
             throw new IllegalArgumentException("Horário inválido: " + horario, e);
         }
         validarHorarioDentroIntervalo(horaConvertida);
+        validarIncrementoMeiaHora(horaConvertida);
 
         boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horaConvertida,
@@ -233,6 +242,7 @@ public class HorarioService {
             throw new IllegalArgumentException("Horário inválido: " + horario, e);
         }
         validarHorarioDentroIntervalo(horaConvertida);
+        validarIncrementoMeiaHora(horaConvertida);
         boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horaConvertida,
                 dia,
@@ -259,6 +269,7 @@ public class HorarioService {
             try {
                 LocalTime hora = LocalTime.parse(h, formatter);
                 validarHorarioDentroIntervalo(hora);
+                validarIncrementoMeiaHora(hora);
 
                 boolean agendado = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                         hora,
@@ -296,6 +307,7 @@ public class HorarioService {
             try {
                 LocalTime hora = LocalTime.parse(h);
                 validarHorarioDentroIntervalo(hora);
+                validarIncrementoMeiaHora(hora);
                 Horario horarioEntity = horarioRepository
                         .findByDiaAndHorarioAndCategoria(dia, h, categoria)
                         .orElseGet(() -> new Horario(dia, h, categoria, HorarioStatus.INDISPONIVEL));
@@ -315,6 +327,7 @@ public class HorarioService {
     public void sincronizarHorariosBaseComHorarios(String novoHorario) {
         LocalTime hora = LocalTime.parse(novoHorario);
         validarHorarioDentroIntervalo(hora);
+        validarIncrementoMeiaHora(hora);
         List<String> diasDaSemana = Arrays.asList("segunda", "terça", "quarta", "quinta", "sexta");
         List<String> categorias = Arrays.asList("GRADUADO", "OFICIAL");
         for (String dia : diasDaSemana) {
