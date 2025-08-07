@@ -51,4 +51,13 @@ describe('HeaderComponent', () => {
     const trigger = compiled.querySelector('[data-testid="menu-trigger"]');
     expect(trigger).toBeTruthy();
   });
+
+  it('contains "Agendar" menu item', () => {
+    userSubject.next([{ postoGrad: 'SGT', nomeDeGuerra: 'Teste' }]);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const spans = Array.from(compiled.querySelectorAll('button span'));
+    const hasAgendar = spans.some((el) => el.textContent?.trim() === 'Agendar');
+    expect(hasAgendar).toBeTrue();
+  });
 });
