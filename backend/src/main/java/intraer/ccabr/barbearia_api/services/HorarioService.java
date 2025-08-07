@@ -176,8 +176,13 @@ public class HorarioService {
         }
         Horario h = horarioOpt.get();
 
-        // ⚠️ Converter String para LocalTime
-        LocalTime horaConvertida = LocalTime.parse(horario);
+        // ⚠️ Converter String para LocalTime com validação de formato
+        LocalTime horaConvertida;
+        try {
+            horaConvertida = LocalTime.parse(horario, TIME_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Horário inválido: " + horario, e);
+        }
         validarHorarioDentroIntervalo(horaConvertida);
 
         boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
@@ -209,7 +214,12 @@ public class HorarioService {
         }
         Horario h = horarioOpt.get();
 
-        LocalTime horaConvertida = LocalTime.parse(horario);
+        LocalTime horaConvertida;
+        try {
+            horaConvertida = LocalTime.parse(horario, TIME_FORMATTER);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Horário inválido: " + horario, e);
+        }
         validarHorarioDentroIntervalo(horaConvertida);
         boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horaConvertida,
