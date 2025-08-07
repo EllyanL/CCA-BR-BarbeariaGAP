@@ -141,7 +141,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   private normalizeDateFormats(dateStr?: string): string[] {
     if (!dateStr) { return []; }
-    const formatted = this.datePipe.transform(dateStr, 'dd/MM/yyyy');
+    const formatted = this.datePipe.transform(dateStr, 'dd/MM/yyyy', undefined, 'pt-BR');
     if (!formatted) { return []; }
     return [formatted];
   }

@@ -93,7 +93,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     const predicate = (a: Agendamento, filter: string): boolean => {
       const f = filter.trim().toLowerCase();
       return [
-        a.data ? new Date(a.data).toLocaleDateString('pt-BR') : '',
+        a.data ? this.datePipe.transform(a.data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '',
         a.hora,
         a.militar?.postoGrad,
         a.militar?.nomeDeGuerra,
@@ -171,7 +171,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
           ]
         ],
         body: rows.map(r => [
-          this.datePipe.transform(r.data, 'dd/MM/yyyy', 'pt-BR') ?? '',
+          this.datePipe.transform(r.data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '',
           this.toTime(r.hora),
           r.militar?.saram ?? '',
           r.militar?.postoGrad ?? '',
@@ -202,11 +202,11 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   private formatDateBr(d?: Date | null): string {
-    return d ? this.datePipe.transform(d, 'dd/MM/yyyy', 'pt-BR') ?? '-' : '-';
+    return d ? this.datePipe.transform(d, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '-' : '-';
   }
 
   toBrDate(dateStr?: string): string {
-    return dateStr ? this.datePipe.transform(dateStr, 'dd/MM/yyyy', 'pt-BR') ?? '' : '';
+    return dateStr ? this.datePipe.transform(dateStr, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '';
   }
 
   private toTime(time?: string): string {

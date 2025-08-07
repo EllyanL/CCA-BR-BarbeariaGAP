@@ -9,7 +9,7 @@
   <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
     <ng-container matColumnDef="data">
       <th mat-header-cell *matHeaderCellDef>Data</th>
-      <td mat-cell *matCellDef="let element">{{ element.data | date: 'dd/MM/yyyy' }}</td>
+      <td mat-cell *matCellDef="let element">{{ element.data | date: 'dd/MM/yyyy':'':'pt-BR' }}</td>
     </ng-container>
 
     <ng-container matColumnDef="hora">
