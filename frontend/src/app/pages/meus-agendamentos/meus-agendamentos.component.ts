@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
@@ -16,6 +17,7 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<Agendamento>([]);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
     private agendamentoService: AgendamentoService,
@@ -27,6 +29,7 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
   }
 
@@ -63,5 +66,21 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
         console.error('Erro ao carregar agendamentos', err);
       }
     });
+  }
+
+  formatarStatus(status: string): string {
+    if (!status) return '';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  }
+
+  statusClass(status?: string): string {
+    const s = (status || '').toUpperCase();
+    return (
+      {
+        AGENDADO: 'status-agendado',
+        CANCELADO: 'status-cancelado',
+        INDISPONIVEL: 'status-indisponivel'
+      } as any
+    )[s] || '';
   }
 }
