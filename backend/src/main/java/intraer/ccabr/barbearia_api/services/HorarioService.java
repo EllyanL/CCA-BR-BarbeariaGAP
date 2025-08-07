@@ -251,42 +251,34 @@ public class HorarioService {
     public Map<String, Object> disponibilizarTodosHorarios(String dia, List<String> horarios, String categoria) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
-        // ✅ Validar formatos e intervalo
-        List<String> horariosValidos = horarios.stream()
-            .map(h -> {
-                try {
-                    LocalTime hora = LocalTime.parse(h, formatter);
-                    validarHorarioDentroIntervalo(hora);
-                    return h;
-                } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException("Horário inválido: " + h);
-                }
-            })
-            .toList();
-
-        boolean hasAgendamentosAtivos = horariosValidos.stream().anyMatch(horario ->
-            agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
-                LocalTime.parse(horario),
-                dia,
-                categoria
-            )
-        );
-
-        if (hasAgendamentosAtivos) {
-            throw new IllegalArgumentException("Existem horários agendados. Não é possível disponibilizar todos.");
-        }
-
         Map<String, Object> response = new HashMap<>();
         response.put("mensagem", "Horários processados para " + dia + " (" + categoria + ")");
 
-        List<Horario> afetados = horariosValidos.stream()
-            .map(h -> {
-                Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, h, categoria);
-                Horario horarioEntity = horarioOpt.orElseGet(() -> new Horario(dia, h, categoria, HorarioStatus.DISPONIVEL));
+        List<Horario> afetados = new ArrayList<>();
+        for (String h : horarios) {
+            try {
+                LocalTime hora = LocalTime.parse(h, formatter);
+                validarHorarioDentroIntervalo(hora);
+
+                boolean agendado = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+                        hora,
+                        dia,
+                        categoria);
+                if (agendado) {
+                    // Se já houver agendamento, ignoramos este horário
+                    continue;
+                }
+
+                Horario horarioEntity = horarioRepository
+                        .findByDiaAndHorarioAndCategoria(dia, h, categoria)
+                        .orElseGet(() -> new Horario(dia, h, categoria, HorarioStatus.DISPONIVEL));
                 horarioEntity.setStatus(HorarioStatus.DISPONIVEL);
-                return horarioRepository.save(horarioEntity);
-            })
-            .toList();
+                afetados.add(horarioRepository.save(horarioEntity));
+            } catch (Exception e) {
+                // Ignora erros de horários já processados ou inválidos
+                logger.warn("Falha ao disponibilizar horário {} em {}: {}", h, dia, e.getMessage());
+            }
+        }
 
         response.put("horariosAfetados", afetados);
         return response;
@@ -298,16 +290,23 @@ public class HorarioService {
     public Map<String, Object> indisponibilizarTodosHorarios(String dia, List<String> horarios, String categoria) {
         Map<String, Object> response = new HashMap<>();
         response.put("mensagem", "Horários indisponibilizados para " + dia + " (" + categoria + ")");
-        List<Horario> afetados = horarios.stream()
-                .map(h -> {
-                    LocalTime hora = LocalTime.parse(h);
-                    validarHorarioDentroIntervalo(hora);
-                    Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, h, categoria);
-                    Horario horarioEntity = horarioOpt.orElseGet(() -> new Horario(dia, h, categoria,HorarioStatus.INDISPONIVEL));
-                    horarioEntity.setStatus(HorarioStatus.INDISPONIVEL);
-                    return horarioRepository.save(horarioEntity);
-                })
-                .collect(Collectors.toList());
+
+        List<Horario> afetados = new ArrayList<>();
+        for (String h : horarios) {
+            try {
+                LocalTime hora = LocalTime.parse(h);
+                validarHorarioDentroIntervalo(hora);
+                Horario horarioEntity = horarioRepository
+                        .findByDiaAndHorarioAndCategoria(dia, h, categoria)
+                        .orElseGet(() -> new Horario(dia, h, categoria, HorarioStatus.INDISPONIVEL));
+                horarioEntity.setStatus(HorarioStatus.INDISPONIVEL);
+                afetados.add(horarioRepository.save(horarioEntity));
+            } catch (Exception e) {
+                // Ignora erros de horários já processados ou inexistentes
+                logger.warn("Falha ao indisponibilizar horário {} em {}: {}", h, dia, e.getMessage());
+            }
+        }
+
         response.put("horariosAfetados", afetados);
         return response;
     }
