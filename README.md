@@ -104,3 +104,9 @@ Se o comando `./mvnw test` falhar, verifique os seguintes pontos:
 
 ## Documentação
 Informaçães detalhadas sobre regras de agendamento e desenvolvimento estão em docs/ANOTATIONS.md
+
+### Listagem de agendamentos (admin)
+O endpoint `GET /api/agendamentos/admin` requer os parâmetros de consulta `inicio` e `fim` no formato `YYYY-MM-DD` para definir o intervalo da busca. Caso qualquer um deles esteja ausente, a API retorna **400 Bad Request**.
+
+### Exportação de registros no frontend
+Na tela **Gerenciar Registros**, escolha as datas inicial e final antes de acionar a opção de exportar PDF. A exportação é bloqueada e uma mensagem é exibida se o intervalo não for informado.
