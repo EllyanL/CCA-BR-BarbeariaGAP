@@ -155,6 +155,7 @@ import { UserService } from 'src/app/services/user.service';
               this.categoriaSelecionada = categoria;
             }
             this.carregarHorariosBase();
+            this.loadHorarios();
             this.horariosService.startPollingHorarios(this.categoriaSelecionada);
             this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
               next: h => {
@@ -199,6 +200,18 @@ import { UserService } from 'src/app/services/user.service';
         );
       }
     }
+
+    loadHorarios(): void {
+      this.horariosService
+        .carregarHorariosDaSemana(this.categoriaSelecionada)
+        .subscribe({
+          next: (horarios: HorariosPorDia) => {
+            this.horariosPorDia = horarios;
+            this.cdr.detectChanges();
+          },
+          error: (err: any) => this.logger.error('Erro ao carregar horários:', err)
+        });
+    }
     
     carregarHorariosDaSemana(): void {
       this.horariosService
@@ -220,6 +233,18 @@ import { UserService } from 'src/app/services/user.service';
             );
           },
         });
+    }
+
+    onDiaChange(): void {
+      this.loadHorarios();
+    }
+
+    onCategoriaChange(): void {
+      this.loadHorarios();
+    }
+
+    isHorariosEmpty(): boolean {
+      return Object.values(this.horariosPorDia).every(arr => !arr || arr.length === 0);
     }
     carregarHorariosBase(): void {
       this.configuracoesService.getConfig().subscribe({
