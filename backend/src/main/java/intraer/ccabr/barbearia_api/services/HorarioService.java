@@ -15,6 +15,7 @@ import java.time.format.DateTimeParseException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,15 +101,26 @@ public class HorarioService {
 
     public List<String> getHorariosUnicos() {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
-        return horarioRepository.findAll()
-            .stream()
-            .map(Horario::getHorario)
-            .map(LocalTime::parse)
-            .filter(h -> horarioDentroIntervalo(h, config))
-            .map(h -> h.format(TIME_FORMATTER))
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
+
+        // Horários gerados a partir da configuração (intervalos de 30 minutos)
+        List<String> gerados = new ArrayList<>();
+        for (LocalTime t = config.getHorarioInicio(); !t.isAfter(config.getHorarioFim()); t = t.plusMinutes(30)) {
+            gerados.add(t.format(TIME_FORMATTER));
+        }
+
+        // Horários existentes no banco dentro do intervalo configurado
+        List<String> existentes = horarioRepository.findAll().stream()
+                .map(Horario::getHorario)
+                .map(LocalTime::parse)
+                .filter(h -> horarioDentroIntervalo(h, config))
+                .map(h -> h.format(TIME_FORMATTER))
+                .toList();
+
+        // Combina, remove duplicados e ordena
+        return Stream.concat(gerados.stream(), existentes.stream())
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
     
     
