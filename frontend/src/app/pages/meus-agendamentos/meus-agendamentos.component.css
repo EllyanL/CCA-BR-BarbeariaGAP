@@ -1,4 +1,13 @@
-.meus-agendamentos {
+.meus-agendamentos-page-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.meus-agendamentos-page-content__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 16px;
 }
 

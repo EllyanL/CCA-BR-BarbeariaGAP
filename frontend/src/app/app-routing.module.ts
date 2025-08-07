@@ -22,6 +22,7 @@ const routes: Routes = [
     { path: 'auth/login', component: LoginComponent, data: { title: 'Login' } },
     { path: 'oficiais', component: OficiaisComponent, data: { title: 'BARBEARIA - OFICIAIS' }, canActivate: [OficialGuard] },
     { path: 'graduados', component: GraduadosComponent, data: { title: 'BARBEARIA - GRADUADOS' }, canActivate: [GraduadoGuard] },
+    { path: 'graduado', redirectTo: 'graduados' },
     { path: 'meus-agendamentos', component: MeusAgendamentosComponent, canActivate: [UserGuard] },
     { path: 'admin', component: AdminComponent, data: { title: 'Admin' }, canActivate: [AdminGuard] },
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
