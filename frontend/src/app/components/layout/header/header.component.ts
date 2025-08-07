@@ -60,6 +60,10 @@ export const rotateToggle = trigger('rotateToggle', [
           <mat-icon>assignment</mat-icon>
           <span>Regras</span>
         </button>
+        <button mat-menu-item [routerLink]="'/graduados'">
+          <mat-icon>schedule</mat-icon>
+          <span>Agendar</span>
+        </button>
         <button mat-menu-item [routerLink]="'/meus-agendamentos'">
           <mat-icon>calendar_today</mat-icon>
           <span>Meus Agendamentos</span>
