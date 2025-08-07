@@ -549,7 +549,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       const diaMatch = agendamento.diaSemana.toLowerCase() === diaSemana;
       const horaAgendamentoFormatada = agendamento.hora.slice(0, 5);
       const horaMatch = horaAgendamentoFormatada === horaFormatada;
-      return diaMatch && horaMatch;
+      const naoCancelado = agendamento.status !== 'CANCELADO';
+      return diaMatch && horaMatch && naoCancelado;
     });
     return agendamento;
   }
@@ -580,10 +581,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const diaSemanaFormatado = dia.split(" - ")[0].trim().toLowerCase();
     const statusHorario = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase();
   
-    if (statusHorario === "DISPONIVEL") {
+    if (statusHorario === "DISPONIVEL" || statusHorario === "CANCELADO") {
       return { cor: "primary", texto: "DISPONIVEL", acao: "agendar" };
     }
-  
+
     if (statusHorario === "AGENDADO") {
       const usuarioId = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.usuarioId;
       if (usuarioId && usuarioId === this.idMilitarLogado) {

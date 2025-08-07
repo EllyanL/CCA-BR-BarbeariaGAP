@@ -50,6 +50,7 @@ import { UserService } from 'src/app/services/user.service';
     configuracao?: ConfiguracaoAgendamento;
     private userDataSubscription?: Subscription;
     private horariosSub?: Subscription;
+    private agendamentoAtualizadoSub?: Subscription;
     private storageKey: string = '';
 
     constructor(
@@ -162,6 +163,11 @@ import { UserService } from 'src/app/services/user.service';
               },
               error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
             });
+          });
+
+          this.agendamentoAtualizadoSub = this.agendamentoService.agendamentoAtualizado$.subscribe(() => {
+            this.carregarAgendamentos();
+            this.carregarHorariosDaSemana();
           });
         });
     }
@@ -560,7 +566,11 @@ import { UserService } from 'src/app/services/user.service';
         return { status: 'AGENDADO' };
       }
 
-      return { status: status === 'DISPONIVEL' ? 'DISPONIVEL' : 'INDISPONIVEL' };
+      if (status === 'CANCELADO' || status === 'DISPONIVEL') {
+        return { status: 'DISPONIVEL' };
+      }
+
+      return { status: 'INDISPONIVEL' };
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
@@ -647,6 +657,7 @@ import { UserService } from 'src/app/services/user.service';
                 hora: a.hora.trim()
               }))
               .filter(a => {
+                if (a.status === 'CANCELADO') return false;
                 if (a.timestamp == null) return true;
                 return a.timestamp >= agora;
               });
@@ -797,7 +808,8 @@ import { UserService } from 'src/app/services/user.service';
       const horaFormatada = hora.slice(0, 5);
       return this.agendamentos.find(a =>
         a.diaSemana.toLowerCase() === diaSemana &&
-        a.hora.slice(0, 5) === horaFormatada
+        a.hora.slice(0, 5) === horaFormatada &&
+        a.status !== 'CANCELADO'
       );
     }
 
@@ -886,6 +898,7 @@ import { UserService } from 'src/app/services/user.service';
     ngOnDestroy(): void {
       this.userDataSubscription?.unsubscribe();
       this.horariosSub?.unsubscribe();
+      this.agendamentoAtualizadoSub?.unsubscribe();
       this.horariosService.stopPollingHorarios();
     }
 

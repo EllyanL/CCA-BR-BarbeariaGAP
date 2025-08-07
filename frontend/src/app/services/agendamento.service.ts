@@ -1,5 +1,5 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, catchError, throwError, map } from 'rxjs';
+import { Observable, Subject, catchError, throwError, map, tap } from 'rxjs';
 
 import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
@@ -11,6 +11,9 @@ import { environment } from 'src/environments/environment';
 })
 export class AgendamentoService {
   private readonly apiUrl = `${environment.apiUrl}/agendamentos`;
+
+  private agendamentoAtualizadoSource = new Subject<void>();
+  agendamentoAtualizado$ = this.agendamentoAtualizadoSource.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -88,6 +91,7 @@ export class AgendamentoService {
 
   cancelarAgendamento(id: number): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${id}/cancelar`, {}).pipe(
+      tap(() => this.agendamentoAtualizadoSource.next()),
       catchError(error => throwError(() => error))
     );
   }
