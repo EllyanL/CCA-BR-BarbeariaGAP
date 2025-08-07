@@ -108,35 +108,6 @@
   font-weight: bold;
 }
 
-.agendamentos-detalhes {
-  margin-top: 20px;
-  padding: 20px;
-}
-
-.agendamentos-detalhes h3 {
-  margin-bottom: 10px;
-}
-
-.tabela-detalhes {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tabela-detalhes th,
-.tabela-detalhes td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.tabela-detalhes th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-}
-
-.tabela-detalhes td {
-  vertical-align: top;
-}
 
 .botao-agendado {
   background-color: #ffab40;
