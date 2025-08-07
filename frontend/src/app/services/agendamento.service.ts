@@ -112,7 +112,8 @@ export class AgendamentoService {
   }
 
   getMeusAgendamentos(): Observable<Agendamento[]> {
-    return this.http.get<Agendamento[] | null>(`${this.apiUrl}/meus`).pipe(
+    const headers = this.getAuthHeaders();
+    return this.http.get<Agendamento[] | null>(`${this.apiUrl}/meus`, { headers }).pipe(
       map(res => res ?? []),
       catchError(error => {
         this.logger.error('Erro ao obter meus agendamentos:', error);

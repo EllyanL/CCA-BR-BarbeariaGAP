@@ -11,6 +11,31 @@
   padding: 16px;
 }
 
-.filtro {
-  margin-bottom: 16px;
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.search-field {
+  flex: 1 1 200px;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem 0;
+  color: #666;
+}
+
+.status-agendado {
+  color: green;
+}
+
+.status-cancelado {
+  color: red;
+}
+
+.status-indisponivel {
+  color: orange;
 }
