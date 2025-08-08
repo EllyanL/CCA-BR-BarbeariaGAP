@@ -69,8 +69,8 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
-    public List<Agendamento> findByCategoriaAndPeriodo(String categoria, LocalDate inicio, LocalDate fim) {
-        return agendamentoRepository.findByCategoriaAndPeriodo(categoria, inicio, fim);
+    public List<Agendamento> findByCategoriaAndPeriodo(String categoria, LocalDate dataInicio, LocalDate dataFim) {
+        return agendamentoRepository.findByCategoriaAndPeriodo(categoria, dataInicio, dataFim);
     }
 
     public Optional<Agendamento> findById(Long id) {
