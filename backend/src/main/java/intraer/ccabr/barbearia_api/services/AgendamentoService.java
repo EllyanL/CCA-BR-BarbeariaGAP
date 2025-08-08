@@ -70,6 +70,7 @@ public class AgendamentoService {
 
     @Transactional(readOnly = true)
     public List<Agendamento> findByCategoriaAndPeriodo(String categoria, LocalDate dataInicio, LocalDate dataFim) {
+        // dataInicio e dataFim podem ser nulos para buscar sem restrição de período
         return agendamentoRepository.findByCategoriaAndPeriodo(categoria, dataInicio, dataFim);
     }
 

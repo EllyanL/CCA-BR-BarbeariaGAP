@@ -55,7 +55,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("data") LocalDate data
     );
 
-    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar")
+    @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar ORDER BY a.data DESC, a.hora DESC")
     List<Agendamento> findAllWithMilitar();
 
     @Modifying
@@ -100,14 +100,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("""
             SELECT a FROM Agendamento a JOIN FETCH a.militar
             WHERE (:categoria IS NULL OR a.categoria = :categoria)
-              AND (:inicio IS NULL OR a.data >= :inicio)
-              AND (:fim IS NULL OR a.data <= :fim)
-            ORDER BY a.data, a.hora
+              AND (:dataInicio IS NULL OR a.data >= :dataInicio)
+              AND (:dataFim IS NULL OR a.data <= :dataFim)
+            ORDER BY a.data DESC, a.hora DESC
             """)
     List<Agendamento> findByCategoriaAndPeriodo(
             @Param("categoria") String categoria,
-            @Param("inicio") LocalDate inicio,
-            @Param("fim") LocalDate fim
+            @Param("dataInicio") LocalDate dataInicio,
+            @Param("dataFim") LocalDate dataFim
     );
 
     @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.id = :id ORDER BY a.data DESC, a.hora DESC")
