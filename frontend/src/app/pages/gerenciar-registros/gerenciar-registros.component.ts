@@ -93,7 +93,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         a.militar?.postoGrad,
         a.militar?.nomeDeGuerra,
         a.status,
-        a.canceladoPor
+        this.formatarCanceladoPor(a.canceladoPor)
       ]
         .map(v => (v ?? '').toLowerCase())
         .some(v => v.includes(f));
@@ -151,7 +151,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
           r.militar?.postoGrad ?? '',
           this.formatName(r.militar?.nomeDeGuerra),
           this.formatarStatus(r.status ?? ''),
-          this.formatName(r.canceladoPor)
+          this.formatarCanceladoPor(r.canceladoPor)
         ]),
         styles: { fontSize: 10, cellPadding: 3 },
         headStyles: { fillColor: [220, 220, 220] }
@@ -203,6 +203,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       .split(' ')
       .map(n => n.charAt(0).toUpperCase() + n.substring(1))
       .join(' ');
+  }
+
+  formatarCanceladoPor(valor?: string | null): string {
+    if (!valor) {
+      return '';
+    }
+    const mapa: Record<string, string> = {
+      ADMIN: 'Admin',
+      USUARIO: 'Usuário'
+    };
+    return mapa[valor.toUpperCase()] || valor;
   }
 
   formatarStatus(texto: string): string {

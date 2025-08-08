@@ -47,7 +47,7 @@
       </ng-container>
       <ng-container matColumnDef="canceladoPor">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>Cancelado Por</th>
-        <td mat-cell *matCellDef="let a">{{ a.canceladoPor }}</td>
+        <td mat-cell *matCellDef="let a">{{ formatarCanceladoPor(a.canceladoPor) }}</td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
