@@ -639,8 +639,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     dia?: string,
     hora?: string
   ): boolean {
-    if (agendamento) {
-      return this.isAgendamentoDoMilitarLogado(agendamento);
+    const agora = Date.now() + this.timeOffsetMs;
+
+    if (agendamento && agendamento.data) {
+      if (!this.isAgendamentoDoMilitarLogado(agendamento)) {
+        return false;
+      }
+      const agendamentoDate = new Date(`${agendamento.data}T${agendamento.hora.slice(0, 5)}`);
+      const diffMs = agendamentoDate.getTime() - agora;
+      return diffMs >= 30 * 60 * 1000;
     }
 
     if (!dia || !hora) {
@@ -651,7 +658,17 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const usuarioId = this.horariosPorDia[diaKey]?.find(
       h => h.horario === hora
     )?.usuarioId;
-    return usuarioId === this.idMilitarLogado;
+    if (usuarioId !== this.idMilitarLogado) {
+      return false;
+    }
+
+    const dataISO = this.getDataFromDiaSemana(dia);
+    if (!dataISO) {
+      return true;
+    }
+    const agendamentoDate = new Date(`${dataISO}T${hora.slice(0, 5)}`);
+    const diffMs = agendamentoDate.getTime() - agora;
+    return diffMs >= 30 * 60 * 1000;
   }
   
   abrirModalAgendamento(agendamento: Agendamento): void {

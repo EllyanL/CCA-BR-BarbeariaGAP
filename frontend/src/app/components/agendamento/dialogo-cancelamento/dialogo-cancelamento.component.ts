@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { LoggingService } from 'src/app/services/logging.service';
+import { ServerTimeService } from 'src/app/services/server-time.service';
 
 export interface DialogData {
   diaSemana: string;
@@ -34,20 +35,35 @@ export interface DialogData {
     color="warn"
     (click)="onYesClick()"
     class="confirm-dialog__button"
+    [disabled]="!canCancel()"
   >
     DESMARCAR
   </button>
 </div>
   `,
 })
-export class DialogoCancelamentoComponent {
+export class DialogoCancelamentoComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogoCancelamentoComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private snackBar: MatSnackBar,
     private logger: LoggingService,
+    private serverTimeService: ServerTimeService,
   ) {
+  }
+
+  timeOffsetMs: number = 0;
+
+  ngOnInit(): void {
+    this.serverTimeService.getServerTime().subscribe({
+      next: res => {
+        this.timeOffsetMs = res.timestamp - Date.now();
+      },
+      error: err => {
+        this.logger.error('Erro ao obter hora do servidor:', err);
+      }
+    });
   }
 
   onNoClick(): void {
@@ -80,7 +96,7 @@ export class DialogoCancelamentoComponent {
     }
     const horaFormatada = this.data.hora.substring(0, 5);
     const agendamentoDate = new Date(`${this.data.data}T${horaFormatada}`);
-    const diffMs = agendamentoDate.getTime() - Date.now();
+    const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
     return diffMs >= 30 * 60 * 1000;
   }
 
