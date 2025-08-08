@@ -14,8 +14,8 @@ describe('GerenciarRegistrosComponent', () => {
   let snackBar: jasmine.SpyObj<MatSnackBar>;
 
   beforeEach(() => {
-    agendamentoService = jasmine.createSpyObj('AgendamentoService', ['listarFiltrado']);
-    agendamentoService.listarFiltrado.and.returnValue(of([]));
+    agendamentoService = jasmine.createSpyObj('AgendamentoService', ['listarAgendamentosAdmin']);
+    agendamentoService.listarAgendamentosAdmin.and.returnValue(of([]));
     snackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     TestBed.configureTestingModule({
@@ -38,7 +38,7 @@ describe('GerenciarRegistrosComponent', () => {
 
     component.carregarAgendamentos();
 
-    expect(agendamentoService.listarFiltrado).not.toHaveBeenCalled();
+    expect(agendamentoService.listarAgendamentosAdmin).not.toHaveBeenCalled();
     expect(snackBar.open).toHaveBeenCalled();
   });
 });

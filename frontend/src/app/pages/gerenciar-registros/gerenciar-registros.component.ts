@@ -79,8 +79,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     const fim = this.formatDate(this.dataFinal);
 
     forkJoin({
-      graduados: this.agendamentoService.listarFiltrado('GRADUADO', inicio, fim),
-      oficiais: this.agendamentoService.listarFiltrado('OFICIAL', inicio, fim)
+      graduados: this.agendamentoService.listarAgendamentosAdmin('GRADUADO', inicio, fim),
+      oficiais: this.agendamentoService.listarAgendamentosAdmin('OFICIAL', inicio, fim)
     }).subscribe({
       next: ({ graduados, oficiais }) => {
         this.dataSourceGraduados.data = graduados;

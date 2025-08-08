@@ -30,7 +30,7 @@ export class AgendamentoService {
     );
   }
 
-  getAgendamentosAdmin(
+  listarAgendamentosAdmin(
     categoria?: string,
     inicio?: string,
     fim?: string
@@ -45,26 +45,6 @@ export class AgendamentoService {
         map(res => res ?? []),
         catchError(error => {
           this.logger.error('Erro ao obter agendamentos admin:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
-  listarFiltrado(
-    categoria?: string,
-    inicio?: string,
-    fim?: string
-  ): Observable<Agendamento[]> {
-    let params: any = {};
-    if (categoria) params.categoria = categoria;
-    if (inicio) params.inicio = inicio;
-    if (fim) params.fim = fim;
-    return this.http
-      .get<Agendamento[] | null>(`${this.apiUrl}/admin`, { params })
-      .pipe(
-        map(res => res ?? []),
-        catchError(error => {
-          this.logger.error('Erro ao listar agendamentos filtrados:', error);
           return throwError(() => error);
         })
       );
