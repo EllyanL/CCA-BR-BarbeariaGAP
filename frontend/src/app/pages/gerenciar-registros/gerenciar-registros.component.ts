@@ -68,8 +68,15 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   carregarAgendamentos(): void {
-    const inicio = this.dataInicial ? this.formatDate(this.dataInicial) : undefined;
-    const fim = this.dataFinal ? this.formatDate(this.dataFinal) : undefined;
+    if (!this.dataInicial || !this.dataFinal) {
+      this.snackBar.open('Selecione o intervalo de datas antes de buscar.', 'Fechar', {
+        duration: 3000
+      });
+      return;
+    }
+
+    const inicio = this.formatDate(this.dataInicial);
+    const fim = this.formatDate(this.dataFinal);
 
     forkJoin({
       graduados: this.agendamentoService.listarFiltrado('GRADUADO', inicio, fim),
