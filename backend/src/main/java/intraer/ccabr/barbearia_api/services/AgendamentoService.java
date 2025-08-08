@@ -89,8 +89,9 @@ public class AgendamentoService {
     }
 
     public boolean isAgendamentoDisponivel(LocalDate data, LocalTime hora, String diaSemana, String categoria) {
-        // A consulta abaixo considera apenas agendamentos ativos (status = 'AGENDADO')
-        return !agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(data, hora, diaSemana, categoria);
+        // Considera apenas agendamentos cujo status seja diferente de 'CANCELADO'
+        return !agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+                data, hora, diaSemana, categoria, "CANCELADO");
     }
 
     public Optional<Agendamento> findAgendamentoByDataHoraDiaCategoria(
@@ -321,8 +322,12 @@ public class AgendamentoService {
         }
         
     
-        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(
-            agendamento.getData(), agendamento.getHora(), agendamento.getDiaSemana(), agendamento.getCategoria());
+        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+            agendamento.getData(),
+            agendamento.getHora(),
+            agendamento.getDiaSemana(),
+            agendamento.getCategoria(),
+            "CANCELADO");
     
         if (jaExiste) {
             throw new IllegalArgumentException("Este horário já está agendado.");

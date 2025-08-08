@@ -8,15 +8,17 @@ CREATE TABLE agendamentos (
     militar_id BIGINT,
     categoria VARCHAR(15),
 
-    -- Status: PENDENTE, EFETUADO, CANCELADO, ADMIN_CANCELADO
-    status VARCHAR(20) DEFAULT 'PENDENTE' NOT NULL,
+    -- Status: AGENDADO, REALIZADO, CANCELADO, ADMIN_CANCELADO
+    status VARCHAR(20) DEFAULT 'AGENDADO' NOT NULL,
 
     -- Quem cancelou: USER ou ADMIN (null se não foi cancelado)
     cancelado_por VARCHAR(10),
 
     -- Relacionamento com tabela de militares
-    CONSTRAINT fk_militar_id FOREIGN KEY (militar_id) REFERENCES militares(id),
-
-    -- Impede que duas pessoas da mesma categoria agendem no mesmo horário
-    CONSTRAINT unique_agendamento UNIQUE (data, hora, dia_semana, categoria)
+    CONSTRAINT fk_militar_id FOREIGN KEY (militar_id) REFERENCES militares(id)
 );
+
+-- Impede agendamentos duplicados para horários ativos
+CREATE UNIQUE INDEX IF NOT EXISTS unique_agendamento_idx
+    ON agendamentos (data, hora, dia_semana, categoria)
+    WHERE status <> 'CANCELADO';

@@ -108,8 +108,12 @@ public class AgendamentoController {
 
 
         // Evita duplo envio (chave única: data/hora/categoria)
-        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(
-            agendamento.getData(), agendamento.getHora(), agendamento.getDiaSemana(), agendamento.getCategoria()
+        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+            agendamento.getData(),
+            agendamento.getHora(),
+            agendamento.getDiaSemana(),
+            agendamento.getCategoria(),
+            "CANCELADO"
         );
         if (jaExiste) {
             return buildResponse("Já existe um agendamento para esse horário.", HttpStatus.CONFLICT);

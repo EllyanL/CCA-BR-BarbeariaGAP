@@ -21,12 +21,13 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("categoria") String categoria
     );
 
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria AND a.status = 'AGENDADO'")
-    boolean existsByDataAndHoraAndDiaSemanaAndCategoria(
+    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria AND a.status <> :status")
+    boolean existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
             @Param("data") LocalDate data,
             @Param("hora") LocalTime hora,
             @Param("diaSemana") String diaSemana,
-            @Param("categoria") String categoria
+            @Param("categoria") String categoria,
+            @Param("status") String status
     );
 
     @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.data = :data AND a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria")
