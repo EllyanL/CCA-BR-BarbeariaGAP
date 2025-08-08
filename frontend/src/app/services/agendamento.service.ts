@@ -32,13 +32,13 @@ export class AgendamentoService {
 
   listarAgendamentosAdmin(
     categoria?: string,
-    inicio?: string,
-    fim?: string
+    dataInicio?: string,
+    dataFim?: string
   ): Observable<Agendamento[]> {
-    let params: any = {};
+    const params: any = {};
     if (categoria) params.categoria = categoria;
-    if (inicio) params.inicio = inicio;
-    if (fim) params.fim = fim;
+    if (dataInicio) params.dataInicio = dataInicio;
+    if (dataFim) params.dataFim = dataFim;
     return this.http
       .get<Agendamento[] | null>(`${this.apiUrl}/admin`, { params })
       .pipe(
