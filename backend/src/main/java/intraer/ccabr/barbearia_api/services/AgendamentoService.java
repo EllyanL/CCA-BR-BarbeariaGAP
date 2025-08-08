@@ -81,6 +81,14 @@ public class AgendamentoService {
     @Transactional
     public void cancelarAgendamento(Long id, String canceladoPor) {
         agendamentoRepository.findById(id).ifPresent(agendamento -> {
+            LocalDateTime dataHoraAgendamento = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+            LocalDateTime agora = LocalDateTime.now();
+            long minutosAteAgendamento = ChronoUnit.MINUTES.between(agora, dataHoraAgendamento);
+
+            if (!"ADMIN".equalsIgnoreCase(canceladoPor) && minutosAteAgendamento < 30) {
+                throw new IllegalStateException("Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.");
+            }
+
             agendamento.setStatus("CANCELADO");
             agendamento.setCanceladoPor(canceladoPor);
             agendamentoRepository.save(agendamento);
