@@ -108,12 +108,6 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   exportarPdf(): void {
-    if (!this.dataInicial || !this.dataFinal) {
-      this.snackBar.open('Selecione o intervalo de datas antes de exportar.', 'Fechar', {
-        duration: 3000
-      });
-      return;
-    }
     const rows = this.dataSource.filteredData;
 
     try {
@@ -127,15 +121,14 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         align: 'center'
       });
 
-      const dataIni = this.formatDateBr(this.dataInicial);
-      const dataFim = this.formatDateBr(this.dataFinal);
+      let headerText = 'Todos os registros';
+      if (this.dataInicial || this.dataFinal) {
+        const dataIni = this.formatDateBr(this.dataInicial);
+        const dataFim = this.formatDateBr(this.dataFinal);
+        headerText = `Intervalo de Busca: ${dataIni} À ${dataFim}`;
+      }
       doc.setFontSize(11);
-      doc.text(
-        `Intervalo de Busca: ${dataIni} À ${dataFim}`,
-        pageWidth / 2,
-        22,
-        { align: 'center' }
-      );
+      doc.text(headerText, pageWidth / 2, 22, { align: 'center' });
 
       // Table
       autoTable(doc, {
