@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { forkJoin } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -23,23 +22,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     'hora',
     'postoGrad',
     'nomeDeGuerra',
-    'secao',
-    'email',
     'status',
     'canceladoPor'
   ];
 
-  dataSourceGraduados = new MatTableDataSource<Agendamento>([]);
-  dataSourceOficiais = new MatTableDataSource<Agendamento>([]);
+  dataSource = new MatTableDataSource<Agendamento>([]);
   searchTerm = '';
   dataInicial?: Date | null;
   dataFinal?: Date | null;
-  currentTab = 0;
 
-  @ViewChild('graduadosPaginator') graduadosPaginator?: MatPaginator;
-  @ViewChild('oficiaisPaginator') oficiaisPaginator?: MatPaginator;
-  @ViewChild('graduadosSort') graduadosSort?: MatSort;
-  @ViewChild('oficiaisSort') oficiaisSort?: MatSort;
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
+  @ViewChild(MatSort) sort?: MatSort;
 
   constructor(
     private agendamentoService: AgendamentoService,
@@ -53,42 +46,37 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    if (this.graduadosPaginator) {
-      this.dataSourceGraduados.paginator = this.graduadosPaginator;
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
     }
-    if (this.oficiaisPaginator) {
-      this.dataSourceOficiais.paginator = this.oficiaisPaginator;
-    }
-    if (this.graduadosSort) {
-      this.dataSourceGraduados.sort = this.graduadosSort;
-    }
-    if (this.oficiaisSort) {
-      this.dataSourceOficiais.sort = this.oficiaisSort;
+    if (this.sort) {
+      this.dataSource.sort = this.sort;
+      this.sort.active = 'data';
+      this.sort.direction = 'desc';
+      this.dataSource.sortingDataAccessor = (item, property) => {
+        switch (property) {
+          case 'data':
+            return new Date(`${item.data}T${item.hora || '00:00'}`).getTime();
+          default:
+            return (item as any)[property];
+        }
+      };
     }
   }
 
   carregarAgendamentos(): void {
-    if (!this.dataInicial || !this.dataFinal) {
-      this.snackBar.open('Selecione o intervalo de datas antes de buscar.', 'Fechar', {
-        duration: 3000
+    const inicio = this.dataInicial ? this.formatDate(this.dataInicial) : undefined;
+    const fim = this.dataFinal ? this.formatDate(this.dataFinal) : undefined;
+
+    this.agendamentoService
+      .listarAgendamentosAdmin(undefined, inicio, fim)
+      .subscribe({
+        next: agendamentos => {
+          this.dataSource.data = agendamentos;
+          this.applyFilter();
+        },
+        error: err => this.logger.error('Erro ao carregar agendamentos:', err)
       });
-      return;
-    }
-
-    const inicio = this.formatDate(this.dataInicial);
-    const fim = this.formatDate(this.dataFinal);
-
-    forkJoin({
-      graduados: this.agendamentoService.listarAgendamentosAdmin('GRADUADO', inicio, fim),
-      oficiais: this.agendamentoService.listarAgendamentosAdmin('OFICIAL', inicio, fim)
-    }).subscribe({
-      next: ({ graduados, oficiais }) => {
-        this.dataSourceGraduados.data = graduados;
-        this.dataSourceOficiais.data = oficiais;
-        this.applyFilter();
-      },
-      error: err => this.logger.error('Erro ao carregar agendamentos:', err)
-    });
   }
 
   applyFilter(event?: Event): void {
@@ -104,8 +92,6 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         a.hora,
         a.militar?.postoGrad,
         a.militar?.nomeDeGuerra,
-        a.militar?.secao,
-        a.militar?.email,
         a.status,
         a.canceladoPor
       ]
@@ -113,21 +99,12 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         .some(v => v.includes(f));
     };
 
-    this.dataSourceGraduados.filterPredicate = predicate;
-    this.dataSourceOficiais.filterPredicate = predicate;
-    this.dataSourceGraduados.filter = this.searchTerm;
-    this.dataSourceOficiais.filter = this.searchTerm;
+    this.dataSource.filterPredicate = predicate;
+    this.dataSource.filter = this.searchTerm;
 
-    if (this.graduadosPaginator) {
-      this.graduadosPaginator.firstPage();
+    if (this.paginator) {
+      this.paginator.firstPage();
     }
-    if (this.oficiaisPaginator) {
-      this.oficiaisPaginator.firstPage();
-    }
-  }
-
-  onTabChange(index: number): void {
-    this.currentTab = index;
   }
 
   exportarPdf(): void {
@@ -137,10 +114,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       });
       return;
     }
-    const rows =
-      this.currentTab === 0
-        ? this.dataSourceGraduados.filteredData
-        : this.dataSourceOficiais.filteredData;
+    const rows = this.dataSource.filteredData;
 
     try {
       const doc = new jsPDF();
