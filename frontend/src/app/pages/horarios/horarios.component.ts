@@ -18,6 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Militar } from '../../models/militar';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
+import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 
 @Component({
     selector: 'app-horarios',
@@ -790,30 +791,32 @@ import { UserService } from 'src/app/services/user.service';
       this.agendamentoService.createAgendamento(agendamento).subscribe({
         next: (res: Agendamento) => {
           const novoAgendamento = res;
-          this.snackBar.open('Agendamento realizado', '', { duration: 3000 });
+          const confirmDialog = this.dialog.open(DialogoAgendamentoRealizadoComponent, {
+            width: '400px'
+          });
 
-          // Atualiza status local
-          const diaKey = agendamento.diaSemana;
-          const horariosDoDia = this.horariosPorDia[diaKey] || [];
-          const index = horariosDoDia.findIndex(h => h.horario === horario);
-    
-          if (index !== -1) {
-            horariosDoDia[index].status = 'AGENDADO';
-          } else {
-            horariosDoDia.push({ horario, status: 'AGENDADO' });
-          }
-    
-          this.horariosPorDia[diaKey] = [...horariosDoDia];
-    
-          // Atualiza lista de agendamentos local
-          if (novoAgendamento) {
-            this.agendamentos.push(novoAgendamento);
-            this.agendamentos = [...this.agendamentos];
-          }
+          confirmDialog.afterClosed().subscribe(() => {
+            const diaKey = agendamento.diaSemana;
+            const horariosDoDia = this.horariosPorDia[diaKey] || [];
+            const index = horariosDoDia.findIndex(h => h.horario === horario);
 
-          this.horariosService.atualizarHorarios(this.horariosPorDia);
-          this.saveAgendamentos();
-          this.cdr.detectChanges();
+            if (index !== -1) {
+              horariosDoDia[index].status = 'AGENDADO';
+            } else {
+              horariosDoDia.push({ horario, status: 'AGENDADO' });
+            }
+
+            this.horariosPorDia[diaKey] = [...horariosDoDia];
+
+            if (novoAgendamento) {
+              this.agendamentos.push(novoAgendamento);
+              this.agendamentos = [...this.agendamentos];
+            }
+
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
+            this.saveAgendamentos();
+            this.cdr.detectChanges();
+          });
         },
         error: (err: any) => {
           this.logger.error('Erro ao agendar:', err);
