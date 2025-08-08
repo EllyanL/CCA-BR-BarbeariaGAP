@@ -8,6 +8,7 @@ import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { DialogoAgendamentoComponent } from '../dialogo-agendamento/dialogo-agendamento.component';
+import { DialogoAgendamentoRealizadoComponent } from '../dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 import { DialogoDetalhesAgendamentoComponent } from '../dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
 import { Horario } from 'src/app/models/horario';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -279,19 +280,24 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       if (result) {
         this.logger.log('Dados recebidos do diálogo:', result);
         // O agendamento já foi salvo no diálogo, basta atualizar o estado local
-        this.agendamentos.push(result);
-        this.agendamentos = [...this.agendamentos];
-        this.logger.log('Agendamentos atualizados:', this.agendamentos);
-        this.saveAgendamentos();
-        this.snackBar.open('Agendamento realizado', '', { duration: 3000 });
-        if (this.horariosPorDia[diaSemanaFormatado]) {
-          const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === hora);
-          if (horarioIndex !== -1) {
-            this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'AGENDADO';
-            this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = result.militar?.id;
-            this.horariosPorDia = { ...this.horariosPorDia };
+        const confirmDialog = this.dialog.open(DialogoAgendamentoRealizadoComponent, {
+          width: '400px'
+        });
+
+        confirmDialog.afterClosed().subscribe(() => {
+          this.agendamentos.push(result);
+          this.agendamentos = [...this.agendamentos];
+          this.logger.log('Agendamentos atualizados:', this.agendamentos);
+          this.saveAgendamentos();
+          if (this.horariosPorDia[diaSemanaFormatado]) {
+            const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === hora);
+            if (horarioIndex !== -1) {
+              this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'AGENDADO';
+              this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = result.militar?.id;
+              this.horariosPorDia = { ...this.horariosPorDia };
+            }
           }
-        }
+        });
       }
     });
   }

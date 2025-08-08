@@ -61,6 +61,7 @@ import { GerenciarRegistrosComponent } from './pages/gerenciar-registros/gerenci
 import { ConfiguracoesAgendamentoService } from './services/configuracoes-agendamento.service';
 import { DialogoGerenciarHorariosComponent } from './components/dialogo-gerenciar-horarios/dialogo-gerenciar-horarios.component';
 import { MeusAgendamentosComponent } from './pages/meus-agendamentos/meus-agendamentos.component';
+import { DialogoAgendamentoRealizadoComponent } from './components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 
 registerLocaleData(ptBrLocale, 'pt-BR');
 
@@ -93,6 +94,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     GerenciarRegistrosComponent,
     DialogoGerenciarHorariosComponent,
     MeusAgendamentosComponent,
+    DialogoAgendamentoRealizadoComponent,
   ],
   imports: [
     BrowserModule,
