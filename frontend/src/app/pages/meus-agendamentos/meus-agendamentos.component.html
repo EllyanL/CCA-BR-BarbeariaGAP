@@ -41,11 +41,21 @@
             </td>
           </ng-container>
 
+          <ng-container matColumnDef="canceladoPor">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Cancelado Por</th>
+            <td mat-cell *matCellDef="let element">{{ formatarCanceladoPor(element.canceladoPor) }}</td>
+          </ng-container>
+
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
 
-        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        <mat-paginator
+          #paginator
+          [pageSize]="10"
+          [pageSizeOptions]="[5, 10, 20]"
+          showFirstLastButtons
+        ></mat-paginator>
       </ng-container>
       <ng-template #noData>
         <div class="no-data">Nenhum agendamento encontrado</div>
