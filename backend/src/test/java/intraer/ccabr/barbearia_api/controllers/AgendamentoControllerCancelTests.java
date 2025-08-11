@@ -2,6 +2,7 @@ package intraer.ccabr.barbearia_api.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -93,7 +94,10 @@ class AgendamentoControllerCancelTests {
         Horario horario = new Horario("segunda", agendamento.getHora().toString(), "GRADUADO", HorarioStatus.AGENDADO);
 
         doAnswer(invocation -> {
+            agendamento.setStatus("CANCELADO");
+            agendamento.setCanceladoPor("USUARIO");
             horario.setStatus(HorarioStatus.DISPONIVEL);
+            agendamentoRepository.save(agendamento);
             return null;
         }).when(agendamentoService).cancelarAgendamento(anyLong(), any());
 
@@ -104,6 +108,7 @@ class AgendamentoControllerCancelTests {
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
         verify(agendamentoService).cancelarAgendamento(1L, "USUARIO");
+        verify(agendamentoRepository).save(argThat(a -> "CANCELADO".equals(a.getStatus()) && "USUARIO".equals(a.getCanceladoPor())));
         org.junit.jupiter.api.Assertions.assertEquals(HorarioStatus.DISPONIVEL, horario.getStatus());
     }
 
@@ -129,6 +134,13 @@ class AgendamentoControllerCancelTests {
         LocalDateTime future = LocalDateTime.now().plusMinutes(40);
         Agendamento agendamento = buildAgendamento(future, "123456789");
 
+        doAnswer(invocation -> {
+            agendamento.setStatus("CANCELADO");
+            agendamento.setCanceladoPor("ADMIN");
+            agendamentoRepository.save(agendamento);
+            return null;
+        }).when(agendamentoService).cancelarAgendamento(anyLong(), any());
+
         when(agendamentoService.findById(1L)).thenReturn(Optional.of(agendamento));
         when(agendamentoService.isAgendamentoPassado(agendamento)).thenReturn(false);
 
@@ -136,5 +148,6 @@ class AgendamentoControllerCancelTests {
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
 
         verify(agendamentoService).cancelarAgendamento(1L, "ADMIN");
+        verify(agendamentoRepository).save(argThat(a -> "CANCELADO".equals(a.getStatus()) && "ADMIN".equals(a.getCanceladoPor())));
     }
 }

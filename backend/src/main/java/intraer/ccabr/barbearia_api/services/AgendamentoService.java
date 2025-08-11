@@ -90,7 +90,8 @@ public class AgendamentoService {
             }
 
             agendamento.setStatus("CANCELADO");
-            agendamento.setCanceladoPor(canceladoPor);
+            String tipoCancelador = "ADMIN".equalsIgnoreCase(canceladoPor) ? "ADMIN" : "USUARIO";
+            agendamento.setCanceladoPor(tipoCancelador);
             agendamentoRepository.save(agendamento);
             marcarHorarioComoDisponivel(agendamento);
         });
