@@ -137,7 +137,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     }
   }
 
-  exportarPdf(): void {
+  async exportarPdf(): Promise<void> {
     this.applyFilter();
     const rows = this.dataSource.filteredData;
 
@@ -145,6 +145,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
+      const brasao = await this.loadImage('assets/images/logo-ccabr.png');
 
       // Header
       doc.setFontSize(16);
@@ -191,7 +192,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
+        const footerY = pageHeight - 20;
+        doc.addImage(brasao, 'PNG', 10, footerY - 10, 15, 15);
         doc.setFontSize(9);
+        doc.text('Barbearia GAP - Força Aérea Brasileira', 30, footerY);
         doc.text(
           `Página ${i} de ${totalPages}`,
           pageWidth / 2,
@@ -265,5 +269,14 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         INDISPONIVEL: 'status-indisponivel'
       } as any
     )[s] || '';
+  }
+
+  private loadImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => resolve(img);
+      img.onerror = err => reject(err);
+    });
   }
 }
