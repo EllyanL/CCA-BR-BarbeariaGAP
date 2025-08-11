@@ -54,7 +54,7 @@ class AgendamentoServiceFifteenDaysRuleTests {
     }
 
     @Test
-    void validarRegrasDeNegocioNaoLancaExcecaoQuandoUltimoAgendamentoCancelado() {
+    void validarRegrasDeNegocioNaoLancaExcecaoQuandoUltimoAgendamentoCanceladoNaoRetornado() {
         Militar m = new Militar();
         m.setSaram("123");
         Agendamento ag = new Agendamento();
@@ -64,10 +64,7 @@ class AgendamentoServiceFifteenDaysRuleTests {
         ag.setCategoria("GRADUADO");
         ag.setMilitar(m);
 
-        Agendamento ultimo = new Agendamento();
-        ultimo.setData(LocalDate.now());
-        ultimo.setStatus("CANCELADO");
-        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.of(ultimo));
+        when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
         assertDoesNotThrow(() -> service.validarRegrasDeNegocio(ag));
