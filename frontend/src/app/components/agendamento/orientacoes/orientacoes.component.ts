@@ -1,43 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Inject } from '@angular/core';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from 'src/app/services/configuracoes-agendamento.service';
 
 @Component({
   selector: 'app-orientacoes',
-  template: `
-    <mat-card class="orientacoes-card">
-      <div class="orientacoes-card__header">
-        <mat-icon color="primary" class="mat-card-avatar">info_outline</mat-icon>
-        <mat-card-title class="orientacoes-card__title">ORIENTAÇÕES DO GAP-BR</mat-card-title>
-      </div>
-      <mat-card-content class="orientacoes-card__content">
-        <mat-list class="orientacoes-card__list">
-          <mat-list-item class="orientacoes-card__list-item">
-            <mat-icon matListIcon>event</mat-icon>
-            Só é possível agendar para datas dentro da semana atual (Segunda à Sexta).
-          </mat-list-item>
-          <mat-list-item class="orientacoes-card__list-item">
-            <mat-icon matListIcon>schedule</mat-icon>
-            Os agendamentos estão disponíveis diariamente das {{horarioInicio}} às {{horarioFim}}.
-          </mat-list-item>
-          <mat-list-item class="orientacoes-card__list-item">
-            <mat-icon matListIcon>repeat</mat-icon>
-            Só é possível marcar uma vez a cada 15 dias.
-          </mat-list-item>
-          <mat-list-item class="orientacoes-card__list-item">
-            <mat-icon matListIcon>access_time</mat-icon>
-            A tolerância é de 10 minutos após o horário marcado.
-          </mat-list-item>
-          <mat-list-item class="orientacoes-card__list-item">
-            <mat-icon matListIcon>assignment</mat-icon>
-            O Atendimento será realizado conforme <b>marcação prévia</b>.
-          </mat-list-item>
-        </mat-list>
-      </mat-card-content>
-      <mat-dialog-actions align="end" class="orientacoes-card__actions">
-        <button mat-button [mat-dialog-close]="true" color="primary">Ciente</button>
-      </mat-dialog-actions>
-    </mat-card>
-  `,
+  templateUrl: './orientacoes.component.html',
   styles: [`
     .orientacoes-card {
       width: 100%;
@@ -98,12 +65,24 @@ export class OrientacoesComponent implements OnInit {
   horarioInicio?: string;
   horarioFim?: string;
 
-  constructor(private configService: ConfiguracoesAgendamentoService) {}
+  @Output() navigate = new EventEmitter<string>();
+
+  constructor(
+    private configService: ConfiguracoesAgendamentoService,
+    private dialogRef: MatDialogRef<OrientacoesComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { destino?: string }
+  ) {}
 
   ngOnInit(): void {
     this.configService.getConfig().subscribe((config: ConfiguracaoAgendamento) => {
-      this.horarioInicio = config.horarioInicio?.slice(0,5);
-      this.horarioFim = config.horarioFim?.slice(0,5);
+      this.horarioInicio = config.horarioInicio?.slice(0, 5);
+      this.horarioFim = config.horarioFim?.slice(0, 5);
     });
+  }
+
+  onAgendar(): void {
+    const destino = this.data?.destino || '/graduado';
+    this.navigate.emit(destino);
+    this.dialogRef.close();
   }
 }
