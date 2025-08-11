@@ -219,11 +219,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
       next: horarios => {
         this.horariosPorDia = horarios;
-        const todosHorarios = new Set<string>();
-        Object.values(this.horariosPorDia).forEach(lista => {
-          lista.forEach(h => todosHorarios.add(h.horario));
-        });
-        this.horariosBaseSemana = Array.from(todosHorarios).sort();
         this.logger.log('Horários atualizados:', this.horariosPorDia);
       },
       error: err => this.logger.error('Erro ao atualizar horários:', err)

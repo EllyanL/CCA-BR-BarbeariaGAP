@@ -12,7 +12,7 @@ export interface ConfiguracaoAgendamento {
   providedIn: 'root'
 })
 export class ConfiguracoesAgendamentoService {
-  private readonly apiUrl = `${environment.apiUrl}/configuracoes/agendamento`;
+  private readonly apiUrl = `${environment.apiUrl}/configuracoes`;
 
   constructor(private http: HttpClient) {}
 
