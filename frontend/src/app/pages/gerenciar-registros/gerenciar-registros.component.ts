@@ -28,8 +28,24 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
   dataSource = new MatTableDataSource<Agendamento>([]);
   searchTerm = '';
-  dataInicial?: Date | null;
-  dataFinal?: Date | null;
+
+  private _dataInicial?: Date | null;
+  get dataInicial(): Date | null | undefined {
+    return this._dataInicial;
+  }
+  set dataInicial(value: Date | null | undefined) {
+    this._dataInicial = value;
+    this.applyFilter();
+  }
+
+  private _dataFinal?: Date | null;
+  get dataFinal(): Date | null | undefined {
+    return this._dataFinal;
+  }
+  set dataFinal(value: Date | null | undefined) {
+    this._dataFinal = value;
+    this.applyFilter();
+  }
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
@@ -85,9 +101,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       this.searchTerm = value.trim().toLowerCase();
     }
 
-    const predicate = (a: Agendamento, filter: string): boolean => {
-      const f = filter.trim().toLowerCase();
-      return [
+    const filterValues = {
+      search: this.searchTerm,
+      inicio: this.dataInicial ? this.formatDate(this.dataInicial) : '',
+      fim: this.dataFinal ? this.formatDate(this.dataFinal) : ''
+    };
+
+    this.dataSource.filterPredicate = (a: Agendamento, filter: string): boolean => {
+      const { search, inicio, fim } = JSON.parse(filter);
+      const term = (search || '').trim().toLowerCase();
+
+      const matchesTerm = [
         a.data ? this.datePipe.transform(a.data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '',
         a.hora,
         a.militar?.postoGrad,
@@ -96,11 +120,16 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         this.formatarCanceladoPor(a.canceladoPor)
       ]
         .map(v => (v ?? '').toLowerCase())
-        .some(v => v.includes(f));
+        .some(v => v.includes(term));
+
+      const data = a.data ? new Date(a.data) : undefined;
+      const startOk = !inicio || (!!data && data >= new Date(inicio));
+      const endOk = !fim || (!!data && data <= new Date(fim));
+
+      return matchesTerm && startOk && endOk;
     };
 
-    this.dataSource.filterPredicate = predicate;
-    this.dataSource.filter = this.searchTerm;
+    this.dataSource.filter = JSON.stringify(filterValues);
 
     if (this.paginator) {
       this.paginator.firstPage();
@@ -108,6 +137,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   exportarPdf(): void {
+    this.applyFilter();
     const rows = this.dataSource.filteredData;
 
     try {
