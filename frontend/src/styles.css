@@ -11,6 +11,16 @@ html, body {
   color: #ffffff;
 }
 
+:root {
+  --footer-height: 2.3rem;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --footer-height: 2.6rem;
+  }
+}
+
 /* APLICAÇÃO EXPLÍCITA EM ELEMENTOS DO ANGULAR MATERIAL */
 .mat-typography,
 .mat-button,
@@ -55,7 +65,7 @@ html, body {
 
 /* === CONTAINERS E AJUSTES === */
 .page-container {
-  height: calc(100vh - 2.3rem); /* ajuste de espaço do rodapé */
+  height: calc(100vh - var(--footer-height)); /* ajuste de espaço do rodapé */
   width: 100%;
-  padding-bottom: 2.5rem;
+  padding-bottom: calc(var(--footer-height) + 1rem);
 }

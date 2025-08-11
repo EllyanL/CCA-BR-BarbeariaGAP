@@ -51,6 +51,7 @@ import { AuthService } from 'src/app/services/auth.service';
       </div>
     </ng-template>
   `,
+  styleUrls: ['./oficiais.component.css'],
 })
 export class OficiaisComponent implements OnInit {
   titleHeader = 'OFICIAIS';

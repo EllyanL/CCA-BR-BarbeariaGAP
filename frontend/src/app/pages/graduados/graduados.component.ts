@@ -51,6 +51,7 @@ import { AuthService } from 'src/app/services/auth.service';
       </div>
     </ng-template>
   `,
+  styleUrls: ['./graduados.component.css'],
 })
 export class GraduadosComponent implements OnInit {
   titleHeader = 'GRADUADOS';
