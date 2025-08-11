@@ -40,6 +40,14 @@ export const rotateToggle = trigger('rotateToggle', [
       <div class="right">
         <mat-icon>home</mat-icon>
         <mat-icon>person</mat-icon>
+        <button
+          mat-icon-button
+          class="agendamento-button"
+          [routerLink]="'/meus-agendamentos'"
+          aria-label="Meus Agendamentos"
+        >
+          <mat-icon>calendar_today</mat-icon>
+        </button>
         <span class="nome">{{ nomeHeader }}</span>
         <button
           mat-icon-button
@@ -112,6 +120,13 @@ export const rotateToggle = trigger('rotateToggle', [
     }
 
     .menu-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #ffffff;
+    }
+
+    .agendamento-button {
       background: none;
       border: none;
       cursor: pointer;
