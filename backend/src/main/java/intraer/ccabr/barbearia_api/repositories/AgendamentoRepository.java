@@ -105,6 +105,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
               AND (:dataFim IS NULL OR a.data <= :dataFim)
             ORDER BY a.data DESC, a.hora DESC
             """)
+    // Sem filtro por status para incluir agendados e cancelados
     List<Agendamento> findByCategoriaAndPeriodo(
             @Param("categoria") String categoria,
             @Param("dataInicio") LocalDate dataInicio,
