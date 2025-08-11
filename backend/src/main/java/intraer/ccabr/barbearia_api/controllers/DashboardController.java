@@ -37,9 +37,11 @@ public class DashboardController {
     @GetMapping("/stats")
     public DashboardStatsDTO getStats() {
         LocalDate today = LocalDate.now();
+        // Conta apenas agendamentos com status AGENDADO ou REALIZADO
         long agendamentosHoje = agendamentoRepository.countByData(today);
         long totalUsuarios = militarRepository.count();
 
+        // Distribuição por categoria considerando somente AGENDADO ou REALIZADO
         Map<String, Long> porCategoria = agendamentoRepository.countByCategoria(today)
                 .stream()
                 .collect(Collectors.toMap(obj -> (String) obj[0], obj -> (Long) obj[1]));
@@ -61,6 +63,7 @@ public class DashboardController {
     public List<WeeklyCountDTO> getWeeklyStats() {
         LocalDate today = LocalDate.now();
         LocalDate start = today.minusDays(6);
+        // Estatísticas semanais considerando apenas AGENDADO ou REALIZADO
         List<Object[]> results = agendamentoRepository.countByDataSince(start);
         return results.stream()
                 .map(arr -> {
