@@ -1,6 +1,8 @@
 package intraer.ccabr.barbearia_api.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,19 +33,27 @@ public class AgendamentoStatusScheduler {
     }
 
     /**
-     * Verifica periodicamente os agendamentos marcados como
-     * {@code AGENDADO} e atualiza para {@code REALIZADO} quando a data e a
-     * hora já estiverem no passado.
+     * Verifica periodicamente os agendamentos marcados como {@code AGENDADO}
+     * e atualiza para {@code REALIZADO} quando:
+     * <ul>
+     *   <li>a data do agendamento for anterior à data atual; ou</li>
+     *   <li>a data for hoje e a hora já tiver passado.</li>
+     * </ul>
+     * Agendamentos cancelados são ignorados e o campo
+     * {@code canceladoPor} permanece inalterado.
      */
     @Scheduled(fixedRate = 900_000)
     @Transactional
     public void atualizarAgendamentosRealizados() {
         LocalDateTime agora = LocalDateTime.now();
+        LocalDate hoje = agora.toLocalDate();
+        LocalTime horaAtual = agora.toLocalTime();
         List<Agendamento> agendados = agendamentoRepository.findByStatus("AGENDADO");
 
         for (Agendamento ag : agendados) {
-            LocalDateTime dataHora = LocalDateTime.of(ag.getData(), ag.getHora());
-            if (dataHora.isBefore(agora)) {
+            LocalDate dataAgendamento = ag.getData();
+            if (dataAgendamento.isBefore(hoje)
+                    || (dataAgendamento.isEqual(hoje) && ag.getHora().isBefore(horaAtual))) {
                 ag.setStatus("REALIZADO");
                 agendamentoRepository.save(ag);
                 logger.debug("Agendamento {} marcado como REALIZADO", ag.getId());
