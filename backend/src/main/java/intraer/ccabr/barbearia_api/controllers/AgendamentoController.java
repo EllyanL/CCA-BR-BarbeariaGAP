@@ -295,7 +295,7 @@ public class AgendamentoController {
                         .body("Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.");
             }
 
-            String canceladoPor = isAdmin ? "ADMIN" : "USUARIO";
+            final String canceladoPor = isAdmin ? "ADMIN" : "USUARIO";
             agendamentoService.cancelarAgendamento(id, canceladoPor);
             return ResponseEntity.noContent().build();
         }
