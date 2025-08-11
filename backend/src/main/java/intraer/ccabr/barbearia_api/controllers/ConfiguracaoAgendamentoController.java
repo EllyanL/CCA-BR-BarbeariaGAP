@@ -8,7 +8,7 @@ import java.time.LocalTime;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/configuracoes/agendamento")
+@RequestMapping("/api/configuracoes")
 public class ConfiguracaoAgendamentoController {
 
     private final ConfiguracaoAgendamentoService service;
@@ -17,12 +17,12 @@ public class ConfiguracaoAgendamentoController {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping({"", "/agendamento"})
     public ConfiguracaoAgendamento buscarConfiguracao() {
         return service.buscarConfiguracao();
     }
 
-    @PutMapping
+    @PutMapping({"", "/agendamento"})
     public ConfiguracaoAgendamento atualizar(@RequestBody Map<String, String> body) {
         LocalTime inicio = LocalTime.parse(body.get("horarioInicio"));
         LocalTime fim = LocalTime.parse(body.get("horarioFim"));
