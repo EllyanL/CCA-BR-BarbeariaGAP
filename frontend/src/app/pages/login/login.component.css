@@ -1,6 +1,7 @@
 .login-wrapper {
   display: flex;
   height: 100vh;
+  padding-bottom: calc(var(--footer-height) + 1rem);
 }
 
 .image-column {

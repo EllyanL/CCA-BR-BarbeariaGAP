@@ -1,5 +1,6 @@
 .gerenciar-container {
   height: 100%;
+  padding-bottom: calc(var(--footer-height) + 1rem);
 }
 
 .gerenciar-content {
