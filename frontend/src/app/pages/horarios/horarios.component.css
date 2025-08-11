@@ -212,17 +212,6 @@ mat-icon {
   background-color: #d0d0d0;
 }
 
-/* === Cabeçalho geral === */
-.header-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.header-container span {
-  font-weight: bold;
-}
-
 /* === Responsividade === */
 @media (max-width: 768px) {
   .header-section {

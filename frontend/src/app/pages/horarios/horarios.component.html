@@ -78,15 +78,7 @@
         <thead class="horarios-header">
           <tr>
             <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia">
-              <div class="header-container">
-                <span>{{ dia | uppercase }}</span>
-                <button *ngIf="isAdmin && !temAgendado(dia)" mat-icon-button
-                        [color]="todosIndisponiveis(dia) ? 'primary' : 'warn'"
-                        (click)="todosIndisponiveis(dia) ? disponibilizarDia(dia) : indisponibilizarDia(dia)"
-                        [title]="todosIndisponiveis(dia) ? 'Disponibilizar ' + (dia | titlecase) : 'Indisponibilizar ' + (dia | titlecase)">
-                  <mat-icon>{{ todosIndisponiveis(dia) ? 'check_circle' : 'block' }}</mat-icon>
-                </button>
-              </div>
+              {{ dia | uppercase }}
             </th>
           </tr>
         </thead>
