@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
+import { DatePipe } from '@angular/common';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-meus-agendamentos',
@@ -67,7 +68,7 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
         a.hora,
         a.militar?.postoGrad,
         a.militar?.nomeDeGuerra,
-        this.formatarStatus(a.status),
+        this.formatarStatus(a.status ?? ''),
         this.formatarCanceladoPor(a.canceladoPor)
       ]
         .map(v => (v ?? '').toLowerCase())

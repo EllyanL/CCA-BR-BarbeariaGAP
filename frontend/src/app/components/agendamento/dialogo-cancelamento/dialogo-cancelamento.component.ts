@@ -90,7 +90,7 @@ export class DialogoCancelamentoComponent implements OnInit {
     }
   }
 
-  private canCancel(): boolean {
+  public canCancel(): boolean {
     if (!this.data?.data || !this.data?.hora) {
       return true;
     }
