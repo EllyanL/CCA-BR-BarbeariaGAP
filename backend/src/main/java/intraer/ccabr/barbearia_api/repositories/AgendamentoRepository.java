@@ -87,13 +87,13 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
                             @Param("diaSemana") String diaSemana,
                             @Param("categoria") String categoria);
 
-    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.data = :data")
+    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.data = :data AND a.status IN ('AGENDADO', 'REALIZADO')")
     long countByData(@Param("data") LocalDate data);
 
-    @Query("SELECT a.categoria, COUNT(a) FROM Agendamento a WHERE a.data = :data GROUP BY a.categoria")
+    @Query("SELECT a.categoria, COUNT(a) FROM Agendamento a WHERE a.data = :data AND a.status IN ('AGENDADO', 'REALIZADO') GROUP BY a.categoria")
     List<Object[]> countByCategoria(@Param("data") LocalDate data);
 
-    @Query("SELECT a.data, COUNT(a) FROM Agendamento a WHERE a.data >= :startDate GROUP BY a.data ORDER BY a.data")
+    @Query("SELECT a.data, COUNT(a) FROM Agendamento a WHERE a.data >= :startDate AND a.status IN ('AGENDADO', 'REALIZADO') GROUP BY a.data ORDER BY a.data")
     List<Object[]> countByDataSince(@Param("startDate") LocalDate startDate);
 
     List<Agendamento> findTop5ByStatusOrderByDataDescHoraDesc(String status);
