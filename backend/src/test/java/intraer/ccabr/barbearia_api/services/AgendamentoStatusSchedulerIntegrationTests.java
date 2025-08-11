@@ -60,6 +60,7 @@ class AgendamentoStatusSchedulerIntegrationTests {
         cancelado.setDiaSemana("ontem");
         cancelado.setCategoria("GRADUADO");
         cancelado.setStatus("CANCELADO");
+        cancelado.setCanceladoPor("ADMIN");
         cancelado.setMilitar(m);
         agendamentoRepository.save(cancelado);
 
@@ -67,7 +68,9 @@ class AgendamentoStatusSchedulerIntegrationTests {
 
         assertEquals("REALIZADO", agendamentoRepository.findById(passado.getId()).orElseThrow().getStatus());
         assertEquals("AGENDADO", agendamentoRepository.findById(futuro.getId()).orElseThrow().getStatus());
-        assertEquals("CANCELADO", agendamentoRepository.findById(cancelado.getId()).orElseThrow().getStatus());
+        Agendamento canceladoPersistido = agendamentoRepository.findById(cancelado.getId()).orElseThrow();
+        assertEquals("CANCELADO", canceladoPersistido.getStatus());
+        assertEquals("ADMIN", canceladoPersistido.getCanceladoPor());
     }
 }
 
