@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -69,6 +69,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       this.dataSource.sort = this.sort;
       this.sort.active = 'data';
       this.sort.direction = 'desc';
+      this.sort.sort({ id: 'data', start: 'desc', disableClear: true } as MatSortable);
       this.dataSource.sortingDataAccessor = (item, property) => {
         switch (property) {
           case 'data':
@@ -116,7 +117,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         a.hora,
         a.militar?.postoGrad,
         a.militar?.nomeDeGuerra,
-        a.status,
+        this.formatarStatus(a.status ?? ''),
         this.formatarCanceladoPor(a.canceladoPor)
       ]
         .map(v => (v ?? '').toLowerCase())
