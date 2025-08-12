@@ -1,11 +1,25 @@
-.acoes {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16px;
+.dlg-title {
+  text-align: center;
 }
 
-.campo {
+.dlg-content .row {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 12px;
+}
+
+.grade-horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.dlg-actions {
+  display: flex;
+  align-items: center;
+}
+
+.dlg-actions .spacer {
+  flex: 1;
 }

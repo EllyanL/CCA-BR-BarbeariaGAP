@@ -1,43 +1,75 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from 'src/app/services/configuracoes-agendamento.service';
+
+interface Horario {
+  hora: string;
+  selecionado: boolean;
+}
 
 @Component({
   selector: 'app-dialogo-gerenciar-horarios',
   templateUrl: './dialogo-gerenciar-horarios.component.html',
   styleUrls: ['./dialogo-gerenciar-horarios.component.css']
 })
-export class DialogoGerenciarHorariosComponent implements OnInit {
-  horarioInicio = '';
-  horarioFim = '';
+export class DialogoGerenciarHorariosComponent {
+  diasDaSemana = [
+    { value: 0, label: 'Dom' },
+    { value: 1, label: 'Seg' },
+    { value: 2, label: 'Ter' },
+    { value: 3, label: 'Qua' },
+    { value: 4, label: 'Qui' },
+    { value: 5, label: 'Sex' },
+    { value: 6, label: 'Sáb' }
+  ];
+  diasSelecionados: number[] = [];
 
-  constructor(
-    private dialogRef: MatDialogRef<DialogoGerenciarHorariosComponent>,
-    private configuracoesService: ConfiguracoesAgendamentoService,
-    private snackBar: MatSnackBar
-  ) {}
+  horaInicio = '';
+  horaFim = '';
+  intervalo = 30;
 
-  ngOnInit(): void {
-    this.configuracoesService.getConfig().subscribe(config => {
-      this.horarioInicio = config.horarioInicio;
-      this.horarioFim = config.horarioFim;
-    });
+  horariosGerados: Horario[] = [];
+
+  constructor(public dialogRef: MatDialogRef<DialogoGerenciarHorariosComponent>) {}
+
+  gerarHorarios(): void {
+    if (!this.horaInicio || !this.horaFim) {
+      this.horariosGerados = [];
+      return;
+    }
+
+    const [startH, startM] = this.horaInicio.split(':').map(Number);
+    const [endH, endM] = this.horaFim.split(':').map(Number);
+
+    const start = new Date();
+    start.setHours(startH, startM, 0, 0);
+    const end = new Date();
+    end.setHours(endH, endM, 0, 0);
+
+    const horarios: Horario[] = [];
+    const current = new Date(start.getTime());
+
+    while (current <= end) {
+      const hh = current.getHours().toString().padStart(2, '0');
+      const mm = current.getMinutes().toString().padStart(2, '0');
+      horarios.push({ hora: `${hh}:${mm}`, selecionado: false });
+      current.setMinutes(current.getMinutes() + this.intervalo);
+    }
+
+    this.horariosGerados = horarios;
   }
 
-  cancelar(): void {
-    this.dialogRef.close();
+  selecionarTodos(): void {
+    this.horariosGerados.forEach(h => (h.selecionado = true));
   }
 
-  salvar(): void {
-    const config: ConfiguracaoAgendamento = {
-      horarioInicio: this.horarioInicio,
-      horarioFim: this.horarioFim
-    };
+  limparSelecao(): void {
+    this.horariosGerados.forEach(h => (h.selecionado = false));
+  }
 
-    this.configuracoesService.updateConfig(config).subscribe(() => {
-      this.snackBar.open('Horários atualizados com sucesso', 'Fechar', { duration: 3000 });
-      this.dialogRef.close(true);
-    });
+  confirmar(): void {
+    const selecionados = this.horariosGerados
+      .filter(h => h.selecionado)
+      .map(h => h.hora);
+    this.dialogRef.close(selecionados);
   }
 }
