@@ -106,7 +106,11 @@
                       </button>
                     </ng-container>
                   </ng-container>
-                  
+
+                  <button *ngSwitchCase="'REALIZADO'" class="botao-hora-indisponivel" mat-raised-button disabled>
+                    {{ formatarStatus('REALIZADO') }}
+                  </button>
+
 
                   <ng-container *ngSwitchDefault>
                     <button mat-raised-button class="botao-hora-adicionar" color="accent"
@@ -138,6 +142,11 @@
               <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario).status === 'INDISPONIVEL'"
                     class="horario-indisponivel">
                 {{ horario }}
+              </span>
+
+              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario).status === 'REALIZADO'"
+                    class="horario-indisponivel">
+                {{ formatarStatus('REALIZADO') }}
               </span>
             </ng-template>
               </div>

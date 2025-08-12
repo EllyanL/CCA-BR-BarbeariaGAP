@@ -219,6 +219,12 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
         .carregarHorariosDaSemana(this.categoriaSelecionada)
         .subscribe({
           next: (horarios: HorariosPorDia) => {
+            Object.keys(horarios).forEach(dia => {
+              horarios[dia] = horarios[dia].map(h => ({
+                ...h,
+                status: h.status.toUpperCase()
+              }));
+            });
             this.horariosPorDia = horarios;
             this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.cdr.detectChanges();
@@ -590,6 +596,10 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
 
       if (status === 'AGENDADO') {
         return { status: 'AGENDADO' };
+      }
+
+      if (status === 'REALIZADO') {
+        return { status: 'REALIZADO' };
       }
 
       if (status === 'CANCELADO' || status === 'DISPONIVEL') {
