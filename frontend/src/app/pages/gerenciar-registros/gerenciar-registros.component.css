@@ -7,35 +7,38 @@
   padding: 1rem;
 }
 
-.filters {
-  display: flex;
-  flex-wrap: wrap;
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr 110px 260px auto;
   gap: 1rem;
   margin-bottom: 1rem;
+  align-items: end;
 }
 
-.search-field {
-  flex: 1 1 200px;
+.f-busca {
+  width: 100%;
 }
 
-.time-field {
-  width: 150px;
+.f-hora {
+  width: 110px;
 }
 
-.date-range-field {
+.f-periodo {
   width: 260px;
 }
 
-.status-toggle {
+.f-status-acoes {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
 }
 
-.export-container {
+.acoes {
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .no-data {
@@ -52,6 +55,6 @@
   color: red;
 }
 
-.status-indisponivel {
-  color: orange;
+.status-realizado {
+  color: #1976d2;
 }
