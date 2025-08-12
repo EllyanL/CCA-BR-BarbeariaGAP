@@ -10,6 +10,12 @@ import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { LoggingService } from '../../services/logging.service';
 
+function compararDesc(a: Agendamento, b: Agendamento): number {
+  const dataA = new Date(`${a.data}T${a.hora}`).getTime();
+  const dataB = new Date(`${b.data}T${b.hora}`).getTime();
+  return dataB - dataA;
+}
+
 @Component({
   selector: 'app-gerenciar-registros',
   templateUrl: './gerenciar-registros.component.html',
@@ -74,7 +80,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   carregarAgendamentos(): void {
     this.agendamentoService.listarAgendamentosAdmin().subscribe({
       next: agendamentos => {
-        this.agendamentos = agendamentos.sort(this.compararDesc);
+        this.agendamentos = agendamentos.sort((a, b) => compararDesc(a, b));
         this.aplicarFiltros();
       },
       error: err => {
@@ -86,31 +92,25 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     });
   }
 
-  private compararDesc(a: Agendamento, b: Agendamento): number {
-    const dataA = new Date(`${a.data}T${a.hora || '00:00'}`).getTime();
-    const dataB = new Date(`${b.data}T${b.hora || '00:00'}`).getTime();
-    return dataB - dataA;
-  }
-
   aplicarFiltros(): void {
-    let dados = [...this.agendamentos];
+    let filtrados = [...this.agendamentos];
 
     if (this.filtros.texto) {
       const termo = this.filtros.texto.toLowerCase();
-      dados = dados.filter(a =>
+      filtrados = filtrados.filter(a =>
         (a.militar?.nomeDeGuerra || '').toLowerCase().includes(termo) ||
         (a.militar?.postoGrad || '').toLowerCase().includes(termo)
       );
     }
 
     if (this.filtros.hora) {
-      dados = dados.filter(a => (a.hora || '').startsWith(this.filtros.hora));
+      filtrados = filtrados.filter(a => (a.hora || '').startsWith(this.filtros.hora));
     }
 
     if (this.filtros.dataInicio || this.filtros.dataFim) {
       const inicio = this.filtros.dataInicio ? this.normalizarData00(this.filtros.dataInicio) : undefined;
       const fim = this.filtros.dataFim ? this.normalizarData2359(this.filtros.dataFim) : undefined;
-      dados = dados.filter(a => {
+      filtrados = filtrados.filter(a => {
         const dataHora = new Date(`${a.data}T${a.hora || '00:00'}`);
         return (!inicio || dataHora >= inicio) && (!fim || dataHora <= fim);
       });
@@ -118,10 +118,11 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
     if (this.filtros.status.length) {
       const statusUpper = this.filtros.status.map(s => s.toUpperCase());
-      dados = dados.filter(a => a.status && statusUpper.includes(a.status.toUpperCase()));
+      filtrados = filtrados.filter(a => a.status && statusUpper.includes(a.status.toUpperCase()));
     }
 
-    this.dataSource.data = dados;
+    filtrados.sort((a, b) => compararDesc(a, b));
+    this.dataSource.data = filtrados;
     if (this.paginator) {
       this.paginator.firstPage();
     }
