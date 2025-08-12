@@ -2,24 +2,53 @@
   <div class="filters">
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Buscar</mat-label>
-      <input matInput (input)="applyFilter($event)" placeholder="Buscar" />
+      <input
+        matInput
+        placeholder="Buscar"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilter()"
+      />
     </mat-form-field>
-    <mat-form-field appearance="fill" class="date-field">
-      <mat-label>Data Inicial</mat-label>
-      <input matInput [matDatepicker]="pickerInicio" [(ngModel)]="dataInicial" (dateChange)="carregarAgendamentos()" />
-      <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
-      <mat-datepicker #pickerInicio></mat-datepicker>
+
+    <mat-form-field appearance="fill" class="time-field">
+      <mat-label>Hora</mat-label>
+      <input
+        matInput
+        type="time"
+        [(ngModel)]="horaFiltro"
+        (ngModelChange)="applyFilter()"
+      />
     </mat-form-field>
-    <mat-form-field appearance="fill" class="date-field">
-      <mat-label>Data Final</mat-label>
-      <input matInput [matDatepicker]="pickerFim" [(ngModel)]="dataFinal" (dateChange)="carregarAgendamentos()" />
-      <mat-datepicker-toggle matSuffix [for]="pickerFim"></mat-datepicker-toggle>
-      <mat-datepicker #pickerFim></mat-datepicker>
+
+    <mat-form-field appearance="fill" class="date-range-field">
+      <mat-label>Período</mat-label>
+      <mat-date-range-input [rangePicker]="picker" (dateChange)="carregarAgendamentos()">
+        <input matStartDate [(ngModel)]="dataInicial" placeholder="Data inicial" />
+        <input matEndDate [(ngModel)]="dataFinal" placeholder="Data final" />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>
+
+    <mat-button-toggle-group
+      class="status-toggle"
+      [(ngModel)]="statusFiltro"
+      (change)="applyFilter()"
+    >
+      <mat-button-toggle value="">Todos</mat-button-toggle>
+      <mat-button-toggle value="AGENDADO">Agendado</mat-button-toggle>
+      <mat-button-toggle value="CANCELADO">Cancelado</mat-button-toggle>
+      <mat-button-toggle value="INDISPONIVEL">Indisponível</mat-button-toggle>
+    </mat-button-toggle-group>
   </div>
 
   <div class="export-container">
-    <button mat-raised-button color="primary" (click)="exportarPdf()">Exportar PDF</button>
+    <button mat-stroked-button (click)="limparFiltros()">
+      Limpar filtros
+    </button>
+    <button mat-raised-button color="primary" (click)="exportarPdf()">
+      Exportar PDF
+    </button>
   </div>
   <ng-container *ngIf="dataSource.filteredData.length; else noData">
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">

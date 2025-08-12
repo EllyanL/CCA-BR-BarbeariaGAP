@@ -28,6 +28,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
   dataSource = new MatTableDataSource<Agendamento>([]);
   searchTerm = '';
+  horaFiltro = '';
+  statusFiltro = '';
 
   private _dataInicial?: Date | null;
   get dataInicial(): Date | null | undefined {
@@ -96,20 +98,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       });
   }
 
-  applyFilter(event?: Event): void {
-    if (event) {
-      const value = (event.target as HTMLInputElement).value;
-      this.searchTerm = value.trim().toLowerCase();
-    }
-
+  applyFilter(): void {
     const filterValues = {
       search: this.searchTerm,
       inicio: this.dataInicial ? this.formatDate(this.dataInicial) : '',
-      fim: this.dataFinal ? this.formatDate(this.dataFinal) : ''
+      fim: this.dataFinal ? this.formatDate(this.dataFinal) : '',
+      hora: this.horaFiltro,
+      status: this.statusFiltro
     };
 
     this.dataSource.filterPredicate = (a: Agendamento, filter: string): boolean => {
-      const { search, inicio, fim } = JSON.parse(filter);
+      const { search, inicio, fim, hora, status } = JSON.parse(filter);
       const term = (search || '').trim().toLowerCase();
 
       const matchesTerm = [
@@ -126,8 +125,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const data = a.data ? new Date(a.data) : undefined;
       const startOk = !inicio || (!!data && data >= new Date(inicio));
       const endOk = !fim || (!!data && data <= new Date(fim));
+      const horaOk = !hora || a.hora === hora;
+      const statusOk = !status || (a.status || '').toUpperCase() === status.toUpperCase();
 
-      return matchesTerm && startOk && endOk;
+      return matchesTerm && startOk && endOk && horaOk && statusOk;
     };
 
     this.dataSource.filter = JSON.stringify(filterValues);
@@ -135,6 +136,15 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     if (this.paginator) {
       this.paginator.firstPage();
     }
+  }
+
+  limparFiltros(): void {
+    this.searchTerm = '';
+    this.horaFiltro = '';
+    this.statusFiltro = '';
+    this.dataInicial = undefined;
+    this.dataFinal = undefined;
+    this.carregarAgendamentos();
   }
 
   async exportarPdf(): Promise<void> {

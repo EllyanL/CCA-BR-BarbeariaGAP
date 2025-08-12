@@ -28,6 +28,7 @@ import { HorariosComponent } from './pages/horarios/horarios.component';
 import { LoginComponent } from './pages/login/login.component';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -128,6 +129,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     MatProgressBarModule,
     MatTabsModule,
     MatNativeDateModule,
+    MatButtonToggleModule,
     NgxMaterialTimepickerModule,
   ],
   providers: [
