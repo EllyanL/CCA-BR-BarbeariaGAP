@@ -1,7 +1,6 @@
 package intraer.ccabr.barbearia_api.controllers;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -287,12 +286,6 @@ public class AgendamentoController {
             if (agendamentoService.isAgendamentoPassado(agendamento)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Não é possível desmarcar um agendamento que já ocorreu.");
-            }
-
-            LocalDateTime dataHoraAgendamento = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-            if (dataHoraAgendamento.isBefore(LocalDateTime.now().plusMinutes(30))) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.");
             }
 
             final String canceladoPor = isAdmin ? "ADMIN" : "USUARIO";
