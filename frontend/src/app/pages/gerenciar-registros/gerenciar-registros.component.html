@@ -1,6 +1,6 @@
 <app-admin-navbar [containerClass]="'gerenciar-container'" [contentClass]="'gerenciar-content'">
-  <div class="filters">
-    <mat-form-field appearance="fill" class="search-field">
+  <div class="filters-grid">
+    <mat-form-field appearance="fill" class="f-busca">
       <mat-label>Buscar</mat-label>
       <input
         matInput
@@ -8,9 +8,18 @@
         [(ngModel)]="filtros.texto"
         (ngModelChange)="aplicarFiltros()"
       />
+      <button
+        matSuffix
+        mat-icon-button
+        *ngIf="filtros.texto"
+        aria-label="Clear"
+        (click)="limparCampo('texto')"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
     </mat-form-field>
 
-    <mat-form-field appearance="fill" class="time-field">
+    <mat-form-field appearance="fill" class="f-hora">
       <mat-label>Hora</mat-label>
       <input
         matInput
@@ -18,9 +27,18 @@
         [(ngModel)]="filtros.hora"
         (ngModelChange)="aplicarFiltros()"
       />
+      <button
+        matSuffix
+        mat-icon-button
+        *ngIf="filtros.hora"
+        aria-label="Clear"
+        (click)="limparCampo('hora')"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
     </mat-form-field>
 
-    <mat-form-field appearance="fill" class="date-range-field">
+    <mat-form-field appearance="fill" class="f-periodo">
       <mat-label>Período</mat-label>
       <mat-date-range-input [rangePicker]="picker" (dateChange)="aplicarFiltros()">
         <input matStartDate [(ngModel)]="filtros.dataInicio" placeholder="Data inicial" />
@@ -30,25 +48,21 @@
       <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>
 
-    <mat-button-toggle-group
-      class="status-toggle"
-      [(ngModel)]="filtros.status"
-      (change)="aplicarFiltros()"
-      multiple
-    >
-      <mat-button-toggle value="AGENDADO">Agendado</mat-button-toggle>
-      <mat-button-toggle value="CANCELADO">Cancelado</mat-button-toggle>
-      <mat-button-toggle value="INDISPONIVEL">Indisponível</mat-button-toggle>
-    </mat-button-toggle-group>
-  </div>
-
-  <div class="export-container">
-    <button mat-stroked-button (click)="limparTodosFiltros()">
-      Limpar filtros
-    </button>
-    <button mat-raised-button color="primary" (click)="exportarPdf()">
-      Exportar PDF
-    </button>
+    <div class="f-status-acoes">
+      <mat-button-toggle-group
+        [(ngModel)]="filtros.status"
+        (change)="aplicarFiltros()"
+        multiple
+      >
+        <mat-button-toggle value="AGENDADO">Agendado</mat-button-toggle>
+        <mat-button-toggle value="CANCELADO">Cancelado</mat-button-toggle>
+        <mat-button-toggle value="REALIZADO">Realizado</mat-button-toggle>
+      </mat-button-toggle-group>
+      <div class="acoes">
+        <button mat-stroked-button (click)="limparTodosFiltros()">Limpar filtros</button>
+        <button mat-raised-button color="primary" (click)="exportarPdf()">Exportar PDF</button>
+      </div>
+    </div>
   </div>
   <ng-container *ngIf="dataSource.data.length; else noData">
     <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
