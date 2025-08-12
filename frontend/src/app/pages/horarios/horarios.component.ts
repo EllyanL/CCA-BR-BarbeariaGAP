@@ -888,7 +888,8 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
         },
         error: (error: any) => {
           this.logger.error('Erro ao desmarcar agendamento:', error);
-          this.snackBar.open('Não foi possível desmarcar o agendamento. Tente novamente.', 'Ciente', { duration: 5000 });
+          const message = error?.error?.message || 'Não foi possível desmarcar o agendamento. Tente novamente.';
+          this.snackBar.open(message, 'Ciente', { duration: 5000 });
         }
       });
     }
