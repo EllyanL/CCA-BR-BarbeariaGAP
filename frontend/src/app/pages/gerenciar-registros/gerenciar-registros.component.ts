@@ -173,14 +173,13 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       doc.setFontSize(11);
       doc.text(headerText, pageWidth / 2, 22, { align: 'center' });
 
-      // Table
+      // Table with filtered rows
       autoTable(doc, {
         startY: 30,
         head: [
           [
             'DATA',
             'HORA',
-            'SARAM',
             'POSTO/GRAD',
             'NOME DE GUERRA',
             'STATUS',
@@ -190,7 +189,6 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         body: rows.map(r => [
           this.formatarDataBR(r.data),
           this.toTime(r.hora),
-          r.militar?.saram ?? '',
           r.militar?.postoGrad ?? '',
           this.formatName(r.militar?.nomeDeGuerra),
           this.formatarStatus(r.status ?? ''),
