@@ -1,18 +1,44 @@
-<mat-card>
-  <mat-card-content>
-    <div mat-dialog-content>
-      <div class="campo">
-        <label for="inicio">Início</label>
-        <input id="inicio" type="time" [(ngModel)]="horarioInicio" />
-      </div>
-      <div class="campo">
-        <label for="fim">Fim</label>
-        <input id="fim" type="time" [(ngModel)]="horarioFim" />
-      </div>
-    </div>
-    <div mat-dialog-actions class="acoes">
-      <button mat-button (click)="cancelar()">Cancelar</button>
-      <button mat-raised-button color="primary" (click)="salvar()">Salvar</button>
-    </div>
-  </mat-card-content>
-</mat-card>
+<h2 mat-dialog-title class="dlg-title">Gerenciar Horários</h2>
+
+<div mat-dialog-content class="dlg-content">
+  <div class="row">
+    <mat-button-toggle-group multiple [(ngModel)]="diasSelecionados">
+      <mat-button-toggle *ngFor="let dia of diasDaSemana" [value]="dia.value">
+        {{ dia.label }}
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="row">
+    <mat-form-field appearance="fill">
+      <mat-label>Início</mat-label>
+      <input matInput type="time" [(ngModel)]="horaInicio" />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Fim</mat-label>
+      <input matInput type="time" [(ngModel)]="horaFim" />
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+      <mat-label>Intervalo (min)</mat-label>
+      <input matInput type="number" [(ngModel)]="intervalo" />
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="gerarHorarios()">Gerar</button>
+  </div>
+
+  <div class="row grade-horarios">
+    <mat-checkbox *ngFor="let h of horariosGerados" [(ngModel)]="h.selecionado">
+      {{ h.hora }}
+    </mat-checkbox>
+  </div>
+</div>
+
+<div mat-dialog-actions class="dlg-actions">
+  <button mat-button (click)="selecionarTodos()">Selecionar todos</button>
+  <button mat-button (click)="limparSelecao()">Limpar</button>
+  <span class="spacer"></span>
+  <button mat-button (click)="dialogRef.close()">Cancelar</button>
+  <button mat-raised-button color="primary" (click)="confirmar()">Confirmar</button>
+</div>
