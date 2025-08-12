@@ -33,7 +33,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   ];
 
   dataSource = new MatTableDataSource<Agendamento>([]);
-  agendamentos: Agendamento[] = [];
+  todosRegistros: Agendamento[] = [];
 
   filtros = {
     texto: '',
@@ -80,7 +80,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   carregarAgendamentos(): void {
     this.agendamentoService.listarAgendamentosAdmin().subscribe({
       next: agendamentos => {
-        this.agendamentos = agendamentos.sort((a, b) => compararDesc(a, b));
+        this.todosRegistros = agendamentos.sort((a, b) => compararDesc(a, b));
         this.aplicarFiltros();
       },
       error: err => {
@@ -93,7 +93,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   aplicarFiltros(): void {
-    let filtrados = [...this.agendamentos];
+    let filtrados = [...this.todosRegistros];
 
     if (this.filtros.texto) {
       const termo = this.filtros.texto.toLowerCase();
