@@ -53,19 +53,45 @@ export class HorariosService {
   //---------------⏰ Gerenciamento de Horários---------------
 
   carregarHorariosDaSemana(categoria: string): Observable<HorariosPorDia> {
-    return this.http.get<HorariosPorDia>(`${this.apiUrl}/categoria/${categoria}`).pipe(
-      map((data: HorariosPorDia) => {
-        // Validação: garantir que cada valor seja array de objetos válidos
+    return forkJoin({
+      horarios: this.http.get<HorariosPorDia>(`${this.apiUrl}/categoria/${categoria}`),
+      agendamentos: this.http.get<Agendamento[]>(this.agendamentosUrl).pipe(
+        catchError(() => of([]))
+      )
+    }).pipe(
+      map(({ horarios, agendamentos }) => {
         const resultado: HorariosPorDia = {};
-        Object.entries(data).forEach(([dia, horarios]) => {
-          if (Array.isArray(horarios)) {
-            resultado[dia] = horarios.map((h: any) => ({
+
+        // Normaliza estrutura base dos horários
+        Object.entries(horarios).forEach(([dia, lista]) => {
+          if (Array.isArray(lista)) {
+            resultado[dia] = lista.map((h: any) => ({
               horario: h.horario,
               status: h.status?.toUpperCase() || 'INDISPONIVEL',
               usuarioId: h.usuarioId
             }));
           }
         });
+
+        // Sobrepõe com agendamentos (AGENDADO ou REALIZADO)
+        agendamentos
+          .filter(a => a.status && ['AGENDADO', 'REALIZADO'].includes(a.status.toUpperCase()))
+          .forEach(a => {
+            const dia = a.diaSemana?.toLowerCase();
+            const hora = a.hora?.slice(0, 5);
+            if (!dia || !hora) return;
+
+            const status = a.status!.toUpperCase();
+            if (!resultado[dia]) resultado[dia] = [];
+            const idx = resultado[dia].findIndex(h => h.horario === hora);
+            const usuarioId = (a as any).militar?.id;
+            if (idx !== -1) {
+              resultado[dia][idx] = { ...resultado[dia][idx], status, usuarioId };
+            } else {
+              resultado[dia].push({ horario: hora, status, usuarioId });
+            }
+          });
+
         return resultado;
       }),
       catchError((error) => {
