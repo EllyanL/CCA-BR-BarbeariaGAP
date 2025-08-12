@@ -14,8 +14,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,12 +83,12 @@ public class AgendamentoService {
     @Transactional
     public void cancelarAgendamento(Long id, String canceladoPor) {
         agendamentoRepository.findById(id).ifPresent(agendamento -> {
-            LocalDateTime dataHoraAgendamento = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-            LocalDateTime agora = LocalDateTime.now();
-            long minutosAteAgendamento = ChronoUnit.MINUTES.between(agora, dataHoraAgendamento);
-
-            if (!"ADMIN".equalsIgnoreCase(canceladoPor) && minutosAteAgendamento < 30) {
-                throw new IllegalStateException("Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.");
+            LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+            if (agendamentoDateTime.isBefore(LocalDateTime.now().plusMinutes(30))) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Desmarcação só permitida com 30 min de antecedência."
+                );
             }
 
             agendamento.setStatus("CANCELADO");
