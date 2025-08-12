@@ -118,7 +118,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
     if (this.filtros.status.length) {
       const statusUpper = this.filtros.status.map(s => s.toUpperCase());
-      filtrados = filtrados.filter(a => a.status && statusUpper.includes(a.status.toUpperCase()));
+      filtrados = filtrados.filter(a => {
+        const statusAtual = (a.status || '').toUpperCase();
+        return statusUpper.includes(statusAtual);
+      });
     }
 
     filtrados.sort((a, b) => compararDesc(a, b));
@@ -259,7 +262,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       DISPONIVEL: 'Disponível',
       INDISPONIVEL: 'Indisponível',
       AGENDADO: 'Agendado',
-      CANCELADO: 'Cancelado'
+      CANCELADO: 'Cancelado',
+      REALIZADO: 'Realizado'
     };
     const key = texto.toUpperCase();
     return mapa[key] || texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
@@ -271,6 +275,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       {
         AGENDADO: 'status-agendado',
         CANCELADO: 'status-cancelado',
+        REALIZADO: 'status-realizado',
         INDISPONIVEL: 'status-indisponivel'
       } as any
     )[s] || '';
