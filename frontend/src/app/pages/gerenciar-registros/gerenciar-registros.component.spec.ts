@@ -32,10 +32,16 @@ describe('GerenciarRegistrosComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('chama o serviço sem parâmetros', () => {
+  it('carrega registros e aplica filtros', () => {
+    const aplicarFiltrosSpy = spyOn(component, 'aplicarFiltros');
+    const registros: any[] = [];
+    agendamentoService.listarAgendamentosAdmin.and.returnValue(of(registros));
+
     component.carregarAgendamentos();
 
     expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith();
+    expect(component.todosRegistros).toEqual(registros);
+    expect(aplicarFiltrosSpy).toHaveBeenCalled();
     expect(snackBar.open).not.toHaveBeenCalled();
   });
 });
