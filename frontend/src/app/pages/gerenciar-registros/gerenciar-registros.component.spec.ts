@@ -32,13 +32,10 @@ describe('GerenciarRegistrosComponent', () => {
     component = fixture.componentInstance;
   });
 
-  it('chama o serviço quando datas estão ausentes', () => {
-    component.dataInicial = undefined;
-    component.dataFinal = undefined;
-
+  it('chama o serviço sem parâmetros', () => {
     component.carregarAgendamentos();
 
-    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(undefined, undefined, undefined);
+    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith();
     expect(snackBar.open).not.toHaveBeenCalled();
   });
 });

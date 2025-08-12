@@ -20,34 +20,22 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   displayedColumns = [
     'data',
     'hora',
-    'postoGrad',
     'nomeDeGuerra',
+    'postoGrad',
     'status',
     'canceladoPor'
   ];
 
   dataSource = new MatTableDataSource<Agendamento>([]);
-  searchTerm = '';
-  horaFiltro = '';
-  statusFiltro = '';
+  agendamentos: Agendamento[] = [];
 
-  private _dataInicial?: Date | null;
-  get dataInicial(): Date | null | undefined {
-    return this._dataInicial;
-  }
-  set dataInicial(value: Date | null | undefined) {
-    this._dataInicial = value;
-    this.applyFilter();
-  }
-
-  private _dataFinal?: Date | null;
-  get dataFinal(): Date | null | undefined {
-    return this._dataFinal;
-  }
-  set dataFinal(value: Date | null | undefined) {
-    this._dataFinal = value;
-    this.applyFilter();
-  }
+  filtros = {
+    texto: '',
+    hora: '',
+    dataInicio: undefined as Date | undefined,
+    dataFim: undefined as Date | undefined,
+    status: [] as string[]
+  };
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatSort) sort?: MatSort;
@@ -84,72 +72,84 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   carregarAgendamentos(): void {
-    const inicio = this.dataInicial ? this.formatDate(this.dataInicial) : undefined;
-    const fim = this.dataFinal ? this.formatDate(this.dataFinal) : undefined;
-
-    this.agendamentoService
-      .listarAgendamentosAdmin(undefined, inicio, fim)
-      .subscribe({
-        next: agendamentos => {
-          this.dataSource.data = agendamentos;
-          this.applyFilter();
-        },
-        error: err => this.logger.error('Erro ao carregar agendamentos:', err)
-      });
+    this.agendamentoService.listarAgendamentosAdmin().subscribe({
+      next: agendamentos => {
+        this.agendamentos = agendamentos.sort(this.compararDesc);
+        this.aplicarFiltros();
+      },
+      error: err => {
+        this.logger.error('Erro ao carregar agendamentos:', err);
+        this.snackBar.open('Erro ao carregar agendamentos', 'Fechar', {
+          duration: 3000
+        });
+      }
+    });
   }
 
-  applyFilter(): void {
-    const filterValues = {
-      search: this.searchTerm,
-      inicio: this.dataInicial ? this.formatDate(this.dataInicial) : '',
-      fim: this.dataFinal ? this.formatDate(this.dataFinal) : '',
-      hora: this.horaFiltro,
-      status: this.statusFiltro
-    };
+  private compararDesc(a: Agendamento, b: Agendamento): number {
+    const dataA = new Date(`${a.data}T${a.hora || '00:00'}`).getTime();
+    const dataB = new Date(`${b.data}T${b.hora || '00:00'}`).getTime();
+    return dataB - dataA;
+  }
 
-    this.dataSource.filterPredicate = (a: Agendamento, filter: string): boolean => {
-      const { search, inicio, fim, hora, status } = JSON.parse(filter);
-      const term = (search || '').trim().toLowerCase();
+  aplicarFiltros(): void {
+    let dados = [...this.agendamentos];
 
-      const matchesTerm = [
-        a.data ? this.datePipe.transform(a.data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '',
-        a.hora,
-        a.militar?.postoGrad,
-        a.militar?.nomeDeGuerra,
-        this.formatarStatus(a.status ?? ''),
-        this.formatarCanceladoPor(a.canceladoPor)
-      ]
-        .map(v => (v ?? '').toLowerCase())
-        .some(v => v.includes(term));
+    if (this.filtros.texto) {
+      const termo = this.filtros.texto.toLowerCase();
+      dados = dados.filter(a =>
+        (a.militar?.nomeDeGuerra || '').toLowerCase().includes(termo) ||
+        (a.militar?.postoGrad || '').toLowerCase().includes(termo)
+      );
+    }
 
-      const data = a.data ? new Date(a.data) : undefined;
-      const startOk = !inicio || (!!data && data >= new Date(inicio));
-      const endOk = !fim || (!!data && data <= new Date(fim));
-      const horaOk = !hora || a.hora === hora;
-      const statusOk = !status || (a.status || '').toUpperCase() === status.toUpperCase();
+    if (this.filtros.hora) {
+      dados = dados.filter(a => (a.hora || '').startsWith(this.filtros.hora));
+    }
 
-      return matchesTerm && startOk && endOk && horaOk && statusOk;
-    };
+    if (this.filtros.dataInicio || this.filtros.dataFim) {
+      const inicio = this.filtros.dataInicio ? this.normalizarData00(this.filtros.dataInicio) : undefined;
+      const fim = this.filtros.dataFim ? this.normalizarData2359(this.filtros.dataFim) : undefined;
+      dados = dados.filter(a => {
+        const dataHora = new Date(`${a.data}T${a.hora || '00:00'}`);
+        return (!inicio || dataHora >= inicio) && (!fim || dataHora <= fim);
+      });
+    }
 
-    this.dataSource.filter = JSON.stringify(filterValues);
+    if (this.filtros.status.length) {
+      const statusUpper = this.filtros.status.map(s => s.toUpperCase());
+      dados = dados.filter(a => a.status && statusUpper.includes(a.status.toUpperCase()));
+    }
 
+    this.dataSource.data = dados;
     if (this.paginator) {
       this.paginator.firstPage();
     }
   }
 
-  limparFiltros(): void {
-    this.searchTerm = '';
-    this.horaFiltro = '';
-    this.statusFiltro = '';
-    this.dataInicial = undefined;
-    this.dataFinal = undefined;
-    this.carregarAgendamentos();
+  limparCampo(campo: keyof typeof this.filtros): void {
+    if (campo === 'status') {
+      this.filtros.status = [];
+    } else if (campo === 'dataInicio' || campo === 'dataFim') {
+      (this.filtros as any)[campo] = undefined;
+    } else {
+      (this.filtros as any)[campo] = '';
+    }
+    this.aplicarFiltros();
+  }
+
+  limparTodosFiltros(): void {
+    this.filtros.texto = '';
+    this.filtros.hora = '';
+    this.filtros.dataInicio = undefined;
+    this.filtros.dataFim = undefined;
+    this.filtros.status = [];
+    this.aplicarFiltros();
   }
 
   async exportarPdf(): Promise<void> {
-    this.applyFilter();
-    const rows = this.dataSource.filteredData;
+    this.aplicarFiltros();
+    const rows = this.dataSource.data;
 
     try {
       const doc = new jsPDF();
@@ -164,9 +164,9 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       });
 
       let headerText = 'Todos os registros';
-      if (this.dataInicial || this.dataFinal) {
-        const dataIni = this.formatDateBr(this.dataInicial);
-        const dataFim = this.formatDateBr(this.dataFinal);
+      if (this.filtros.dataInicio || this.filtros.dataFim) {
+        const dataIni = this.formatarDataBR(this.filtros.dataInicio);
+        const dataFim = this.formatarDataBR(this.filtros.dataFim);
         headerText = `Intervalo de Busca: ${dataIni} À ${dataFim}`;
       }
       doc.setFontSize(11);
@@ -187,7 +187,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
           ]
         ],
         body: rows.map(r => [
-          this.datePipe.transform(r.data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '',
+          this.formatarDataBR(r.data),
           this.toTime(r.hora),
           r.militar?.saram ?? '',
           r.militar?.postoGrad ?? '',
@@ -220,12 +220,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private formatDateBr(d?: Date | null): string {
-    return d ? this.datePipe.transform(d, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '-' : '-';
-  }
-
-  toBrDate(dateStr?: string): string {
-    return dateStr ? this.datePipe.transform(dateStr, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '';
+  formatarDataBR(data?: string | Date | null): string {
+    return data ? this.datePipe.transform(data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '';
   }
 
   private toTime(time?: string): string {
@@ -233,10 +229,6 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       return '';
     }
     return time.substring(0, 5);
-  }
-
-  private formatDate(d: Date): string {
-    return d.toISOString().split('T')[0];
   }
 
   formatName(nome?: string | null): string {
@@ -261,13 +253,16 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     return mapa[valor.toUpperCase()] || valor;
   }
 
-  formatarStatus(texto: string): string {
+  formatarStatus(texto?: string | null): string {
     if (!texto) return '';
-    const lower = texto.toLowerCase();
-    if (lower === 'disponivel') return 'Disponível';
-    if (lower === 'indisponivel') return 'Indisponível';
-    if (lower === 'agendado') return 'Agendado';
-    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+    const mapa: Record<string, string> = {
+      DISPONIVEL: 'Disponível',
+      INDISPONIVEL: 'Indisponível',
+      AGENDADO: 'Agendado',
+      CANCELADO: 'Cancelado'
+    };
+    const key = texto.toUpperCase();
+    return mapa[key] || texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
   }
 
   statusClass(status?: string): string {
@@ -288,5 +283,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       img.onload = () => resolve(img);
       img.onerror = err => reject(err);
     });
+  }
+
+  normalizarData00(data: Date): Date {
+    const d = new Date(data);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  normalizarData2359(data: Date): Date {
+    const d = new Date(data);
+    d.setHours(23, 59, 59, 999);
+    return d;
   }
 }
