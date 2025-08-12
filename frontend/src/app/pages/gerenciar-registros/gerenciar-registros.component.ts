@@ -188,7 +188,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         ],
         body: rows.map(r => [
           this.formatarDataBR(r.data),
-          this.toTime(r.hora),
+          this.formatarHoraBR(r.hora),
           r.militar?.postoGrad ?? '',
           this.formatName(r.militar?.nomeDeGuerra),
           this.formatarStatus(r.status ?? ''),
@@ -223,11 +223,12 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     return data ? this.datePipe.transform(data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '';
   }
 
-  private toTime(time?: string): string {
-    if (!time) {
+  formatarHoraBR(hora?: string | Date | null): string {
+    if (!hora) {
       return '';
     }
-    return time.substring(0, 5);
+    const date = hora instanceof Date ? hora : new Date(`1970-01-01T${hora}`);
+    return this.datePipe.transform(date, 'HH:mm', undefined, 'pt-BR') ?? '';
   }
 
   formatName(nome?: string | null): string {
