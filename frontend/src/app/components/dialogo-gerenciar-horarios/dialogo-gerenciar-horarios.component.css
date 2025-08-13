@@ -1,42 +1,32 @@
+:host {
+  display: block;
+  max-width: 420px;          /* largura agradável para o diálogo */
+}
+
 .dlg-title {
-  font-weight: 700;
+  text-align: center;
+  font-weight: 600;          /* negrito como no mock */
+  margin: 0;
 }
 
-.dlg-content .row {
+.dlg-content {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
 }
 
-.spacer {
-  flex: 1 1 auto;
-}
-
-.grade-horarios {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 8px;
-  max-height: 340px;
-  overflow: auto;
-  padding: 8px 0;
+mat-form-field {
+  width: 100%;
 }
 
 .dlg-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* Cancelar à esquerda, Gerar à direita */
+  align-items: center;
+  padding-top: 8px;
 }
 
-.dlg-actions .left-actions,
-.dlg-actions .right-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.mat-card,
-.mat-elevation-z2,
-.mat-elevation-z4 {
-  box-shadow: none !important;
-  border: none !important;
+button[mat-flat-button] {
+  min-width: 120px;
 }
