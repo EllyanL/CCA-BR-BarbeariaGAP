@@ -1,25 +1,40 @@
 .dlg-title {
-  text-align: center;
+  font-weight: 700;
 }
 
 .dlg-content .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
+}
+
+.spacer {
+  flex: 1 1 auto;
 }
 
 .grade-horarios {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 8px;
+  max-height: 340px;
+  overflow: auto;
+  padding: 8px 0;
 }
 
 .dlg-actions {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
 }
 
-.dlg-actions .spacer {
-  flex: 1;
+.btn-cancelar {
+  margin-right: auto;
+}
+
+.mat-card,
+.mat-elevation-z2,
+.mat-elevation-z4 {
+  box-shadow: none !important;
+  border: none !important;
 }
