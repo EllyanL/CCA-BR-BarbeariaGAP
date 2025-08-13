@@ -117,4 +117,9 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
     @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.status <> 'CANCELADO' AND (a.hora < :inicio OR a.hora > :fim)")
     boolean existsAtivoForaJanela(@Param("inicio") LocalTime inicio, @Param("fim") LocalTime fim);
+
+    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.categoria = :categoria AND a.status IN ('AGENDADO', 'REALIZADO') AND (a.hora < :inicio OR a.hora > :fim)")
+    boolean existsAtivoForaJanelaByCategoria(@Param("inicio") LocalTime inicio,
+                                             @Param("fim") LocalTime fim,
+                                             @Param("categoria") String categoria);
 }

@@ -31,14 +31,30 @@ public class ConfigHorarioService {
     }
 
     public ConfigHorario atualizar(LocalTime inicio, LocalTime fim) {
-        LocalTime janelaInicio = inicio.plusMinutes(10);
-        LocalTime janelaFim = fim.minusMinutes(30);
-        if (agendamentoRepository.existsAtivoForaJanela(janelaInicio, janelaFim)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "JANELA_CONFLITO_AGENDAMENTOS_ATIVOS");
-        }
-
         ConfigHorario config = repository.findById(CONFIG_ID)
                 .orElse(new ConfigHorario(CONFIG_ID, inicio, fim, LocalDateTime.now()));
+
+        LocalTime antigoInicio = config.getInicio();
+        LocalTime antigoFim = config.getFim();
+
+        boolean reducaoInicio = inicio.isAfter(antigoInicio);
+        boolean reducaoFim = fim.isBefore(antigoFim);
+
+        if (reducaoInicio || reducaoFim) {
+            LocalTime janelaInicio = inicio.plusMinutes(10);
+            LocalTime janelaFim = fim.minusMinutes(30);
+            String[] categorias = {"GRADUADO", "OFICIAL"};
+            for (String categoria : categorias) {
+                if (agendamentoRepository.existsAtivoForaJanelaByCategoria(janelaInicio, janelaFim, categoria)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.CONFLICT,
+                            "Não é possível realizar alteração com agendamentos ativos.",
+                            new Throwable("JANELA_CONFLITO_AGENDAMENTOS")
+                    );
+                }
+            }
+        }
+
         config.setInicio(inicio);
         config.setFim(fim);
         return repository.save(config);
