@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -45,7 +46,7 @@ public class ConfigHorarioService {
             LocalTime janelaFim = fim.minusMinutes(30);
             String[] categorias = {"GRADUADO", "OFICIAL"};
             for (String categoria : categorias) {
-                if (agendamentoRepository.existsAtivoForaJanelaByCategoria(janelaInicio, janelaFim, categoria)) {
+                if (agendamentoRepository.existsAtivoForaJanela(janelaInicio, janelaFim, categoria, LocalDate.now())) {
                     throw new ResponseStatusException(
                             HttpStatus.CONFLICT,
                             "Não é possível realizar alteração com agendamentos ativos.",
