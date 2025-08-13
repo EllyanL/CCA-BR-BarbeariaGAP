@@ -883,11 +883,11 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
         },
         error: (err: any) => {
           this.logger.error('Erro ao agendar:', err);
-          this.snackBar.open(
-            'Não foi possível realizar o agendamento. Tente novamente.',
-            'Ciente',
-            { duration: 5000 }
-          );
+          let message = 'Não foi possível realizar o agendamento. Tente novamente.';
+          if (err.error?.code === 'FORA_DA_JANELA_PERMITIDA') {
+            message = 'Agendamentos são permitidos entre (Início + 10min) e (Fim − 30min).';
+          }
+          this.snackBar.open(message, 'Ciente', { duration: 5000 });
         }
       });
     }
