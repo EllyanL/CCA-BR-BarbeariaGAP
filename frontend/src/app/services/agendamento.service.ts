@@ -61,9 +61,8 @@ export class AgendamentoService {
   createAgendamento(agendamento: Agendamento): Observable<Agendamento> {
     this.logger.log('Enviando para URL:', this.apiUrl);
     return this.http.post<Agendamento>(this.apiUrl, agendamento).pipe(
-      catchError(error => {
-        this.logger.error('❌ Erro no createAgendamento():', error);
-        return throwError(() => error);
+      tap({
+        error: error => this.logger.error('❌ Erro no createAgendamento():', error)
       })
     );
   }
