@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { Component, TemplateRef, ViewChild } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ConfigHorarioService } from 'src/app/services/config-horario.service';
 
 export interface GerenciarHorariosResult {
   inicio: string; // HH:mm
@@ -15,11 +18,16 @@ export class DialogoGerenciarHorariosComponent {
   horaInicio = '';
   horaFim = '';
 
+  @ViewChild('conflitoDialog') conflitoDialog?: TemplateRef<any>;
+
   // HH:mm entre 00:00 e 23:59
   private readonly timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
   constructor(
-    public dialogRef: MatDialogRef<DialogoGerenciarHorariosComponent, GerenciarHorariosResult | null>
+    private configService: ConfigHorarioService,
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog,
+    public dialogRef: MatDialogRef<DialogoGerenciarHorariosComponent, boolean>
   ) {}
 
   /** Valida os campos (formato HH:mm e início < fim) */
@@ -31,17 +39,27 @@ export class DialogoGerenciarHorariosComponent {
     return this.horaInicio < this.horaFim;
   }
 
-  /** Fecha retornando os horários escolhidos */
+  /** Salva a nova janela de horários via API */
   gerarHorarios(): void {
     if (!this.isValid()) return;
-    this.dialogRef.close({
-      inicio: this.horaInicio,
-      fim: this.horaFim,
+    this.configService.put({ inicio: this.horaInicio, fim: this.horaFim }).subscribe({
+      next: () => {
+        this.snackBar.open('Janela de horários atualizada.', 'Ciente', { duration: 3000 });
+        this.configService.emitirRecarregarGrade();
+        this.dialogRef.close(true);
+      },
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 409 && err.error?.code === 'JANELA_CONFLITO_AGENDAMENTOS_ATIVOS') {
+          if (this.conflitoDialog) {
+            this.dialog.open(this.conflitoDialog);
+          }
+        }
+      }
     });
   }
 
   /** Fecha sem retornar nada (cancelado) */
   cancelar(): void {
-    this.dialogRef.close(null);
+    this.dialogRef.close(false);
   }
 }
