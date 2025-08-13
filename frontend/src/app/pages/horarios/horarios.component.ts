@@ -11,6 +11,7 @@ import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from '../../services/configuracoes-agendamento.service';
+import { ConfigHorarioService } from '../../services/config-horario.service';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -52,7 +53,13 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
     private userDataSubscription?: Subscription;
     private horariosSub?: Subscription;
     private agendamentoAtualizadoSub?: Subscription;
+    private recarregarGradeSub?: Subscription;
     private storageKey: string = '';
+
+    private inicioJanelaMin: number = 0;
+    private fimJanelaMin: number = 24 * 60;
+    private inicioAgendavelMin: number = 0;
+    private fimAgendavelMin: number = 24 * 60;
 
     constructor(
       private horariosService: HorariosService,
@@ -66,7 +73,8 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
       private userService: UserService,
       private serverTimeService: ServerTimeService,
       private logger: LoggingService,
-      private configuracoesService: ConfiguracoesAgendamentoService
+      private configuracoesService: ConfiguracoesAgendamentoService,
+      private configHorarioService: ConfigHorarioService
     ) {}
 
     private saveAgendamentos(): void {
@@ -93,6 +101,41 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
       }
     }
 
+    private toMinutes(hora: string): number {
+      const [h, m] = hora.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    private carregarConfigHorario(): void {
+      this.configHorarioService.get().subscribe({
+        next: ({ inicio, fim }) => {
+          this.inicioJanelaMin = this.toMinutes(inicio);
+          this.fimJanelaMin = this.toMinutes(fim);
+          this.inicioAgendavelMin = this.inicioJanelaMin + 10;
+          this.fimAgendavelMin = this.fimJanelaMin - 30;
+          this.aplicarJanelaHorarios();
+        },
+        error: err => this.logger.error('Erro ao carregar janela de horários:', err)
+      });
+    }
+
+    private aplicarJanelaHorarios(): void {
+      const inRange = (h: string) => {
+        const m = this.toMinutes(h);
+        return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
+      };
+      this.horariosBaseSemana = this.horariosBaseSemana.filter(inRange);
+      Object.keys(this.horariosPorDia).forEach(dia => {
+        this.horariosPorDia[dia] = (this.horariosPorDia[dia] || []).filter(h => inRange(h.horario));
+      });
+      this.cdr.detectChanges();
+    }
+
+    isHoraAgendavel(hora: string): boolean {
+      const m = this.toMinutes(hora);
+      return m >= this.inicioAgendavelMin && m <= this.fimAgendavelMin;
+    }
+
 //---------------🔰Inicialização e Logout--------------------    
   ngOnInit(): void {
       this.usuarioLogado = this.authService.getUsuarioAutenticado();
@@ -100,6 +143,12 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
       this.cdr.detectChanges();
       const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
+      this.carregarConfigHorario();
+      this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(() => {
+        this.carregarConfigHorario();
+        this.carregarHorariosBase();
+        this.carregarHorariosDaSemana();
+      });
       this.serverTimeService.getServerTime().subscribe({
         next: (res) => {
           this.timeOffsetMs = res.timestamp - Date.now();
@@ -161,6 +210,7 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
             this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
               next: h => {
                 this.horariosPorDia = h;
+                this.aplicarJanelaHorarios();
                 this.cdr.detectChanges();
               },
               error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
@@ -208,6 +258,7 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
         .subscribe({
           next: (horarios: HorariosPorDia) => {
             this.horariosPorDia = horarios;
+            this.aplicarJanelaHorarios();
             this.cdr.detectChanges();
           },
           error: (err: any) => this.logger.error('Erro ao carregar horários:', err)
@@ -226,6 +277,7 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
               }));
             });
             this.horariosPorDia = horarios;
+            this.aplicarJanelaHorarios();
             this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.cdr.detectChanges();
           },
@@ -273,6 +325,7 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
           }
 
           this.horariosBaseSemana = slots;
+          this.aplicarJanelaHorarios();
           this.ordenarHorarios();
           this.cdr.detectChanges();
         },
@@ -955,6 +1008,7 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
       this.userDataSubscription?.unsubscribe();
       this.horariosSub?.unsubscribe();
       this.agendamentoAtualizadoSub?.unsubscribe();
+      this.recarregarGradeSub?.unsubscribe();
       this.horariosService.stopPollingHorarios();
     }
 
