@@ -24,8 +24,6 @@
       <mat-label>Intervalo (min)</mat-label>
       <input matInput type="number" [(ngModel)]="intervalo" />
     </mat-form-field>
-
-    <button mat-flat-button color="primary" (click)="gerarHorarios()">Gerar</button>
   </div>
 
   <div class="row grade-horarios">
@@ -34,13 +32,15 @@
     </mat-checkbox>
   </div>
 
-  <div class="row">
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="dlg-actions">
+  <div class="left-actions">
+    <button mat-flat-button color="primary" (click)="gerarHorarios()">Gerar</button>
     <button mat-button (click)="selecionarTodos()">Selecionar todos</button>
     <button mat-button (click)="limparSelecao()">Limpar</button>
   </div>
-</mat-dialog-content>
-
-<mat-dialog-actions align="end" class="dlg-actions">
-  <button mat-button mat-dialog-close class="btn-cancelar">Cancelar</button>
-  <button mat-flat-button color="primary" (click)="confirmar()">Confirmar</button>
+  <div class="right-actions">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="primary" (click)="confirmar()">Confirmar</button>
+  </div>
 </mat-dialog-actions>
