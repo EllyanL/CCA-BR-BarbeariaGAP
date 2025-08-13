@@ -20,6 +20,7 @@ import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
+import { ConfigHorarioService } from 'src/app/services/config-horario.service';
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -74,6 +75,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
   private storageKey: string = '';
+  private recarregarGradeSub?: Subscription;
+
+  private inicioJanelaMin: number = 0;
+  private fimJanelaMin: number = 24 * 60;
+  private inicioAgendavelMin: number = 0;
+  private fimAgendavelMin: number = 24 * 60;
 
   constructor(
     private router: Router,
@@ -87,7 +94,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     private authService: AuthService,
     private logger: LoggingService,
     private cdr: ChangeDetectorRef,
-    private configuracoesService: ConfiguracoesAgendamentoService
+    private configuracoesService: ConfiguracoesAgendamentoService,
+    private configHorarioService: ConfigHorarioService
   ) {}
 
   private saveAgendamentos(): void {
@@ -122,7 +130,40 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   }
 
+  private toMinutes(hora: string): number {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+  }
 
+  private carregarConfigHorario(): void {
+    this.configHorarioService.get().subscribe({
+      next: ({ inicio, fim }) => {
+        this.inicioJanelaMin = this.toMinutes(inicio);
+        this.fimJanelaMin = this.toMinutes(fim);
+        this.inicioAgendavelMin = this.inicioJanelaMin + 10;
+        this.fimAgendavelMin = this.fimJanelaMin - 30;
+        this.aplicarJanelaHorarios();
+      },
+      error: err => this.logger.error('Erro ao carregar janela de horários:', err)
+    });
+  }
+
+  private aplicarJanelaHorarios(): void {
+    const inRange = (h: string) => {
+      const m = this.toMinutes(h);
+      return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
+    };
+    this.horariosBaseSemana = this.horariosBaseSemana.filter(inRange);
+    Object.keys(this.horariosPorDia).forEach(dia => {
+      this.horariosPorDia[dia] = (this.horariosPorDia[dia] || []).filter(h => inRange(h.horario));
+    });
+    this.cdr.detectChanges();
+  }
+
+  isHoraAgendavel(hora: string): boolean {
+    const m = this.toMinutes(hora);
+    return m >= this.inicioAgendavelMin && m <= this.fimAgendavelMin;
+  }
 
   ngOnInit(): void {
     const usuario = this.authService.getUsuarioAutenticado();
@@ -131,6 +172,19 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       this.storageKey = `agendamentos-${usuario.cpf}`;
       this.cdr.detectChanges();
     }
+    this.carregarConfigHorario();
+    this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(() => {
+      this.carregarConfigHorario();
+      this.loadHorariosBase();
+      this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
+        next: h => {
+          this.horariosPorDia = h;
+          this.aplicarJanelaHorarios();
+          this.horariosService.atualizarHorarios(this.horariosPorDia);
+        },
+        error: err => this.logger.error('Erro ao recarregar horários:', err)
+      });
+    });
     this.serverTimeService.getServerTime().subscribe({
       next: (res) => {
         this.timeOffsetMs = res.timestamp - Date.now();
@@ -215,10 +269,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     } else if (this.isCurrentRoute('/oficiais')) {
       this.categoria = 'OFICIAL';
     }
+    this.carregarConfigHorario();
     this.horariosService.startPollingHorarios(this.categoria);
     this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
       next: horarios => {
         this.horariosPorDia = horarios;
+        this.aplicarJanelaHorarios();
         this.logger.log('Horários atualizados:', this.horariosPorDia);
       },
       error: err => this.logger.error('Erro ao atualizar horários:', err)
@@ -353,6 +409,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         this.horariosBaseSemana = slots;
+        this.aplicarJanelaHorarios();
         this.ordenarHorarios();
       },
       error: err => {
@@ -707,6 +764,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   ngOnDestroy(): void {
     this.userDataSubscription?.unsubscribe();
     this.horariosSub?.unsubscribe();
+    this.recarregarGradeSub?.unsubscribe();
     this.horariosService.stopPollingHorarios();
   }
 

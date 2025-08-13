@@ -32,7 +32,7 @@
                     [color]="status.cor"
                     (click)="agendarCorte(getLabelDiaComData(dia), hora)"
                     [@agendarAnimacao]
-                    [disabled]="desabilitarTodosOsBotoes()"
+                    [disabled]="desabilitarTodosOsBotoes() || !isHoraAgendavel(hora)"
                   >
                     {{ formatarStatus(status.texto) }}
                   </button>
