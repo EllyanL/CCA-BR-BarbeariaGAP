@@ -20,3 +20,13 @@
   <button mat-button mat-dialog-close>Cancelar</button>
   <button mat-flat-button color="primary" (click)="gerarHorarios()" [disabled]="!isValid()">Gerar</button>
 </mat-dialog-actions>
+
+<ng-template #conflitoDialog>
+  <h2 mat-dialog-title>Atenção</h2>
+  <mat-dialog-content>
+    Existem agendamentos ativos que conflitam com a nova janela de horários.
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Ciente</button>
+  </mat-dialog-actions>
+</ng-template>
