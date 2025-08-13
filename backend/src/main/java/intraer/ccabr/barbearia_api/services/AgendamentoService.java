@@ -309,10 +309,17 @@ public class AgendamentoService {
         LocalTime inicio = config.getHorarioInicio();
         LocalTime fim = config.getHorarioFim();
 
-        if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY || hora.isBefore(inicio) || hora.isAfter(fim)) {
+        if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY) {
             throw new IllegalArgumentException(
                 "Agendamentos são permitidos apenas de segunda a sexta das " +
                 inicio.format(TIME_FORMATTER) + " às " + fim.format(TIME_FORMATTER) + ".");
+        }
+
+        LocalTime limiteInicial = inicio.plusMinutes(10);
+        LocalTime limiteFinal = fim.minusMinutes(30);
+
+        if (hora.isBefore(limiteInicial) || hora.isAfter(limiteFinal)) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "FORA_DA_JANELA_PERMITIDA");
         }
 
         // bloqueia agendamentos em datas/horas já passadas
