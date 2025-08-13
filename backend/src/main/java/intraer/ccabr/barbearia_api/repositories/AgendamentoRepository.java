@@ -115,11 +115,15 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a JOIN FETCH a.militar WHERE a.militar.id = :id ORDER BY a.data DESC, a.hora DESC")
     List<Agendamento> findByMilitarId(@Param("id") Long id);
 
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.status <> 'CANCELADO' AND (a.hora < :inicio OR a.hora > :fim)")
-    boolean existsAtivoForaJanela(@Param("inicio") LocalTime inicio, @Param("fim") LocalTime fim);
-
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.categoria = :categoria AND a.status IN ('AGENDADO', 'REALIZADO') AND (a.hora < :inicio OR a.hora > :fim)")
-    boolean existsAtivoForaJanelaByCategoria(@Param("inicio") LocalTime inicio,
-                                             @Param("fim") LocalTime fim,
-                                             @Param("categoria") String categoria);
+    @Query("""
+            SELECT COUNT(a) > 0 FROM Agendamento a
+            WHERE a.categoria = :categoria
+              AND ((a.status = 'AGENDADO' AND a.data >= :dataAtual)
+                OR (a.status = 'REALIZADO' AND a.data <= :dataAtual))
+              AND (a.hora < :inicio OR a.hora > :fim)
+            """)
+    boolean existsAtivoForaJanela(@Param("inicio") LocalTime inicio,
+                                  @Param("fim") LocalTime fim,
+                                  @Param("categoria") String categoria,
+                                  @Param("dataAtual") LocalDate dataAtual);
 }
