@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
 
     private String resolveMessage(String code) {
         return switch (code) {
-            case "FORA_DA_JANELA_PERMITIDA" -> "Horário fora da janela permitida.";
+            case "FORA_DA_JANELA_PERMITIDA" -> "Agendamentos são permitidos entre (Início + 10 min) e (Fim − 30 min).";
             case "JANELA_CONFLITO_AGENDAMENTOS" -> "Não é possível realizar alteração com agendamentos ativos.";
             default -> code;
         };

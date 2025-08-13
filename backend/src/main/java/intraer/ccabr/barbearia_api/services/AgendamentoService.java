@@ -25,10 +25,10 @@ import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Militar;
-import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
+import intraer.ccabr.barbearia_api.models.ConfigHorario;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
-import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
+import intraer.ccabr.barbearia_api.services.ConfigHorarioService;
 
 @Service
 @Transactional
@@ -40,14 +40,14 @@ public class AgendamentoService {
 
     private final HorarioRepository horarioRepository;
 
-    private final ConfiguracaoAgendamentoService configuracaoAgendamentoService;
+    private final ConfigHorarioService configHorarioService;
 
     public AgendamentoService(AgendamentoRepository agendamentoRepository,
                               HorarioRepository horarioRepository,
-                              ConfiguracaoAgendamentoService configuracaoAgendamentoService) {
+                              ConfigHorarioService configHorarioService) {
         this.agendamentoRepository = agendamentoRepository;
         this.horarioRepository = horarioRepository;
-        this.configuracaoAgendamentoService = configuracaoAgendamentoService;
+        this.configHorarioService = configHorarioService;
     }
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
@@ -290,24 +290,24 @@ public class AgendamentoService {
     }
 
     public void validarRegrasDeNegocio(Agendamento agendamento) {
-        ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
+        ConfigHorario config = configHorarioService.buscarConfiguracao();
 
         // 1. Agendamento só é permitido a partir de segunda às horárioInicio configurado
         LocalDate hoje = LocalDate.now();
         LocalDate segundaDaSemana = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getHorarioInicio());
+        LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getInicio());
 
         if (LocalDateTime.now().isBefore(inicioDaSemana)) {
             throw new IllegalArgumentException(
                 "Agendamentos só são permitidos a partir de segunda às " +
-                config.getHorarioInicio().format(TIME_FORMATTER) + ".");
+                config.getInicio().format(TIME_FORMATTER) + ".");
         }
 
         // 2. Horários válidos somente de segunda a sexta entre horárioInicio e horárioFim configurados
         DayOfWeek dia = agendamento.getData().getDayOfWeek();
         LocalTime hora = agendamento.getHora();
-        LocalTime inicio = config.getHorarioInicio();
-        LocalTime fim = config.getHorarioFim();
+        LocalTime inicio = config.getInicio();
+        LocalTime fim = config.getFim();
 
         if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY) {
             throw new IllegalArgumentException(
