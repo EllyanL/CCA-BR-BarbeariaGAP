@@ -21,16 +21,11 @@
             {{ hora }}
           </td>
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
-              <ng-container *ngIf="getHorario(dia, hora) as h; else indisponivel">
+              <ng-container *ngIf="getItem(dia, hora) as h">
                 <span [ngClass]="statusClass(h.status)">
                   {{ h.status | titlecase }}
                 </span>
               </ng-container>
-              <ng-template #indisponivel>
-                <span [ngClass]="statusClass('INDISPONIVEL')">
-                  Indisponivel
-                </span>
-              </ng-template>
             </td>
         </tr>
       </tbody>
