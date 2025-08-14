@@ -72,7 +72,7 @@ class AgendamentoServiceTimeWindowTests {
         Agendamento ag = new Agendamento();
         ag.setData(LocalDate.now().with(java.time.DayOfWeek.SATURDAY));
         ag.setHora(LocalTime.of(10, 0));
-        ag.setDiaSemana("sabado");
+        ag.setDiaSemana("sábado");
         ag.setCategoria("GRADUADO");
         ag.setMilitar(m);
 

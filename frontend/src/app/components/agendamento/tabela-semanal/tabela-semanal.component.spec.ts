@@ -101,7 +101,7 @@ describe('TabelaSemanalComponent', () => {
     });
 
     it('bloqueia agendamento no sábado às 12h', () => {
-      const saturdayNoon = new Date('2023-01-07T12:00:00'); // sabado
+      const saturdayNoon = new Date('2023-01-07T12:00:00'); // sábado
       jasmine.clock().install();
       jasmine.clock().mockDate(saturdayNoon);
 

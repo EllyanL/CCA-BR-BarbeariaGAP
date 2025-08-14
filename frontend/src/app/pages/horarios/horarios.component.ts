@@ -316,7 +316,7 @@ import { UserService } from 'src/app/services/user.service';
             }
     
             // se a API não retorna algumas chaves, evite undefined
-            const DIAS_PADRAO = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+            const DIAS_PADRAO = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
             for (const d of DIAS_PADRAO) {
               if (!resultado[d]) resultado[d] = [];
             }
@@ -353,7 +353,7 @@ import { UserService } from 'src/app/services/user.service';
     /** Garante que todos os dias existam como arrays (nunca null) */
     private normalizarEstrutura(h: HorariosPorDia | null | undefined): HorariosPorDia {
       // Ajuste os nomes conforme seu contrato real
-      const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+      const dias = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
       const out: any = {};
     
       for (const d of dias) {
