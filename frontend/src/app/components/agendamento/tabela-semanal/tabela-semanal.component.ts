@@ -50,7 +50,7 @@ import { ConfigHorarioService } from 'src/app/services/config-horario.service';
 export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() categoria: string = '';
   @Input() opcoesPostoGrad: string[] = [];
-  @Input() horariosPorDia: { [key: string]: { horario: string, status: string, usuarioId?: number }[] } = {};
+  @Input() horariosPorDia: HorariosPorDia = {};
   @Input() saramUsuario!: string;
   @Input() idMilitarLogado: number | null | undefined;
 

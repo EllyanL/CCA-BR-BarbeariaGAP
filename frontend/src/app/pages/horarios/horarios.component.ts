@@ -36,7 +36,7 @@ import { UserService } from 'src/app/services/user.service';
     diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
     diaSelecionado: string = 'segunda';
-    horariosPorDia: { [key: string]: { horario: string; status: string }[] } = {
+    horariosPorDia: HorariosPorDia = {
       segunda: [],
       terça: [],
       quarta: [],
