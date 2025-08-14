@@ -7,6 +7,8 @@ export interface ConfigHorario {
   id?: number;
   inicio: string;
   fim: string;
+  /** Categoria a que a configuração pertence */
+  categoria?: string;
   updatedAt?: string;
 }
 
@@ -15,8 +17,8 @@ export interface ConfigHorario {
 })
 export class ConfigHorarioService {
   private readonly apiUrl = `${environment.apiUrl}/config-horario`;
-  private reloadSubject = new Subject<void>();
-  /** Emite quando a janela de horários é atualizada. */
+  private reloadSubject = new Subject<string>();
+  /** Emite quando a janela de horários de uma categoria é atualizada. */
   recarregarGrade$ = this.reloadSubject.asObservable();
 
   constructor(private http: HttpClient) {}
@@ -27,13 +29,13 @@ export class ConfigHorarioService {
   }
 
   /** Atualiza a configuração de horários. */
-  put(payload: { inicio: string; fim: string }): Observable<ConfigHorario> {
+  put(payload: { inicio: string; fim: string; categoria: string }): Observable<ConfigHorario> {
     return this.http.put<ConfigHorario>(this.apiUrl, payload);
   }
 
-  /** Notifica assinantes para recarregar a grade. */
-  emitirRecarregarGrade(): void {
-    this.reloadSubject.next();
+  /** Notifica assinantes para recarregar a grade de determinada categoria. */
+  emitirRecarregarGrade(categoria: string): void {
+    this.reloadSubject.next(categoria);
   }
 }
 

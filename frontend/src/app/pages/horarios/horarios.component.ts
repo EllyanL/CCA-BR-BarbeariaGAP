@@ -144,10 +144,12 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
       const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
       this.carregarConfigHorario();
-      this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(() => {
-        this.carregarConfigHorario();
-        this.carregarHorariosBase();
-        this.carregarHorariosDaSemana();
+      this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(cat => {
+        if (cat === this.categoriaSelecionada) {
+          this.carregarConfigHorario();
+          this.carregarHorariosBase();
+          this.carregarHorariosDaSemana();
+        }
       });
       this.serverTimeService.getServerTime().subscribe({
         next: (res) => {
