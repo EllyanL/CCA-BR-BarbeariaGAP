@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DialogoGerenciarHorariosComponent } from './dialogo-gerenciar-horarios.component';
-import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -17,7 +17,10 @@ describe('DialogoGerenciarHorariosComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [DialogoGerenciarHorariosComponent],
       imports: [FormsModule, MatDialogModule, MatSnackBarModule, HttpClientTestingModule],
-      providers: [{ provide: MatDialogRef, useValue: dialogRefSpy }],
+      providers: [
+        { provide: MatDialogRef, useValue: dialogRefSpy },
+        { provide: MAT_DIALOG_DATA, useValue: { categoria: 'GRADUADO' } }
+      ],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
 

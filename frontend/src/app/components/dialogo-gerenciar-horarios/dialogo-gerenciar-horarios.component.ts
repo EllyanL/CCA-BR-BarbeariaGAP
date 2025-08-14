@@ -1,5 +1,5 @@
-import { Component, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Component, TemplateRef, ViewChild, Inject } from '@angular/core';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ConfigHorarioService } from 'src/app/services/config-horario.service';
@@ -17,6 +17,7 @@ export interface GerenciarHorariosResult {
 export class DialogoGerenciarHorariosComponent {
   horaInicio = '';
   horaFim = '';
+  categoria = '';
 
   @ViewChild('conflitoDialog') conflitoDialog?: TemplateRef<any>;
 
@@ -27,8 +28,11 @@ export class DialogoGerenciarHorariosComponent {
     private configService: ConfigHorarioService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    public dialogRef: MatDialogRef<DialogoGerenciarHorariosComponent, boolean>
-  ) {}
+    public dialogRef: MatDialogRef<DialogoGerenciarHorariosComponent, boolean>,
+    @Inject(MAT_DIALOG_DATA) private data: { categoria: string }
+  ) {
+    this.categoria = data?.categoria ?? '';
+  }
 
   /** Valida os campos (formato HH:mm e início < fim) */
   isValid(): boolean {
@@ -42,10 +46,10 @@ export class DialogoGerenciarHorariosComponent {
   /** Salva a nova janela de horários via API */
   gerarHorarios(): void {
     if (!this.isValid()) return;
-    this.configService.put({ inicio: this.horaInicio, fim: this.horaFim }).subscribe({
+    this.configService.put({ inicio: this.horaInicio, fim: this.horaFim, categoria: this.categoria }).subscribe({
       next: () => {
         this.snackBar.open('Janela de horários atualizada.', 'Ciente', { duration: 3000 });
-        this.configService.emitirRecarregarGrade();
+        this.configService.emitirRecarregarGrade(this.categoria);
         this.dialogRef.close(true);
       },
       error: (err: HttpErrorResponse) => {

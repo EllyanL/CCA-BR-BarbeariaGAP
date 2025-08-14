@@ -173,17 +173,19 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       this.cdr.detectChanges();
     }
     this.carregarConfigHorario();
-    this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(() => {
-      this.carregarConfigHorario();
-      this.loadHorariosBase();
-      this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
-        next: h => {
-          this.horariosPorDia = h;
-          this.aplicarJanelaHorarios();
-          this.horariosService.atualizarHorarios(this.horariosPorDia);
-        },
-        error: err => this.logger.error('Erro ao recarregar horários:', err)
-      });
+    this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(cat => {
+      if (cat === this.categoria) {
+        this.carregarConfigHorario();
+        this.loadHorariosBase();
+        this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
+          next: h => {
+            this.horariosPorDia = h;
+            this.aplicarJanelaHorarios();
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
+          },
+          error: err => this.logger.error('Erro ao recarregar horários:', err)
+        });
+      }
     });
     this.serverTimeService.getServerTime().subscribe({
       next: (res) => {

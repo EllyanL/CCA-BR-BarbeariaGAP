@@ -12,6 +12,8 @@ import { DialogoGerenciarHorariosComponent } from '../dialogo-gerenciar-horarios
 export class AdminNavbarComponent implements OnInit {
   @Input() containerClass = '';
   @Input() contentClass = '';
+  /** Categoria atualmente ativa na página (OFICIAL, GRADUADO, etc.) */
+  @Input() categoria = '';
   isAdmin = false;
 
   constructor(
@@ -34,7 +36,8 @@ export class AdminNavbarComponent implements OnInit {
 
   abrirDialogoGerenciarHorarios(): void {
     this.dialog.open(DialogoGerenciarHorariosComponent, {
-      width: '400px'
+      width: '400px',
+      data: { categoria: this.categoria }
     });
   }
 }
