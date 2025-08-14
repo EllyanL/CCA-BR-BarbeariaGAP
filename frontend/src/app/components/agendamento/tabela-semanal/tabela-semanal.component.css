@@ -128,3 +128,19 @@
   background-color: #9e9e9e;
   color: white;
 }
+
+/* Status classes */
+.status-disponivel {
+}
+
+.status-agendado {
+}
+
+.status-cancelado {
+}
+
+.status-realizado {
+}
+
+.status-indisponivel {
+}

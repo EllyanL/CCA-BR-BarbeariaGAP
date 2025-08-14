@@ -21,56 +21,46 @@
             {{ hora }}
           </td>
           <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
-            <ng-container *ngIf="getHorarioStatus(dia, hora.trim()) as status">
-              <ng-container [ngSwitch]="status.acao">
+            <ng-container *ngIf="getStatus(dia, hora.trim()) as status">
+              <ng-container [ngSwitch]="status">
                 <!-- DISPONIVEL para agendar -->
-                <div *ngSwitchCase="'agendar'" class="tabela-botao-container">
+                <div *ngSwitchCase="'DISPONIVEL'" class="tabela-botao-container">
                   <button
                     title="{{ hora }}"
                     mat-raised-button
                     class="tabela-botao-disponivel"
-                    [color]="status.cor"
+                    [ngClass]="statusClass(status)"
                     (click)="agendarCorte(getLabelDiaComData(dia), hora)"
                     [@agendarAnimacao]
                     [disabled]="desabilitarTodosOsBotoes() || !isHoraAgendavel(hora)"
                   >
-                    {{ formatarStatus(status.texto) }}
+                    {{ formatarStatus(status) }}
                   </button>
                 </div>
 
-                <!-- Agendado pelo usuário logado -->
-                <div *ngSwitchCase="'cancelar'" class="tabela-botao-container">
+                <!-- Agendado pelo usuário logado ou outro -->
+                <div *ngSwitchCase="'AGENDADO'" class="tabela-botao-container">
                   <button
                     *ngIf="isAgendamentoDesmarcavel(getAgendamentoParaDiaHora(dia, hora), dia, hora); else agendadoSemCancelar"
                     class="tabela-botao botao-agendado"
+                    [ngClass]="statusClass(status)"
                     (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
                     [attr.title]="getTextTooltip(getAgendamentoParaDiaHora(dia, hora))"
                     [@cancelarAnimacao]
                   >
-                    {{ formatarStatus(status.texto) }}
+                    {{ formatarStatus(status) }}
                   </button>
                   <ng-template #agendadoSemCancelar>
-                    <button class="tabela-botao botao-agendado" disabled>
-                      {{ formatarStatus(status.texto) }}
+                    <button class="tabela-botao botao-agendado" [ngClass]="statusClass(status)" disabled>
+                      {{ formatarStatus(status) }}
                     </button>
                   </ng-template>
                 </div>
 
-                <!-- Agendado por outro usuário -->
-                <div *ngSwitchCase="'ocupado'" class="tabela-botao-container">
-                  <button
-                    class="tabela-botao botao-agendado-outro"
-                    disabled
-                    title="Horário já agendado por outro usuário"
-                  >
-                    {{ formatarStatus(status.texto) }}
-                  </button>
-                </div>
-
-                <!-- Indisponivel -->
+                <!-- Outros status (CANCELADO, REALIZADO, INDISPONIVEL) -->
                 <div *ngSwitchDefault class="tabela-horario-indisponivel" [attr.title]="feedbackMessageTitle || 'Este horário não está disponivel nesta semana'">
-                  <button mat-raised-button disabled class="tabela-botao-indisponivel">
-                    {{ formatarStatus(status.texto) }}
+                  <button mat-raised-button disabled class="tabela-botao-indisponivel" [ngClass]="statusClass(status)">
+                    {{ formatarStatus(status) }}
                   </button>
                 </div>
               </ng-container>
