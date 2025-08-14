@@ -570,9 +570,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     );
   }
 
-  getHorario(dia: string, hora: string): Horario | undefined {
+  getItem(dia: string, hora: string): Horario | null {
     const diaFmt = dia.split(' - ')[0].trim().toLowerCase();
-    return this.horariosPorDia[diaFmt]?.find(h => h.horario === hora.trim()) as Horario | undefined;
+    return (
+      this.horariosPorDia[diaFmt]?.find(h => h.horario === hora.trim()) as Horario | undefined
+    ) ?? null;
   }
 
   statusClass(status: string): string {
