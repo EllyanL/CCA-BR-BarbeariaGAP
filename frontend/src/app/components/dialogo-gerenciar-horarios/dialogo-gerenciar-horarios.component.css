@@ -38,10 +38,12 @@ button[mat-flat-button] {
 
 .hint {
   background-color: #e8f5e9;
+   color: black;
 }
 
 .warn {
   background-color: #ffebee;
+  color: black;
 }
 
 .hint-title,

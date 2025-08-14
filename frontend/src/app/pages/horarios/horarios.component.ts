@@ -1,17 +1,18 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import {
     HorariosPorDia,
     HorariosService,
 } from '../../services/horarios.service';
-import { Observable, Subscription, of, from } from 'rxjs';
-import { catchError, take, timeout, concatMap, tap } from 'rxjs/operators';
+import { Observable, Subscription, from, of } from 'rxjs';
+import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
-import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from '../../services/configuracoes-agendamento.service';
 import { ConfigHorarioService } from '../../services/config-horario.service';
+import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,7 +20,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Militar } from '../../models/militar';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
-import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 
 @Component({
     selector: 'app-horarios',
@@ -120,16 +120,38 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
     }
 
     private aplicarJanelaHorarios(): void {
-      const inRange = (h: string) => {
-        const m = this.toMinutes(h);
-        return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
+      const toMinutesSafe = (t?: string | null): number => {
+        if (!t || typeof t !== 'string' || !t.includes(':')) return NaN;
+        const [hh, mm] = t.split(':').map(Number);
+        return (Number.isFinite(hh) ? hh : 0) * 60 + (Number.isFinite(mm) ? mm : 0);
       };
-      this.horariosBaseSemana = this.horariosBaseSemana.filter(inRange);
-      Object.keys(this.horariosPorDia).forEach(dia => {
-        this.horariosPorDia[dia] = (this.horariosPorDia[dia] || []).filter(h => inRange(h.horario));
+    
+      const inicio = Number.isFinite(this.inicioJanelaMin) ? this.inicioJanelaMin : 0;
+      const fim    = Number.isFinite(this.fimJanelaMin)    ? this.fimJanelaMin    : 24 * 60;
+    
+      const inRange = (t?: string | null) => {
+        const m = toMinutesSafe(t);
+        return Number.isFinite(m) && m >= inicio && m <= fim;
+      };
+    
+      const base = Array.isArray(this.horariosBaseSemana) ? this.horariosBaseSemana : [];
+      this.horariosBaseSemana = base.filter((item: any) => {
+        const time = typeof item === 'string' ? item : item?.hora ?? item?.horario;
+        return inRange(time);
       });
+    
+      const dias = Object.keys(this.horariosPorDia ?? {});
+      for (const dia of dias) {
+        const lista = (this.horariosPorDia as any)[dia] ?? [];
+        const segura = Array.isArray(lista) ? lista : [];
+        (this.horariosPorDia as any)[dia] = segura.filter((h: any) => inRange(h?.hora ?? h?.horario));
+      }
+    
+      this.cdr.markForCheck?.();
       this.cdr.detectChanges();
     }
+    
+    
 
     isHoraAgendavel(hora: string): boolean {
       const m = this.toMinutes(hora);
@@ -271,16 +293,49 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
       this.horariosService
         .carregarHorariosDaSemana(this.categoriaSelecionada)
         .subscribe({
-          next: (horarios: HorariosPorDia) => {
-            Object.keys(horarios).forEach(dia => {
-              horarios[dia] = horarios[dia].map(h => ({
-                ...h,
-                status: h.status.toUpperCase()
-              }));
+          next: (horarios: any) => {
+            const makeArray = (v: any): any[] =>
+              Array.isArray(v) ? v : (v ? [v] : []);               // garante array
+            const normalizeItem = (it: any) => ({
+              ...it,
+              // aceita 'hora' ou 'horario'
+              horario: it?.horario ?? it?.hora ?? '',
+              status: String(it?.status ?? 'INDISPONIVEL').toUpperCase(),
             });
-            this.horariosPorDia = horarios;
-            this.aplicarJanelaHorarios();
+    
+            // garante objeto
+            const origem = horarios ?? {};
+            const resultado: Record<string, any[]> = {};
+    
+            for (const dia of Object.keys(origem)) {
+              // evita map/filter em null
+              const arr = makeArray(origem[dia])
+                .filter(Boolean)
+                .map(normalizeItem);
+              resultado[dia] = arr;
+            }
+    
+            // se a API não retorna algumas chaves, evite undefined
+            const DIAS_PADRAO = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+            for (const d of DIAS_PADRAO) {
+              if (!resultado[d]) resultado[d] = [];
+            }
+    
+            this.horariosPorDia = resultado;
+    
+            // garanta base inicial sempre como array
+            if (!Array.isArray(this.horariosBaseSemana)) {
+              this.horariosBaseSemana = [];
+            }
+    
+            try {
+              this.aplicarJanelaHorarios();  // já está robusta
+            } catch (e) {
+              this.logger.error('Falha ao aplicar janela de horários:', e);
+            }
+    
             this.horariosService.atualizarHorarios(this.horariosPorDia);
+            this.cdr.markForCheck?.();
             this.cdr.detectChanges();
           },
           error: (error: any) => {
@@ -288,13 +343,28 @@ import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendam
             this.snackBar.open(
               'Não foi possível carregar os horários desta semana. Verifique a conexão e tente novamente.',
               'Ciente',
-              {
-                duration: 3000,
-              }
+              { duration: 4000 }
             );
           },
         });
     }
+    
+    
+    /** Garante que todos os dias existam como arrays (nunca null) */
+    private normalizarEstrutura(h: HorariosPorDia | null | undefined): HorariosPorDia {
+      // Ajuste os nomes conforme seu contrato real
+      const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado', 'domingo'];
+      const out: any = {};
+    
+      for (const d of dias) {
+        const lista = (h as any)?.[d];
+        out[d] = Array.isArray(lista) ? lista : [];
+      }
+    
+      return out as HorariosPorDia;
+    }
+    
+
 
     onDiaChange(): void {
       this.loadHorarios();
