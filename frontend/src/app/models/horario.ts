@@ -3,7 +3,8 @@ export interface Horario {
   dia: string;
   horario: string;
   categoria: string;
-  status: string; // 'DISPONIVEL', 'Indisponivel', 'Agendado'
+  status: 'DISPONIVEL' | 'AGENDADO' | 'CANCELADO' | 'REALIZADO' | 'INDISPONIVEL';
+  // Status possibilities for a given horário
   usuarioId?: number;
 }
 export interface HorarioRequest {
