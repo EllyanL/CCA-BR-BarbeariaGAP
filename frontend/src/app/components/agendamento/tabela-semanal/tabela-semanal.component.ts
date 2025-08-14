@@ -556,45 +556,34 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return agendamento;
   }
 
-  getHorarioStatus(dia: string, hora: string): { cor: string, texto: string, acao: string } {
+  getStatus(dia: string, hora: string): string {
     const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
-  
-    // LOG DE DEBUG
-    console.log('[STATUS] Dia:', dia, 'Hora:', hora);
-    console.log('[STATUS] Agendamento:', agendamento);
-    console.log('[STATUS] idLogado:', this.idMilitarLogado, 'saramLogado:', this.saramUsuario);
-    if (agendamento) {
-      console.log('[STATUS] Dono do agendamento → id:', agendamento.militar?.id, 'saram:', agendamento.militar?.saram);
-    }
-  
-    // Verifica se há agendamento e se é do usuário logado
-    if (agendamento) {
-      const podeVerificarUsuario = this.idMilitarLogado != null || !!this.saramUsuario;
-  
-      if (podeVerificarUsuario && this.isAgendamentoDoMilitarLogado(agendamento)) {
-        return { cor: "accent", texto: "Agendado", acao: "cancelar" };
-      }
-  
-      return { cor: "basic", texto: "Agendado", acao: "ocupado" };
-    }
-  
-    // Caso não haja agendamento, verifica status do horário base
-    const diaSemanaFormatado = dia.split(" - ")[0].trim().toLowerCase();
-    const statusHorario = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase();
-  
-    if (statusHorario === "DISPONIVEL" || statusHorario === "CANCELADO") {
-      return { cor: "primary", texto: "DISPONIVEL", acao: "agendar" };
+    if (agendamento?.status) {
+      return agendamento.status.toUpperCase();
     }
 
-    if (statusHorario === "AGENDADO") {
-      const usuarioId = this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.usuarioId;
-      if (usuarioId && usuarioId === this.idMilitarLogado) {
-        return { cor: "accent", texto: "Agendado", acao: "cancelar" };
-      }
-      return { cor: "basic", texto: "Agendado", acao: "ocupado" };
+    const diaSemanaFormatado = dia.split(' - ')[0].trim().toLowerCase();
+    return (
+      this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase() ||
+      'INDISPONIVEL'
+    );
+  }
+
+  statusClass(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'DISPONIVEL':
+        return 'status-disponivel';
+      case 'AGENDADO':
+        return 'status-agendado';
+      case 'CANCELADO':
+        return 'status-cancelado';
+      case 'REALIZADO':
+        return 'status-realizado';
+      case 'INDISPONIVEL':
+        return 'status-indisponivel';
+      default:
+        return '';
     }
-  
-    return { cor: "disabled", texto: "Indisponivel", acao: "nenhuma" };
   }
 
   formatarStatus(texto: string): string {
