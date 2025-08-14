@@ -153,13 +153,11 @@
               </div>
             </td>
           </tr>
-          <tr *ngIf="!horariosBaseSemana.length || isHorariosEmpty()">
-            <td [colSpan]="diasDaSemana.length" class="no-horarios">
-              Nenhum horário encontrado
-            </td>
-          </tr>
         </tbody>
       </table>
+      </div>
+      <div *ngIf="!horariosBaseSemana.length || isHorariosEmpty()" class="no-horarios">
+        Nenhum horário encontrado
       </div>
     </mat-card-content>
   </mat-card>
