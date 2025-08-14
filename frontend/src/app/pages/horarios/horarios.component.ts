@@ -120,33 +120,15 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     private aplicarJanelaHorarios(): void {
-      const toMinutesSafe = (t?: string | null): number => {
-        if (!t || typeof t !== 'string' || !t.includes(':')) return NaN;
-        const [hh, mm] = t.split(':').map(Number);
-        return (Number.isFinite(hh) ? hh : 0) * 60 + (Number.isFinite(mm) ? mm : 0);
+      const inRange = (h: string) => {
+        const m = this.toMinutes(h);
+        return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
       };
-    
-      const inicio = Number.isFinite(this.inicioJanelaMin) ? this.inicioJanelaMin : 0;
-      const fim    = Number.isFinite(this.fimJanelaMin)    ? this.fimJanelaMin    : 24 * 60;
-    
-      const inRange = (t?: string | null) => {
-        const m = toMinutesSafe(t);
-        return Number.isFinite(m) && m >= inicio && m <= fim;
-      };
-    
-      const base = Array.isArray(this.horariosBaseSemana) ? this.horariosBaseSemana : [];
-      this.horariosBaseSemana = base.filter((item: any) => {
-        const time = typeof item === 'string' ? item : item?.hora ?? item?.horario;
-        return inRange(time);
+      this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(inRange);
+      Object.keys(this.horariosPorDia).forEach(dia => {
+        const arr = this.horariosPorDia[dia] || [];
+        this.horariosPorDia[dia] = arr.filter(h => inRange(h.horario));
       });
-    
-      const dias = Object.keys(this.horariosPorDia ?? {});
-      for (const dia of dias) {
-        const lista = (this.horariosPorDia as any)[dia] ?? [];
-        const segura = Array.isArray(lista) ? lista : [];
-        (this.horariosPorDia as any)[dia] = segura.filter((h: any) => inRange(h?.hora ?? h?.horario));
-      }
-    
       this.cdr.markForCheck?.();
       this.cdr.detectChanges();
     }
