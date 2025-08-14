@@ -153,9 +153,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       const m = this.toMinutes(h);
       return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
     };
-    this.horariosBaseSemana = this.horariosBaseSemana.filter(inRange);
+    this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(inRange);
     Object.keys(this.horariosPorDia).forEach(dia => {
-      this.horariosPorDia[dia] = (this.horariosPorDia[dia] || []).filter(h => inRange(h.horario));
+      const arr = this.horariosPorDia[dia] || [];
+      this.horariosPorDia[dia] = arr.filter(h => inRange(h.horario));
     });
     this.cdr.detectChanges();
   }
