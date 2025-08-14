@@ -30,3 +30,35 @@ mat-form-field {
 button[mat-flat-button] {
   min-width: 120px;
 }
+
+.hint,
+.warn {
+  margin-bottom: 16px;
+}
+
+.hint {
+  background-color: #e8f5e9;
+}
+
+.warn {
+  background-color: #ffebee;
+}
+
+.hint-title,
+.warn-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.hint-title {
+  color: #2e7d32;
+}
+
+.warn-title {
+  color: #c62828;
+}
+
+.hint-text,
+.warn-text {
+  font-size: 14px;
+}
