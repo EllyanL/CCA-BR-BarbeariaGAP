@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { HorariosService } from 'src/app/services/horarios.service'; // Importar o serviço
+import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service'; // Importar o serviço
 import { OrientacoesComponent } from 'src/app/components/agendamento/orientacoes/orientacoes.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -58,7 +58,7 @@ export class OficiaisComponent implements OnInit {
   // Categoria precisa estar em maiúsculo para corresponder ao backend
   categoria = 'OFICIAL';
   opcoesPostoGrad: string[] = ['ASP', '2TEN', '1TEN', 'CAP', 'MAJ', 'TC', 'CEL'];
-  horariosPorDia: { [dia: string]: { horario: string, status: string }[] } = {};
+  horariosPorDia: HorariosPorDia = {};
   saramUsuario: string = '';
   idMilitarLogado: number | null = null;
   isAdmin: boolean = false;

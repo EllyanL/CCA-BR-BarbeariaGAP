@@ -20,7 +20,7 @@ export interface HorariosPorDiaECategoria {
 }
 
 export interface HorariosPorDia {
-  [dia: string]: { horario: string; status: string; usuarioId?: number }[];
+  [dia: string]: { horario: string; status?: string; usuarioId?: number }[];
 }
 
 
@@ -67,7 +67,7 @@ export class HorariosService {
           if (Array.isArray(lista)) {
             resultado[dia] = lista.map((h: any) => ({
               horario: h.horario,
-              status: h.status?.toUpperCase() || 'INDISPONIVEL',
+              status: h.status?.toUpperCase(),
               usuarioId: h.usuarioId
             }));
           }
