@@ -1,5 +1,17 @@
 <h2 mat-dialog-title class="dlg-title">Gerenciar Horários</h2>
 
+<mat-card class="hint">
+  <div class="hint-title">Dica</div>
+  <div class="hint-text">
+    Os horários serão gerados de 30 em 30 minutos dentro da janela informada.
+  </div>
+</mat-card>
+
+<mat-card class="warn">
+  <div class="warn-title">Atenção</div>
+  <div class="warn-text">Não é possível realizar alteração com agendamentos ativos.</div>
+</mat-card>
+
 <mat-dialog-content class="dlg-content">
   <div class="row">
     <mat-form-field appearance="fill">
@@ -24,7 +36,7 @@
 <ng-template #conflitoDialog>
   <h2 mat-dialog-title>Atenção</h2>
   <mat-dialog-content>
-    Existem agendamentos ativos que conflitam com a nova janela de horários.
+    Não é possível realizar alteração com agendamentos ativos.
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button mat-dialog-close>Ciente</button>

@@ -49,9 +49,15 @@ export class DialogoGerenciarHorariosComponent {
         this.dialogRef.close(true);
       },
       error: (err: HttpErrorResponse) => {
-        if (err.status === 409 && err.error?.code === 'JANELA_CONFLITO_AGENDAMENTOS_ATIVOS') {
+        if (err.status === 409 && err.error?.code === 'JANELA_CONFLITO_AGENDAMENTOS') {
           if (this.conflitoDialog) {
             this.dialog.open(this.conflitoDialog);
+          } else {
+            this.snackBar.open(
+              'Não é possível realizar alteração com agendamentos ativos.',
+              'Ciente',
+              { duration: 3000 }
+            );
           }
         }
       }
