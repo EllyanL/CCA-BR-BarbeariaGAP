@@ -569,6 +569,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     );
   }
 
+  getHorario(dia: string, hora: string): Horario | undefined {
+    const diaFmt = dia.split(' - ')[0].trim().toLowerCase();
+    return this.horariosPorDia[diaFmt]?.find(h => h.horario === hora.trim()) as Horario | undefined;
+  }
+
   statusClass(status: string): string {
     switch (status?.toUpperCase()) {
       case 'DISPONIVEL':

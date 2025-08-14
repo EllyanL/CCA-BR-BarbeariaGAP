@@ -21,7 +21,7 @@
             {{ hora }}
           </td>
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
-              <ng-container *ngIf="horariosPorDia[dia]?.find(h => h.horario === hora.trim()) as h; else indisponivel">
+              <ng-container *ngIf="getHorario(dia, hora) as h; else indisponivel">
                 <span [ngClass]="statusClass(h.status)">
                   {{ h.status | titlecase }}
                 </span>
