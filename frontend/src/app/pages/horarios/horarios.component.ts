@@ -455,18 +455,7 @@ import { UserService } from 'src/app/services/user.service';
             this.horariosBaseSemana.push(horario);
             this.ordenarHorarios();
           }
-
-          diasAlvo.forEach(dia => {
-            const diaKey = dia.toLowerCase();
-            const listaDia = this.horariosPorDia[diaKey] || [];
-            if (!listaDia.some(h => h.horario === horario)) {
-              listaDia.push({ horario, status: 'DISPONIVEL' });
-              this.horariosPorDia[diaKey] = listaDia;
-            }
-          });
-
           this.carregarHorariosDaSemana();
-          this.horariosService.atualizarHorarios(this.horariosPorDia);
           const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
           this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em ${msgDias}.`, 'Ciente', { duration: 3000 });
           this.horarioPersonalizado = '';
@@ -502,16 +491,7 @@ import { UserService } from 'src/app/services/user.service';
         this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
           next: () => {
             this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: 3000 });
-
-            const diaKey = dia.toLowerCase();
-            const listaDia = this.horariosPorDia[diaKey] || [];
-            if (!listaDia.some(h => h.horario === horario)) {
-              listaDia.push({ horario, status: 'DISPONIVEL' });
-              this.horariosPorDia[diaKey] = listaDia;
-            }
-
             this.carregarHorariosDaSemana();
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.carregarHorariosBase();
             this.horarioPersonalizado = '';
             this.horarioValido = false;
@@ -556,9 +536,7 @@ import { UserService } from 'src/app/services/user.service';
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
         .subscribe({
           next: () => {
-            diasAlvo.forEach(d => this.atualizarHorarioLocal(d, horario, true));
             this.carregarHorariosDaSemana();
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.snackBar.open('Horário disponibilizado', 'Ciente', { duration: 3000 });
           },
           error: () => {
@@ -582,17 +560,7 @@ import { UserService } from 'src/app/services/user.service';
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, false)
         .subscribe({
           next: () => {
-            diasAlvo.forEach(d => {
-              const diaKey = d.toLowerCase();
-              const listaDia = this.horariosPorDia[diaKey] || [];
-              const idx = listaDia.findIndex(h => h.horario === horario);
-              if (idx !== -1) {
-                listaDia[idx].status = 'INDISPONIVEL';
-                this.horariosPorDia[diaKey] = listaDia;
-              }
-            });
             this.carregarHorariosDaSemana(); // ✅ recarrega os dados atualizados
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
             this.snackBar.open('Horário indisponibilizado', 'Ciente', { duration: 3000 });
           },
           error: (error: any) => {
@@ -608,26 +576,15 @@ import { UserService } from 'src/app/services/user.service';
 
     adicionarHorarioIndividual(dia: string, horario: string, categoria: string): void { //Adiciona horário fixo na base
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
-        next: (response) => {
-          // Atualiza localmente o horário no dia especificado
-          const diaKey = dia.toLowerCase();
-          if (!this.horariosPorDia[diaKey]) {
-            this.horariosPorDia[diaKey] = [];
-          }
-
-          if (!this.horariosPorDia[diaKey].some(h => h.horario === horario)) {
-            this.horariosPorDia[diaKey].push({ horario, status: 'DISPONIVEL' });
-          }
-    
+        next: () => {
           // Garante que ele exista na base da semana
           if (!this.horariosBaseSemana.includes(horario)) {
             this.horariosBaseSemana.push(horario);
             this.ordenarHorarios();
           }
-    
+
           this.snackBar.open(`Horário ${horario} adicionado ao dia ${dia}.`, 'Ciente', { duration: 3000 });
           this.carregarHorariosDaSemana();
-          this.horariosService.atualizarHorarios(this.horariosPorDia);
         },
         error: (error: any) => {
           this.logger.error('Erro ao adicionar horário individual:', error);
@@ -666,7 +623,6 @@ import { UserService } from 'src/app/services/user.service';
           });
 
           this.carregarHorariosDaSemana();
-          this.horariosService.atualizarHorarios(this.horariosPorDia);
           const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
           this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: 3000 });
         },
@@ -678,35 +634,6 @@ import { UserService } from 'src/app/services/user.service';
       });
     }
         
-
-    private atualizarHorarioLocal( //Atualiza estrutura local após criar/remover horarios
-      dia: string,
-      horario: string,
-      disponivel: boolean
-    ): void {
-      const diaKey = dia.toLowerCase();
-      const horariosDoDia = this.horariosPorDia[diaKey] || [];
-      const horarioIndex = horariosDoDia.findIndex((h) => h.horario === horario);
-
-      const status = disponivel ? 'DISPONIVEL' : 'INDISPONIVEL';
-
-      if (horarioIndex !== -1) {
-        horariosDoDia[horarioIndex].status = status;
-      } else {
-        horariosDoDia.push({ horario, status });
-      }
-
-      horariosDoDia.sort((a, b) => {
-        const getTimeValue = (horarioStr: string) => {
-          const [hours, minutes] = horarioStr.split(':').map(Number);
-          return hours * 60 + minutes;
-        };
-        return getTimeValue(a.horario) - getTimeValue(b.horario);
-      });
-
-      this.horariosPorDia[diaKey] = horariosDoDia;
-      this.horariosService.atualizarHorarios(this.horariosPorDia);
-    }
 
     getHorarioStatus(dia: string, hora: string): { status: string } {
       const diaKey = dia.toLowerCase();
@@ -785,21 +712,13 @@ import { UserService } from 'src/app/services/user.service';
                 this.categoriaSelecionada
               )
               .pipe(
-                tap((response) => {
-                  const diaKey = d.toLowerCase();
-                  this.horariosPorDia[diaKey] = (response.horariosAfetados || []).map(
-                    (h: any) => ({
-                      horario: h.horario,
-                      status: h.status || 'DISPONIVEL',
-                    })
-                  );
-                  this.horariosService.atualizarHorarios(this.horariosPorDia);
+                tap(() => {
+                  this.carregarHorariosDaSemana();
                   this.snackBar.open(
                     `Dia ${d} liberado para ${this.categoriaSelecionada}`,
                     'Ciente',
                     { duration: 3000 }
                   );
-                  this.cdr.detectChanges();
                 }),
                 catchError(() => {
                   this.snackBar.open(
@@ -1010,16 +929,8 @@ import { UserService } from 'src/app/services/user.service';
             };
           }
 
-          const diaKey = dia.toLowerCase();
-          if (this.horariosPorDia[diaKey]) {
-            const index = this.horariosPorDia[diaKey].findIndex(h => h.horario.slice(0, 5) === hora);
-            if (index !== -1) {
-              this.horariosPorDia[diaKey][index].status = 'DISPONIVEL';
-              this.horariosPorDia = { ...this.horariosPorDia };
-              this.horariosService.atualizarHorarios(this.horariosPorDia);
-            }
-          }
           this.saveAgendamentos();
+          this.carregarHorariosDaSemana();
         },
         error: (error: any) => {
           this.logger.error('Erro ao desmarcar agendamento:', error);
