@@ -300,7 +300,7 @@ import { UserService } from 'src/app/services/user.service';
               ...it,
               // aceita 'hora' ou 'horario'
               horario: it?.horario ?? it?.hora ?? '',
-              status: String(it?.status ?? 'INDISPONIVEL').toUpperCase(),
+              status: it?.status ? String(it.status).toUpperCase() : undefined,
             });
     
             // garante objeto
