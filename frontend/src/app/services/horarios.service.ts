@@ -70,16 +70,20 @@ export class HorariosService {
       )
     }).pipe(
       map(({ horarios, agendamentos }) => {
+        horarios = horarios ?? {};
+        agendamentos = Array.isArray(agendamentos) ? agendamentos : [];
         const resultado: HorariosPorDia = {};
 
         // Normaliza estrutura base dos horários
         Object.entries(horarios).forEach(([dia, lista]) => {
           if (Array.isArray(lista)) {
-            resultado[dia] = lista.map((h: any) => ({
-              horario: h.horario,
-              status: this.normalizeStatus(h.status),
-              usuarioId: h.usuarioId
-            }));
+            resultado[dia] = (resultado[dia] ?? []).concat(
+              lista.map((h: any) => ({
+                horario: h.horario,
+                status: this.normalizeStatus(h.status),
+                usuarioId: h.usuarioId
+              }))
+            );
           }
         });
 
@@ -92,14 +96,15 @@ export class HorariosService {
             if (!dia || !hora) return;
 
             const status = this.normalizeStatus(a.status);
-            if (!resultado[dia]) resultado[dia] = [];
-            const idx = resultado[dia].findIndex(h => h.horario === hora);
+            const lista = resultado[dia] ?? [];
+            const idx = lista.findIndex(h => h.horario === hora);
             const usuarioId = (a as any).militar?.id;
             if (idx !== -1) {
-              resultado[dia][idx] = { ...resultado[dia][idx], status, usuarioId };
+              lista[idx] = { ...lista[idx], status, usuarioId };
             } else {
-              resultado[dia].push({ horario: hora, status, usuarioId });
+              lista.push({ horario: hora, status, usuarioId });
             }
+            resultado[dia] = lista;
           });
 
         return resultado;

@@ -561,7 +561,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   getSlot(dia: string, hora: string): SlotHorario | null {
     const list = this.horariosPorDia?.[dia] || [];
     const hh = (hora || '').trim();
-    return list.find(h => (h?.horario || '').trim() === hh) || null;
+    return list.find?.(h => (h?.horario || '').trim() === hh) || null;
   }
 
   statusClass(status?: string) {
