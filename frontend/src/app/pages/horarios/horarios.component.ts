@@ -272,63 +272,14 @@ import { UserService } from 'src/app/services/user.service';
     }
     
     carregarHorariosDaSemana(): void {
-      this.horariosService
-        .carregarHorariosDaSemana(this.categoriaSelecionada)
-        .subscribe({
-          next: (horarios: any) => {
-            const makeArray = (v: any): any[] =>
-              Array.isArray(v) ? v : (v ? [v] : []);               // garante array
-            const normalizeItem = (it: any) => ({
-              ...it,
-              // aceita 'hora' ou 'horario'
-              horario: it?.horario ?? it?.hora ?? '',
-              status: it?.status ? String(it.status).toUpperCase() : undefined,
-            });
-    
-            // garante objeto
-            const origem = horarios ?? {};
-            const resultado: Record<string, any[]> = {};
-    
-            for (const dia of Object.keys(origem)) {
-              // evita map/filter em null
-              const arr = makeArray(origem[dia])
-                .filter(Boolean)
-                .map(normalizeItem);
-              resultado[dia] = arr;
-            }
-    
-            // se a API não retorna algumas chaves, evite undefined
-            const DIAS_PADRAO = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
-            for (const d of DIAS_PADRAO) {
-              if (!resultado[d]) resultado[d] = [];
-            }
-    
-            this.horariosPorDia = resultado;
-    
-            // garanta base inicial sempre como array
-            if (!Array.isArray(this.horariosBaseSemana)) {
-              this.horariosBaseSemana = [];
-            }
-    
-            try {
-              this.aplicarJanelaHorarios();  // já está robusta
-            } catch (e) {
-              this.logger.error('Falha ao aplicar janela de horários:', e);
-            }
-    
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
-            this.cdr.markForCheck?.();
-            this.cdr.detectChanges();
-          },
-          error: (error: any) => {
-            this.logger.error('Erro ao carregar horários da semana:', error);
-            this.snackBar.open(
-              'Não foi possível carregar os horários desta semana. Verifique a conexão e tente novamente.',
-              'Ciente',
-              { duration: 4000 }
-            );
-          },
-        });
+      this.horariosService.carregarHorariosDaSemana(this.categoriaSelecionada).subscribe({
+        next: (horarios: HorariosPorDia) => {
+          this.horariosPorDia = horarios || {};
+          this.aplicarJanelaHorarios();
+          this.cdr.detectChanges();
+        },
+        error: err => this.logger.error('Erro ao carregar horários:', err)
+      });
     }
     
     
@@ -626,7 +577,7 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       const horarios = this.horariosPorDia[diaKey];
-      const status = horarios?.find(h => h.horario === hora)?.status?.toUpperCase();
+      const status = horarios?.find(h => h.horario === hora)?.status;
 
       if (status === 'AGENDADO') {
         return { status: 'AGENDADO' };
