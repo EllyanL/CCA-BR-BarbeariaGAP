@@ -7,7 +7,7 @@ import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
