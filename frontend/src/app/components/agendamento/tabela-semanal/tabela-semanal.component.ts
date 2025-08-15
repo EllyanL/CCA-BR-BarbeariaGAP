@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service';
+import { HorariosService } from 'src/app/services/horarios.service';
+import { HorariosPorDia, SlotHorario } from 'src/app/models/slot-horario';
 import { Observable, Subscription, of } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
 import { catchError, map, take, tap, timeout } from 'rxjs/operators';
@@ -21,11 +22,6 @@ import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { ConfigHorarioService } from 'src/app/services/config-horario.service';
 
-interface SlotHorario {
-  horario: string;
-  status?: string;
-  usuarioId?: number;
-}
 
 @Component({
   selector: 'app-tabela-semanal',

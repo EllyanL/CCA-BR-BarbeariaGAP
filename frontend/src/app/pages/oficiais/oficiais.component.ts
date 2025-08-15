@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { HorariosPorDia, HorariosService } from 'src/app/services/horarios.service'; // Importar o serviço
+import { HorariosService } from 'src/app/services/horarios.service'; // Importar o serviço
+import { HorariosPorDia } from 'src/app/models/slot-horario';
 import { OrientacoesComponent } from 'src/app/components/agendamento/orientacoes/orientacoes.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { AuthService } from 'src/app/services/auth.service';

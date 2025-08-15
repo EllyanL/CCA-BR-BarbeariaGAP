@@ -7,6 +7,7 @@ import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
+import { SlotHorario, HorariosPorDia } from '../models/slot-horario';
 
 interface HorarioResponse {
   mensagem: string;
@@ -15,12 +16,8 @@ interface HorarioResponse {
 
 export interface HorariosPorDiaECategoria {
   [dia: string]: {
-    [categoria: string]: Horario[];
+    [categoria: string]: SlotHorario[];
   };
-}
-
-export interface HorariosPorDia {
-  [dia: string]: { horario: string; status?: string; usuarioId?: number }[];
 }
 
 
@@ -67,7 +64,7 @@ export class HorariosService {
           if (Array.isArray(lista)) {
             resultado[dia] = lista.map((h: any) => ({
               horario: h.horario,
-              status: h.status,
+              status: (h.status || 'INDISPONIVEL') as SlotHorario['status'],
               usuarioId: h.usuarioId
             }));
           }
@@ -81,7 +78,7 @@ export class HorariosService {
             const hora = a.hora?.slice(0, 5);
             if (!dia || !hora) return;
 
-            const status = a.status!;
+            const status = (a.status === 'REALIZADO' ? 'AGENDADO' : a.status!) as SlotHorario['status'];
             if (!resultado[dia]) resultado[dia] = [];
             const idx = resultado[dia].findIndex(h => h.horario === hora);
             const usuarioId = (a as any).militar?.id;
