@@ -63,6 +63,10 @@ export class AgendamentoService {
     return this.http.post<Agendamento>(this.apiUrl, agendamento).pipe(
       tap({
         error: error => this.logger.error('❌ Erro no createAgendamento():', error)
+      }),
+      catchError(error => {
+        const parsed = error?.error?.message || error?.error || error.message || error;
+        return throwError(() => parsed);
       })
     );
   }
