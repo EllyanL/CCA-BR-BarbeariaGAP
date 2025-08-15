@@ -63,6 +63,39 @@ public class AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
+    @Transactional
+    public Agendamento criarAgendamentoTransactional(Agendamento agendamento) {
+        String horaFormatada = agendamento.getHora().format(TIME_FORMATTER);
+        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
+            agendamento.getDiaSemana(),
+            horaFormatada,
+            agendamento.getCategoria()
+        );
+
+        if (horarioOpt.isEmpty() || horarioOpt.get().getStatus() != HorarioStatus.DISPONIVEL) {
+            throw new IllegalStateException("Horário indisponível");
+        }
+
+        boolean ocupado = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+            agendamento.getData(),
+            agendamento.getHora(),
+            agendamento.getDiaSemana(),
+            agendamento.getCategoria(),
+            "CANCELADO"
+        );
+        if (ocupado) {
+            throw new IllegalStateException("Horário indisponível");
+        }
+
+        Agendamento saved = agendamentoRepository.save(agendamento);
+
+        Horario horario = horarioOpt.get();
+        horario.setStatus(HorarioStatus.AGENDADO);
+        horarioRepository.save(horario);
+
+        return saved;
+    }
+
     public List<Agendamento> findAll() {
         return agendamentoRepository.findAllWithMilitar();
     }
