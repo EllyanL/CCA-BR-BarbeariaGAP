@@ -93,7 +93,7 @@ describe('HorariosComponent', () => {
     component.carregarAgendamentos();
     component.carregarHorariosDaSemana();
 
-    const status = component.getHorarioStatus('segunda', '08:00').status;
+    const status = component.getHorarioStatus('segunda', '08:00');
   expect(status).toBe('AGENDADO');
 });
 
@@ -162,8 +162,8 @@ describe('HorariosComponent', () => {
     component.carregarAgendamentos();
     component.carregarHorariosDaSemana();
 
-      const statusPassado = component.getHorarioStatus('segunda', '08:00').status;
-      const statusFuturo = component.getHorarioStatus('segunda', '09:00').status;
+      const statusPassado = component.getHorarioStatus('segunda', '08:00');
+      const statusFuturo = component.getHorarioStatus('segunda', '09:00');
 
     expect(statusPassado).not.toBe('AGENDADO');
     expect(statusFuturo).toBe('AGENDADO');
