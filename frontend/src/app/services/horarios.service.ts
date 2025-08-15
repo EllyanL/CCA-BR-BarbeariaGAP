@@ -241,7 +241,18 @@ export class HorariosService {
         ? this.disponibilizarHorario(horario, d, categoria)
         : this.indisponibilizarHorario(horario, d, categoria)
     );
-    return forkJoin(requests);
+    return forkJoin(requests).pipe(
+      tap(() => {
+        const atuais = { ...this.horariosPorDiaSource.getValue() };
+        dias.forEach(d => {
+          const slot = atuais[d]?.find(s => s.horario === horario);
+          if (slot) {
+            slot.status = disponibilizar ? 'DISPONIVEL' : 'INDISPONIVEL';
+          }
+        });
+        this.horariosPorDiaSource.next(atuais);
+      })
+    );
   }
 
   indisponibilizarTodosHorarios(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {
