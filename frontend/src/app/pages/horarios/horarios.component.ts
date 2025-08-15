@@ -1,10 +1,8 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
-import {
-    HorariosPorDia,
-    HorariosService,
-} from '../../services/horarios.service';
+import { HorariosService } from '../../services/horarios.service';
+import { HorariosPorDia } from '../../models/slot-horario';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 

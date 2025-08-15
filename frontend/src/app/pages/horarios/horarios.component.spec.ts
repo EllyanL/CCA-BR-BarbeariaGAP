@@ -6,6 +6,7 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { HorariosComponent } from './horarios.component';
 import { HorariosService } from '../../services/horarios.service';
+import { HorariosPorDia } from '../../models/slot-horario';
 import { ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -68,7 +69,7 @@ describe('HorariosComponent', () => {
         }
       ];
 
-      const horarios = {
+      const horarios: HorariosPorDia = {
         segunda: [{ horario: '08:00', status: 'DISPONIVEL' }],
         terça: [], quarta: [], quinta: [], sexta: []
       };
@@ -134,7 +135,7 @@ describe('HorariosComponent', () => {
         }
       ];
 
-      const horarios = {
+      const horarios: HorariosPorDia = {
         segunda: [
           { horario: '08:00', status: 'DISPONIVEL' },
           { horario: '09:00', status: 'DISPONIVEL' }
