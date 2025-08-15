@@ -22,12 +22,14 @@
           </td>
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
               <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
-                <button [ngClass]="statusClass(slot.status)">
-                  {{ slot.status | titlecase }}
+                <button [ngClass]="statusClass(normalizeStatus(slot.status))">
+                  {{ formatarStatus(normalizeStatus(slot.status)) }}
                 </button>
               </ng-container>
               <ng-template #indisponivel>
-                <button [ngClass]="statusClass('INDISPONIVEL')">Indisponível</button>
+                <button [ngClass]="statusClass(normalizeStatus('INDISPONIVEL'))">
+                  {{ formatarStatus(normalizeStatus('INDISPONIVEL')) }}
+                </button>
               </ng-template>
             </td>
         </tr>

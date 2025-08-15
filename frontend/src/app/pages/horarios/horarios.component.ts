@@ -2,7 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService } from '../../services/horarios.service';
-import { HorariosPorDia } from '../../models/slot-horario';
+import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 
@@ -569,7 +569,7 @@ import { UserService } from 'src/app/services/user.service';
     getHorarioStatus(dia: string, hora: string): string {
       const diaKey = dia.toLowerCase();
       const status = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.status;
-      return status ?? 'INDISPONIVEL';
+      return this.normalizeStatus(status);
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
@@ -880,6 +880,19 @@ import { UserService } from 'src/app/services/user.service';
         }
       });
     }
+
+  normalizeStatus(raw?: string): SlotHorario['status'] {
+    const status = raw?.toUpperCase();
+    switch (status) {
+      case 'AGENDADO':
+      case 'INDISPONIVEL':
+        return status;
+      case 'REALIZADO':
+        return 'AGENDADO';
+      default:
+        return 'DISPONIVEL';
+    }
+  }
 
   formatarStatus(texto: string): string {
     if (!texto) return '';
