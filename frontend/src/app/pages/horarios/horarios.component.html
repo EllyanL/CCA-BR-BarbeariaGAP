@@ -135,14 +135,13 @@
               <button *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'DISPONIVEL'"
                       mat-raised-button
                       color="primary"
-                      (click)="selecionarHorario(dia, horario)"
-                      [disabled]="!isHoraAgendavel(horario)">
+                      (click)="selecionarHorario(dia, horario)">
                 {{ horario }}
               </button>
 
               <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'INDISPONIVEL'"
                     class="horario-indisponivel">
-                {{ horario }}
+                Indisponível
               </span>
 
               <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'REALIZADO'"

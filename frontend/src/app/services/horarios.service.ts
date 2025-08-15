@@ -8,6 +8,7 @@ import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
 import { SlotHorario, HorariosPorDia } from '../models/slot-horario';
+import { ServerTimeService } from './server-time.service';
 
 interface HorarioResponse {
   mensagem: string;
@@ -44,7 +45,8 @@ export class HorariosService {
 
   constructor(
     private http: HttpClient,
-    private logger: LoggingService
+    private logger: LoggingService,
+    private serverTime: ServerTimeService
   ) {}
 
   private normalizeStatus(raw?: string): SlotHorario['status'] {
@@ -67,9 +69,12 @@ export class HorariosService {
       horarios: this.http.get<HorariosPorDia>(`${this.apiUrl}/categoria/${categoria}`),
       agendamentos: this.http.get<Agendamento[]>(this.agendamentosUrl).pipe(
         catchError(() => of([]))
+      ),
+      serverTime: this.serverTime.getServerTime().pipe(
+        catchError(() => of({ timestamp: Date.now() }))
       )
     }).pipe(
-      map(({ horarios, agendamentos }) => {
+      map(({ horarios, agendamentos, serverTime }) => {
         horarios = horarios ?? {};
         agendamentos = Array.isArray(agendamentos) ? agendamentos : [];
         const resultado: HorariosPorDia = {};
@@ -106,6 +111,37 @@ export class HorariosService {
             }
             resultado[dia] = lista;
           });
+
+        const now = serverTime?.timestamp ?? Date.now();
+        const startOfWeek = new Date(now);
+        const diffToMonday = (startOfWeek.getDay() + 6) % 7;
+        startOfWeek.setDate(startOfWeek.getDate() - diffToMonday);
+        startOfWeek.setHours(0, 0, 0, 0);
+        const diaMap: Record<string, number> = {
+          segunda: 0,
+          terça: 1,
+          terca: 1,
+          quarta: 2,
+          quinta: 3,
+          sexta: 4,
+          sábado: 5,
+          sabado: 5,
+          domingo: 6
+        };
+        Object.entries(resultado).forEach(([dia, slots]) => {
+          const idxDia = diaMap[dia.toLowerCase()];
+          if (idxDia === undefined) return;
+          resultado[dia] = slots.map(slot => {
+            const [h, m] = slot.horario.split(':').map(Number);
+            const slotDate = new Date(startOfWeek);
+            slotDate.setDate(startOfWeek.getDate() + idxDia);
+            slotDate.setHours(h, m, 0, 0);
+            if (slotDate.getTime() < now && slot.status === 'DISPONIVEL') {
+              return { ...slot, status: 'INDISPONIVEL' };
+            }
+            return slot;
+          });
+        });
 
         return resultado;
       }),
