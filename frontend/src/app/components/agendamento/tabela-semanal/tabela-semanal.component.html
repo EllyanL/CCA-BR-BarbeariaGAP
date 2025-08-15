@@ -22,13 +22,18 @@
           </td>
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
               <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
-                <button [ngClass]="statusClass(normalizeStatus(slot.status))">
-                  {{ formatarStatus(normalizeStatus(slot.status)) }}
+                <button
+                  mat-raised-button
+                  [disabled]="slot.status !== 'DISPONIVEL'"
+                  [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
+                  [ngClass]="statusClass(slot.status)"
+                >
+                  {{ formatarStatus(slot.status) }}
                 </button>
               </ng-container>
               <ng-template #indisponivel>
-                <button [ngClass]="statusClass(normalizeStatus('INDISPONIVEL'))">
-                  {{ formatarStatus(normalizeStatus('INDISPONIVEL')) }}
+                <button mat-raised-button disabled [ngClass]="statusClass('INDISPONIVEL')">
+                  {{ formatarStatus('INDISPONIVEL') }}
                 </button>
               </ng-template>
             </td>
