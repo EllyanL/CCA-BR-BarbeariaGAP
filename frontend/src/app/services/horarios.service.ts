@@ -75,7 +75,7 @@ export class HorariosService {
 
         // Sobrepõe com agendamentos (AGENDADO ou REALIZADO)
         agendamentos
-          .filter(a => a.status && ['AGENDADO', 'REALIZADO'].includes(a.status))
+          .filter(a => ['AGENDADO', 'REALIZADO'].includes(a.status?.toUpperCase() || ''))
           .forEach(a => {
             const dia = a.diaSemana?.toLowerCase();
             const hora = a.hora?.slice(0, 5);
