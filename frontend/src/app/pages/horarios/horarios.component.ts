@@ -467,6 +467,13 @@ import { UserService } from 'src/app/services/user.service';
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
         .subscribe({
           next: () => {
+            diasAlvo.forEach(d => {
+              const slot = this.horariosPorDia[d]?.find(s => s.horario === horario);
+              if (slot) {
+                slot.status = 'DISPONIVEL';
+              }
+            });
+            this.cdr.detectChanges();
             this.carregarHorariosDaSemana();
             this.snackBar.open('Horário disponibilizado', 'Ciente', { duration: 3000 });
           },
@@ -491,6 +498,13 @@ import { UserService } from 'src/app/services/user.service';
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, false)
         .subscribe({
           next: () => {
+            diasAlvo.forEach(d => {
+              const slot = this.horariosPorDia[d]?.find(s => s.horario === horario);
+              if (slot) {
+                slot.status = 'INDISPONIVEL';
+              }
+            });
+            this.cdr.detectChanges();
             this.carregarHorariosDaSemana(); // ✅ recarrega os dados atualizados
             this.snackBar.open('Horário indisponibilizado', 'Ciente', { duration: 3000 });
           },
