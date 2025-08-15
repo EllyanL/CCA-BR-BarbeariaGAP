@@ -4,6 +4,11 @@
     <div *ngIf="feedbackMessageTitle" class="feedback-message">
       {{ feedbackMessageTitle }}
     </div>
+    <ng-template #indisponivel>
+      <button mat-raised-button disabled [ngClass]="statusClass('INDISPONIVEL')">
+        {{ formatarStatus('INDISPONIVEL') }}
+      </button>
+    </ng-template>
 
     <!-- Tabela Principal -->
     <table class="tabela">
@@ -20,23 +25,18 @@
           <td class="tabela-coluna-horario">
             {{ hora }}
           </td>
-            <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
-              <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
-                <button
-                  mat-raised-button
-                  [disabled]="slot.status !== 'DISPONIVEL'"
-                  [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
-                  [ngClass]="statusClass(slot.status)"
-                >
-                  {{ formatarStatus(slot.status) }}
-                </button>
-              </ng-container>
-              <ng-template #indisponivel>
-                <button mat-raised-button disabled [ngClass]="statusClass('INDISPONIVEL')">
-                  {{ formatarStatus('INDISPONIVEL') }}
-                </button>
-              </ng-template>
-            </td>
+          <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
+            <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
+              <button
+                mat-raised-button
+                [disabled]="slot.status !== 'DISPONIVEL'"
+                [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
+                [ngClass]="statusClass(slot.status)"
+              >
+                {{ formatarStatus(slot.status) }}
+              </button>
+            </ng-container>
+          </td>
         </tr>
       </tbody>
     </table>
