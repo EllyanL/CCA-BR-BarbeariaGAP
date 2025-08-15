@@ -228,19 +228,19 @@ export class HorariosService {
     this.pollingSub = undefined;
   }
 
-  disponibilizarHorario(horario: string, dia: string, categoria: string): Observable<any> {
+  disponibilizarHorario(horario: string, dia: string, categoria: string): Observable<Horario> {
     const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
-    return this.http.post(`${this.apiUrl}/disponibilizar`, horarioRequest, { headers });
+    return this.http.post<Horario>(`${this.apiUrl}/disponibilizar`, horarioRequest, { headers });
   }
 
-  indisponibilizarHorario(horario: string, dia: string, categoria: string): Observable<any> {
+  indisponibilizarHorario(horario: string, dia: string, categoria: string): Observable<Horario> {
     const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
-    return this.http.post(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
+    return this.http.post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
   }
 
-  alterarDisponibilidadeEmDias(horario: string, dias: string[], categoria: string, disponibilizar: boolean): Observable<any[]> {
+  alterarDisponibilidadeEmDias(horario: string, dias: string[], categoria: string, disponibilizar: boolean): Observable<Horario[]> {
     const requests = dias.map(d =>
       disponibilizar
         ? this.disponibilizarHorario(horario, d, categoria)

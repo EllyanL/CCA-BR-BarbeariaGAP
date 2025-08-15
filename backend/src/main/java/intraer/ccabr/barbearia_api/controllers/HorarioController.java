@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,43 +78,34 @@ public class HorarioController {
     }
     @PostMapping("/indisponibilizar")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> indisponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
-        if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
-        horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
-        horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
-    }
-        Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
-                horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
-        if (horarioIndisponibilizado == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("mensagem", "Horário não encontrado."));
-        }
-        Map<String, Object> response = new HashMap<>();
-        response.put("mensagem", "Horário indisponibilizado com sucesso para " + horarioDTO.getCategoria());
-        response.put("horario", horarioIndisponibilizado);
-        return ResponseEntity.ok(response);
-    }
-    @PostMapping("/disponibilizar")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Object>> disponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
+    public ResponseEntity<HorarioDTO> indisponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
         if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
             horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
             horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("mensagem", "Dia, horário e categoria são obrigatórios."));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
+                horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+        if (horarioIndisponibilizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(new HorarioDTO(horarioIndisponibilizado));
+    }
+
+    @PostMapping("/disponibilizar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<HorarioDTO> disponibilizarHorario(@RequestBody @Valid HorarioDTO horarioDTO) {
+        if (horarioDTO.getDia() == null || horarioDTO.getDia().trim().isEmpty() ||
+            horarioDTO.getHorario() == null || horarioDTO.getHorario().trim().isEmpty() ||
+            horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         Horario horarioDisponibilizado = horarioService.disponibilizarHorario(
                 horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
         if (horarioDisponibilizado == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("mensagem", "Horário não encontrado."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        Map<String, Object> response = new HashMap<>();
-        response.put("mensagem", "Horário disponibilizado com sucesso para " + horarioDTO.getCategoria());
-        response.put("horario", horarioDisponibilizado);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new HorarioDTO(horarioDisponibilizado));
     }
 
     @PostMapping("/indisponibilizar/tudo/{dia}")
