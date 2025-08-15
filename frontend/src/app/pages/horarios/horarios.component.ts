@@ -466,15 +466,27 @@ import { UserService } from 'src/app/services/user.service';
       this.horariosService
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
         .subscribe({
-          next: () => {
-            diasAlvo.forEach(d => {
-              const slot = this.horariosPorDia[d]?.find(s => s.horario === horario);
-              if (slot) {
-                slot.status = 'DISPONIVEL';
+          next: horariosAtualizados => {
+            horariosAtualizados.forEach(h => {
+              const diaLower = h.dia.toLowerCase();
+              const lista = this.horariosPorDia[diaLower] ?? [];
+              const idx = lista.findIndex(s => s.horario === h.horario);
+              if (idx !== -1) {
+                lista[idx] = {
+                  ...lista[idx],
+                  status: h.status as SlotHorario['status'],
+                  usuarioId: h.usuarioId,
+                };
+              } else {
+                lista.push({
+                  horario: h.horario,
+                  status: h.status as SlotHorario['status'],
+                  usuarioId: h.usuarioId,
+                });
               }
+              this.horariosPorDia[diaLower] = lista;
             });
             this.cdr.detectChanges();
-            this.carregarHorariosDaSemana();
             this.snackBar.open('Horário disponibilizado', 'Ciente', { duration: 3000 });
           },
           error: () => {
@@ -497,15 +509,27 @@ import { UserService } from 'src/app/services/user.service';
       this.horariosService
         .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, false)
         .subscribe({
-          next: () => {
-            diasAlvo.forEach(d => {
-              const slot = this.horariosPorDia[d]?.find(s => s.horario === horario);
-              if (slot) {
-                slot.status = 'INDISPONIVEL';
+          next: horariosAtualizados => {
+            horariosAtualizados.forEach(h => {
+              const diaLower = h.dia.toLowerCase();
+              const lista = this.horariosPorDia[diaLower] ?? [];
+              const idx = lista.findIndex(s => s.horario === h.horario);
+              if (idx !== -1) {
+                lista[idx] = {
+                  ...lista[idx],
+                  status: h.status as SlotHorario['status'],
+                  usuarioId: h.usuarioId,
+                };
+              } else {
+                lista.push({
+                  horario: h.horario,
+                  status: h.status as SlotHorario['status'],
+                  usuarioId: h.usuarioId,
+                });
               }
+              this.horariosPorDia[diaLower] = lista;
             });
             this.cdr.detectChanges();
-            this.carregarHorariosDaSemana(); // ✅ recarrega os dados atualizados
             this.snackBar.open('Horário indisponibilizado', 'Ciente', { duration: 3000 });
           },
           error: (error: any) => {
