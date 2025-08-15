@@ -85,7 +85,7 @@
         <tbody class="horarios-body">
           <tr *ngFor="let horario of horariosBaseSemana; trackBy: trackByHorario">
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-coluna-dia">
-              <div class="horarios-botao-container" [ngSwitch]="getHorarioStatus(dia, horario).status">
+              <div class="horarios-botao-container" [ngSwitch]="getHorarioStatus(dia, horario)">
                 <!-- ADMIN -->
                 <ng-container *ngIf="isAdmin; else visualizacaoUsuario">
                   <button *ngSwitchCase="'DISPONIVEL'" class="botao-hora-disponivel" mat-raised-button color="primary"
@@ -132,7 +132,7 @@
                 </button>
               </ng-container>
 
-              <button *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario).status === 'DISPONIVEL'"
+              <button *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'DISPONIVEL'"
                       mat-raised-button
                       color="primary"
                       (click)="selecionarHorario(dia, horario)"
@@ -140,12 +140,12 @@
                 {{ horario }}
               </button>
 
-              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario).status === 'INDISPONIVEL'"
+              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'INDISPONIVEL'"
                     class="horario-indisponivel">
                 {{ horario }}
               </span>
 
-              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario).status === 'REALIZADO'"
+              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'REALIZADO'"
                     class="horario-indisponivel">
                 {{ formatarStatus('REALIZADO') }}
               </span>

@@ -240,7 +240,7 @@ import { UserService } from 'src/app/services/user.service';
 
 //---------------⏰ Gerenciamento de Horários---------------
     selecionarHorario(dia: string, horario: string): void {
-      const status = this.getHorarioStatus(dia, horario).status;
+      const status = this.getHorarioStatus(dia, horario);
       if (status === 'DISPONIVEL') {
         this.agendarHorario(dia, horario); // Usuário comum tenta agendar
       } else if (status === 'INDISPONIVEL') {
@@ -568,30 +568,10 @@ import { UserService } from 'src/app/services/user.service';
     }
         
 
-    getHorarioStatus(dia: string, hora: string): { status: string } {
+    getHorarioStatus(dia: string, hora: string): string {
       const diaKey = dia.toLowerCase();
-      const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
-
-      if (agendamento && this.isAgendamentoDoMilitarLogado(agendamento)) {
-        return { status: 'AGENDADO' };
-      }
-
-      const horarios = this.horariosPorDia[diaKey];
-      const status = horarios?.find(h => h.horario === hora)?.status;
-
-      if (status === 'AGENDADO') {
-        return { status: 'AGENDADO' };
-      }
-
-      if (status === 'REALIZADO') {
-        return { status: 'REALIZADO' };
-      }
-
-      if (status === 'CANCELADO' || status === 'DISPONIVEL') {
-        return { status: 'DISPONIVEL' };
-      }
-
-      return { status: 'INDISPONIVEL' };
+      const status = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.status;
+      return status ?? 'INDISPONIVEL';
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
