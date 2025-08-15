@@ -47,6 +47,19 @@ export class HorariosService {
     private logger: LoggingService
   ) {}
 
+  private normalizeStatus(raw?: string): SlotHorario['status'] {
+    const status = raw?.toUpperCase();
+    switch (status) {
+      case 'AGENDADO':
+      case 'INDISPONIVEL':
+        return status;
+      case 'REALIZADO':
+        return 'AGENDADO';
+      default:
+        return 'DISPONIVEL';
+    }
+  }
+
   //---------------⏰ Gerenciamento de Horários---------------
 
   carregarHorariosDaSemana(categoria: string): Observable<HorariosPorDia> {
@@ -64,7 +77,7 @@ export class HorariosService {
           if (Array.isArray(lista)) {
             resultado[dia] = lista.map((h: any) => ({
               horario: h.horario,
-              status: (h.status || 'INDISPONIVEL') as SlotHorario['status'],
+              status: this.normalizeStatus(h.status),
               usuarioId: h.usuarioId
             }));
           }
@@ -78,7 +91,7 @@ export class HorariosService {
             const hora = a.hora?.slice(0, 5);
             if (!dia || !hora) return;
 
-            const status = (a.status === 'REALIZADO' ? 'AGENDADO' : a.status!) as SlotHorario['status'];
+            const status = this.normalizeStatus(a.status);
             if (!resultado[dia]) resultado[dia] = [];
             const idx = resultado[dia].findIndex(h => h.horario === hora);
             const usuarioId = (a as any).militar?.id;
