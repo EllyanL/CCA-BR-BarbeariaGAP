@@ -53,7 +53,7 @@ describe('TabelaSemanalComponent', () => {
     expect(titulo).toBeTruthy();
   });
 
-  // Tests for getStatus and statusClass could be added here if needed
+  // Tests for getSlot and statusClass could be added here if needed
 
   it('nao abre dialogo se horario for em menos de 15 minutos', () => {
     const now = new Date();

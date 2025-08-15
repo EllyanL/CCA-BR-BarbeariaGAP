@@ -21,7 +21,7 @@
             {{ hora }}
           </td>
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
-              <ng-container *ngIf="getItem(dia, hora) as h">
+              <ng-container *ngIf="getSlot(dia, hora) as h">
                 <span [ngClass]="statusClass(h.status)">
                   {{ h.status | titlecase }}
                 </span>
