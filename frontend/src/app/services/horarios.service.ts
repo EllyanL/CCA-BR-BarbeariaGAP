@@ -67,7 +67,7 @@ export class HorariosService {
           if (Array.isArray(lista)) {
             resultado[dia] = lista.map((h: any) => ({
               horario: h.horario,
-              status: h.status?.toUpperCase(),
+              status: h.status,
               usuarioId: h.usuarioId
             }));
           }
@@ -75,13 +75,13 @@ export class HorariosService {
 
         // Sobrepõe com agendamentos (AGENDADO ou REALIZADO)
         agendamentos
-          .filter(a => a.status && ['AGENDADO', 'REALIZADO'].includes(a.status.toUpperCase()))
+          .filter(a => a.status && ['AGENDADO', 'REALIZADO'].includes(a.status))
           .forEach(a => {
             const dia = a.diaSemana?.toLowerCase();
             const hora = a.hora?.slice(0, 5);
             if (!dia || !hora) return;
 
-            const status = a.status!.toUpperCase();
+            const status = a.status!;
             if (!resultado[dia]) resultado[dia] = [];
             const idx = resultado[dia].findIndex(h => h.horario === hora);
             const usuarioId = (a as any).militar?.id;
