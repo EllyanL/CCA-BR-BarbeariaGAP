@@ -580,10 +580,9 @@ import { UserService } from 'src/app/services/user.service';
     }
         
 
-    getHorarioStatus(dia: string, hora: string): string {
+  getHorarioStatus(dia: string, hora: string): string {
       const diaKey = dia.toLowerCase();
-      const status = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.status;
-      return this.normalizeStatus(status);
+      return this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.status || 'DISPONIVEL';
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
@@ -894,19 +893,6 @@ import { UserService } from 'src/app/services/user.service';
         }
       });
     }
-
-  normalizeStatus(raw?: string): SlotHorario['status'] {
-    const status = raw?.toUpperCase();
-    switch (status) {
-      case 'AGENDADO':
-      case 'INDISPONIVEL':
-        return status;
-      case 'REALIZADO':
-        return 'AGENDADO';
-      default:
-        return 'DISPONIVEL';
-    }
-  }
 
   formatarStatus(texto: string): string {
     if (!texto) return '';
