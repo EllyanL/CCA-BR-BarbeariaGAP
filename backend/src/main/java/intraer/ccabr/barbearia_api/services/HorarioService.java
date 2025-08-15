@@ -14,6 +14,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.LocalDate;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -168,10 +172,33 @@ public class HorarioService {
             }
 
             dto.setStatus(normalizeStatus(status));
+
+            DayOfWeek diaSemana = parseDiaSemana(h.getDia());
+            LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
+            LocalDate dataSlot = hoje.with(TemporalAdjusters.nextOrSame(diaSemana));
+            LocalDateTime slotDateTime = LocalDateTime.of(dataSlot, LocalTime.parse(h.getHorario()));
+            LocalDateTime agora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
+            if (slotDateTime.isBefore(agora)) {
+                dto.setStatus("INDISPONIVEL");
+            }
+
             return dto;
         }).toList();
 
         return dtos.stream().collect(Collectors.groupingBy(HorarioDTO::getDia));
+    }
+
+    private DayOfWeek parseDiaSemana(String dia) {
+        return switch (dia.toLowerCase(Locale.ROOT)) {
+            case "segunda" -> DayOfWeek.MONDAY;
+            case "terça", "terca" -> DayOfWeek.TUESDAY;
+            case "quarta" -> DayOfWeek.WEDNESDAY;
+            case "quinta" -> DayOfWeek.THURSDAY;
+            case "sexta" -> DayOfWeek.FRIDAY;
+            case "sábado", "sabado" -> DayOfWeek.SATURDAY;
+            case "domingo" -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalArgumentException("Dia inválido: " + dia);
+        };
     }
     
 
