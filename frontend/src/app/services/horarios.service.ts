@@ -231,13 +231,17 @@ export class HorariosService {
   disponibilizarHorario(horario: string, dia: string, categoria: string): Observable<Horario> {
     const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
-    return this.http.post<Horario>(`${this.apiUrl}/disponibilizar`, horarioRequest, { headers });
+    return this.http
+      .post<Horario>(`${this.apiUrl}/disponibilizar`, horarioRequest, { headers })
+      .pipe(map(h => ({ ...h, status: this.normalizeStatus(h.status) })));
   }
 
   indisponibilizarHorario(horario: string, dia: string, categoria: string): Observable<Horario> {
     const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
-    return this.http.post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
+    return this.http
+      .post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers })
+      .pipe(map(h => ({ ...h, status: this.normalizeStatus(h.status) })));
   }
 
   alterarDisponibilidadeEmDias(horario: string, dias: string[], categoria: string, disponibilizar: boolean): Observable<Horario[]> {
@@ -246,14 +250,21 @@ export class HorariosService {
         ? this.disponibilizarHorario(horario, d, categoria)
         : this.indisponibilizarHorario(horario, d, categoria)
     );
+
     return forkJoin(requests).pipe(
-      tap(() => {
+      map(horarios =>
+        horarios.map(h => ({ ...h, status: this.normalizeStatus(h.status) }))
+      ),
+      tap(horarios => {
         const atuais = { ...this.horariosPorDiaSource.getValue() };
-        dias.forEach(d => {
-          const slot = atuais[d]?.find(s => s.horario === horario);
-          if (slot) {
-            slot.status = disponibilizar ? 'DISPONIVEL' : 'INDISPONIVEL';
+        horarios.forEach(h => {
+          const diaLower = h.dia.toLowerCase();
+          const lista = atuais[diaLower] ?? [];
+          const idx = lista.findIndex(s => s.horario === h.horario);
+          if (idx !== -1) {
+            lista[idx] = { ...lista[idx], status: h.status as SlotHorario['status'], usuarioId: h.usuarioId };
           }
+          atuais[diaLower] = lista;
         });
         this.horariosPorDiaSource.next(atuais);
       })
