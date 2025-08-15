@@ -3,6 +3,7 @@ package intraer.ccabr.barbearia_api.services;
 import intraer.ccabr.barbearia_api.dtos.HorarioDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.models.Horario;
+import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
@@ -131,20 +132,42 @@ public class HorarioService {
     
     
 
+    private String normalizeStatus(String raw) {
+        if (raw == null) {
+            return "DISPONIVEL";
+        }
+        String status = raw.toUpperCase();
+        return switch (status) {
+            case "AGENDADO", "INDISPONIVEL" -> status;
+            case "REALIZADO" -> "AGENDADO";
+            default -> "DISPONIVEL";
+        };
+    }
+
     public Map<String, List<HorarioDTO>> listarHorariosAgrupadosPorCategoria(String categoria) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
         List<Horario> horarios = horarioRepository.findByCategoria(categoria).stream()
                 .filter(h -> horarioDentroIntervalo(LocalTime.parse(h.getHorario()), config))
                 .collect(Collectors.toList());
+
         List<HorarioDTO> dtos = horarios.stream().map(h -> {
             HorarioDTO dto = new HorarioDTO(h);
-            agendamentoRepository
-                .findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
-                        LocalTime.parse(h.getHorario()),
-                        h.getDia(),
-                        h.getCategoria(),
-                        LocalDate.now())
-                .ifPresent(a -> dto.setUsuarioId(a.getMilitar().getId()));
+            String status = h.getStatus().name();
+
+            Optional<Agendamento> agendamento = agendamentoRepository
+                    .findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
+                            LocalTime.parse(h.getHorario()),
+                            h.getDia(),
+                            h.getCategoria(),
+                            LocalDate.now());
+            if (agendamento.isPresent()) {
+                dto.setUsuarioId(agendamento.get().getMilitar().getId());
+                if (!"CANCELADO".equalsIgnoreCase(agendamento.get().getStatus())) {
+                    status = "AGENDADO";
+                }
+            }
+
+            dto.setStatus(normalizeStatus(status));
             return dto;
         }).toList();
 

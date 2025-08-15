@@ -102,13 +102,13 @@
                     <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
                       <button *ngIf="agendamento" (click)="abrirModalAgendamento(agendamento)" mat-raised-button class="botao-hora-agendado">
                         <mat-icon>lock</mat-icon>
-                        {{ formatarStatus(normalizeStatus('AGENDADO')) }}
+                        {{ formatarStatus('AGENDADO') }}
                       </button>
                     </ng-container>
                   </ng-container>
 
                   <button *ngSwitchCase="'REALIZADO'" class="botao-hora-indisponivel" mat-raised-button disabled>
-                    {{ formatarStatus(normalizeStatus('REALIZADO')) }}
+                    {{ formatarStatus('AGENDADO') }}
                   </button>
 
 
@@ -128,7 +128,7 @@
                         [disabled]="!isAgendamentoDoMilitarLogado(agendamento) || !isAgendamentoDesmarcavel(agendamento)"
                         (click)="handleClick(agendamento)">
                   <mat-icon>lock</mat-icon>
-                  {{ formatarStatus(normalizeStatus('AGENDADO')) }}
+                  {{ formatarStatus('AGENDADO') }}
                 </button>
               </ng-container>
 
@@ -147,7 +147,7 @@
 
               <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'REALIZADO'"
                     class="horario-indisponivel">
-                {{ formatarStatus(normalizeStatus('REALIZADO')) }}
+                {{ formatarStatus('AGENDADO') }}
               </span>
             </ng-template>
               </div>

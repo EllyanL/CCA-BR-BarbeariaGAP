@@ -564,19 +564,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return list.find(h => (h?.horario || '').trim() === hh) || null;
   }
 
-  normalizeStatus(raw?: string): SlotHorario['status'] {
-    const status = raw?.toUpperCase();
-    switch (status) {
-      case 'AGENDADO':
-      case 'INDISPONIVEL':
-        return status;
-      case 'REALIZADO':
-        return 'AGENDADO';
-      default:
-        return 'DISPONIVEL';
-    }
-  }
-
   statusClass(status?: string) {
     switch ((status ?? '').toUpperCase()) {
       case 'DISPONIVEL':
