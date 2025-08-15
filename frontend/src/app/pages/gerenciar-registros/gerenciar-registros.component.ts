@@ -177,6 +177,15 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       doc.text(headerText, pageWidth / 2, 22, { align: 'center' });
 
       // Table with filtered rows
+      const tableBody = rows.map(r => [
+        this.formatarDataBR(r.data),
+        this.formatarHoraBR(r.hora),
+        r.militar?.postoGrad ?? '',
+        this.formatName(r.militar?.nomeDeGuerra),
+        this.formatarStatus(r.status ?? ''),
+        this.formatarCanceladoPor(r.canceladoPor)
+      ]);
+
       autoTable(doc, {
         startY: 30,
         head: [
@@ -189,14 +198,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
             'CANCELADO POR'
           ]
         ],
-        body: rows.map(r => [
-          this.formatarDataBR(r.data),
-          this.formatarHoraBR(r.hora),
-          r.militar?.postoGrad ?? '',
-          this.formatName(r.militar?.nomeDeGuerra),
-          this.formatarStatus(r.status ?? ''),
-          this.formatarCanceladoPor(r.canceladoPor)
-        ]),
+        body: tableBody,
         styles: { fontSize: 10, cellPadding: 3 },
         headStyles: { fillColor: [220, 220, 220] }
       });
