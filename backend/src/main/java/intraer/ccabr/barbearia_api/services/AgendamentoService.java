@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.ChronoUnit;
@@ -51,6 +52,7 @@ public class AgendamentoService {
     }
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final ZoneId ZONE_ID_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
     @Transactional
     public Agendamento saveAgendamento(Agendamento agendamento) {
@@ -84,7 +86,10 @@ public class AgendamentoService {
     public void cancelarAgendamento(Long id, String canceladoPor) {
         agendamentoRepository.findById(id).ifPresent(agendamento -> {
             LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-            if (agendamentoDateTime.isBefore(LocalDateTime.now().plusMinutes(30))) {
+            LocalDateTime limiteCancelamento = ZonedDateTime.now(ZONE_ID_SAO_PAULO)
+                .plusMinutes(30)
+                .toLocalDateTime();
+            if (agendamentoDateTime.isBefore(limiteCancelamento)) {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Desmarcação só permitida com 30 min de antecedência."
@@ -118,8 +123,11 @@ public class AgendamentoService {
 
     public boolean podeAgendarDataHora(LocalDate data, LocalTime hora) {
         LocalDateTime agendamentoDateTime = LocalDateTime.of(data, hora);
-        LocalDateTime agora = LocalDateTime.now().withSecond(0).withNano(0);
-        logger.debug("🌍 Zone ID do backend: {}", ZoneId.systemDefault());
+        LocalDateTime agora = ZonedDateTime.now(ZONE_ID_SAO_PAULO)
+            .withSecond(0)
+            .withNano(0)
+            .toLocalDateTime();
+        logger.debug("🌍 Zone ID do backend: {}", ZONE_ID_SAO_PAULO);
         logger.debug("⏱️ [DEBUG] Data/Hora do agendamento: {}", agendamentoDateTime);
         logger.debug("⏱️ [DEBUG] Data/Hora atual (ajustada): {}", agora);
     
@@ -128,8 +136,9 @@ public class AgendamentoService {
     }    
 
     public boolean isAgendamentoPassado(Agendamento agendamento) {
-        LocalDate dataAtual = LocalDate.now();
-        LocalTime horaAtual = LocalTime.now();  
+        ZonedDateTime agora = ZonedDateTime.now(ZONE_ID_SAO_PAULO);
+        LocalDate dataAtual = agora.toLocalDate();
+        LocalTime horaAtual = agora.toLocalTime();
     
         if (agendamento.getData().isBefore(dataAtual)) {
             return true;
@@ -293,11 +302,11 @@ public class AgendamentoService {
         ConfigHorario config = configHorarioService.buscarConfiguracao();
 
         // 1. Agendamento só é permitido a partir de segunda às horárioInicio configurado
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = ZonedDateTime.now(ZONE_ID_SAO_PAULO).toLocalDate();
         LocalDate segundaDaSemana = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getInicio());
 
-        if (LocalDateTime.now().isBefore(inicioDaSemana)) {
+        if (ZonedDateTime.now(ZONE_ID_SAO_PAULO).toLocalDateTime().isBefore(inicioDaSemana)) {
             throw new IllegalArgumentException(
                 "Agendamentos só são permitidos a partir de segunda às " +
                 config.getInicio().format(TIME_FORMATTER) + ".");
@@ -328,7 +337,7 @@ public class AgendamentoService {
         }
 
         LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-        if (agendamentoDateTime.isBefore(LocalDateTime.now().plusMinutes(15))) {
+        if (agendamentoDateTime.isBefore(ZonedDateTime.now(ZONE_ID_SAO_PAULO).plusMinutes(15).toLocalDateTime())) {
             throw new IllegalArgumentException("O agendamento deve ser feito com pelo menos 15 minutos de antecedência.");
         }
     
