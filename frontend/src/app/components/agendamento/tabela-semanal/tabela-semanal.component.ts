@@ -10,7 +10,6 @@ import { AuthService } from 'src/app/services/auth.service';
 import { DialogoAgendamentoComponent } from '../dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoAgendamentoRealizadoComponent } from '../dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 import { DialogoDetalhesAgendamentoComponent } from '../dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
-import { Horario } from 'src/app/models/horario';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,6 +20,12 @@ import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { ConfigHorarioService } from 'src/app/services/config-horario.service';
+
+interface SlotHorario {
+  horario: string;
+  status?: string;
+  usuarioId?: number;
+}
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -149,14 +154,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private aplicarJanelaHorarios(): void {
-    const inRange = (h: string) => {
-      const m = this.toMinutes(h);
+    const inRange = (horario: string) => {
+      const m = this.toMinutes(horario);
       return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
     };
-    this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(inRange);
+    this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(h => inRange(h));
     Object.keys(this.horariosPorDia).forEach(dia => {
-      const arr = this.horariosPorDia[dia] || [];
-      this.horariosPorDia[dia] = arr.filter(h => inRange(h.horario));
+      const list = this.horariosPorDia[dia] || [];
+      this.horariosPorDia[dia] = list.filter(slot => inRange(slot.horario));
     });
     this.cdr.detectChanges();
   }
@@ -557,40 +562,18 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return agendamento;
   }
 
-  getStatus(dia: string, hora: string): string {
-    const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
-    if (agendamento?.status) {
-      return agendamento.status.toUpperCase();
-    }
-
-    const diaSemanaFormatado = dia.split(' - ')[0].trim().toLowerCase();
-    return (
-      this.horariosPorDia[diaSemanaFormatado]?.find(h => h.horario === hora)?.status?.toUpperCase() ||
-      'INDISPONIVEL'
-    );
+  getSlot(dia: string, hora: string): SlotHorario | null {
+    const list = this.horariosPorDia?.[dia] || [];
+    const hh = (hora || '').trim();
+    return list.find(h => (h?.horario || '').trim() === hh) || null;
   }
 
-  getItem(dia: string, hora: string): Horario | null {
-    const diaFmt = dia.split(' - ')[0].trim().toLowerCase();
-    return (
-      this.horariosPorDia[diaFmt]?.find(h => h.horario === hora.trim()) as Horario | undefined
-    ) ?? null;
-  }
-
-  statusClass(status: string): string {
-    switch (status?.toUpperCase()) {
-      case 'DISPONIVEL':
-        return 'status-disponivel';
-      case 'AGENDADO':
-        return 'status-agendado';
-      case 'CANCELADO':
-        return 'status-cancelado';
-      case 'REALIZADO':
-        return 'status-realizado';
-      case 'INDISPONIVEL':
-        return 'status-indisponivel';
-      default:
-        return '';
+  statusClass(status?: string) {
+    switch ((status || '').toUpperCase()) {
+      case 'DISPONIVEL': return 'btn-disponivel';
+      case 'AGENDADO': return 'btn-agendado';
+      case 'INDISPONIVEL': return 'btn-indisponivel';
+      default: return 'btn-indisponivel';
     }
   }
 
