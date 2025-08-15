@@ -578,11 +578,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   statusClass(status?: string) {
-    switch (status) {
-      case 'DISPONIVEL': return 'btn-disponivel';
-      case 'AGENDADO': return 'btn-agendado';
-      case 'INDISPONIVEL': return 'btn-indisponivel';
-      default: return 'btn-indisponivel';
+    switch ((status ?? '').toUpperCase()) {
+      case 'DISPONIVEL':
+        return 'tabela-botao-disponivel';
+      case 'AGENDADO':
+        return 'botao-agendado';
+      case 'INDISPONIVEL':
+        return 'tabela-botao-indisponivel';
+      default:
+        return 'tabela-botao-indisponivel';
     }
   }
 
