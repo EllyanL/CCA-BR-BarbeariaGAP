@@ -120,9 +120,12 @@ public class AgendamentoController {
 
         agendamento.setMilitar(militar);
         agendamentoService.validarRegrasDeNegocio(agendamento);
-        Agendamento saved = agendamentoService.saveAgendamento(agendamento);
-        agendamentoService.marcarHorarioComoAgendado(saved);
-        return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
+        try {
+            Agendamento saved = agendamentoService.criarAgendamentoTransactional(agendamento);
+            return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
+        } catch (DataIntegrityViolationException e) {
+            return buildResponse("Horário indisponível", HttpStatus.CONFLICT);
+        }
     }
 
     @GetMapping
