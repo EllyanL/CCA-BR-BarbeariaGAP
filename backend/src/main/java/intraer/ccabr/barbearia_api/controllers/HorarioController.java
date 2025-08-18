@@ -9,6 +9,7 @@ import intraer.ccabr.barbearia_api.services.HorarioService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
@@ -127,11 +128,18 @@ public class HorarioController {
         return ResponseEntity.ok(horarioService.listarHorariosAgrupadosPorCategoria(categoria));
     }
 
-    @PutMapping("/status")
-    public ResponseEntity<HorarioDTO> alterarStatus(@RequestParam String dia,
-                                                    @RequestParam String horario,
-                                                    @RequestParam String categoria,
-                                                    @RequestParam HorarioStatus status) {
-        return ResponseEntity.ok(horarioService.alterarStatus(dia, horario, categoria, status));
+    @PutMapping("/{id}")
+    public ResponseEntity<HorarioDTO> alterarStatus(@PathVariable Long id,
+                                                    @RequestBody HorarioDTO horarioDTO) {
+        HorarioStatus status;
+        try {
+            status = HorarioStatus.valueOf(horarioDTO.getStatus().toUpperCase());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        HorarioDTO atualizado = horarioService.alterarStatus(id, status);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+                .body(atualizado);
     }
 }
