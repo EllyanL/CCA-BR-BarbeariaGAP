@@ -79,6 +79,24 @@
           <tr>
             <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia">
               {{ dia | uppercase }}
+              <ng-container *ngIf="isAdmin">
+                <button
+                  mat-icon-button
+                  color="primary"
+                  aria-label="Disponibilizar dia"
+                  (click)="disponibilizarDia(dia)"
+                >
+                  <mat-icon>check_circle</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  color="warn"
+                  aria-label="Indisponibilizar dia"
+                  (click)="indisponibilizarDia(dia)"
+                >
+                  <mat-icon>block</mat-icon>
+                </button>
+              </ng-container>
             </th>
           </tr>
         </thead>
