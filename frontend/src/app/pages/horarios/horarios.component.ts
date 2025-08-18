@@ -823,7 +823,21 @@ import { UserService } from 'src/app/services/user.service';
     
     handleClick(agendamento: Agendamento): void {
       if (this.isAgendamentoDoMilitarLogado(agendamento)) {
-        this.desmarcarAgendamento(agendamento);
+        const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
+          width: '400px',
+          data: {
+            id: agendamento.id,
+            militar: agendamento.militar,
+            dia: agendamento.diaSemana,
+            hora: agendamento.hora,
+          },
+        });
+
+        dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+          if (confirmado) {
+            this.desmarcarAgendamento(agendamento);
+          }
+        });
       }
     }
 
@@ -891,20 +905,20 @@ import { UserService } from 'src/app/services/user.service';
   abrirModalAgendamento(agendamento: Agendamento) {
     const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
       width: '400px',
-        data: {
-          id: agendamento.id,
-          militar: agendamento.militar,
-          dia: agendamento.diaSemana,
-          hora: agendamento.hora,
-        },
-      });
+      data: {
+        id: agendamento.id,
+        militar: agendamento.militar,
+        dia: agendamento.diaSemana,
+        hora: agendamento.hora,
+      },
+    });
 
-      dialogRef.afterClosed().subscribe((confirmado: boolean) => {
-        if (confirmado) {
-          this.carregarHorariosDaSemana();
-        }
-      });
-    }
+    dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+      if (confirmado) {
+        this.desmarcarAgendamento(agendamento);
+      }
+    });
+  }
 
   formatarStatus(texto: string): string {
     if (!texto) return '';
