@@ -24,7 +24,7 @@ describe('HorariosComponent', () => {
   let configService: jasmine.SpyObj<ConfiguracoesAgendamentoService>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias'], { horariosPorDia$: of({}) });
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'disponibilizarHorario', 'indisponibilizarHorario'], { horariosPorDia$: of({}) });
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos', 'createAgendamento']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
@@ -163,7 +163,7 @@ describe('HorariosComponent', () => {
     authService.getUsuarioAutenticado.and.returnValue({categoria: 'ADMIN'} as Militar);
       component.configuracao = {horarioInicio: '08:00', horarioFim: '18:00'};
     component.disponibilizarHorario('segunda', '07:00', 'GRADUADO');
-    expect(horariosService.alterarDisponibilidadeEmDias).not.toHaveBeenCalled();
+    expect(horariosService.disponibilizarHorario).not.toHaveBeenCalled();
     expect(snack.open).toHaveBeenCalled();
   });
 });
