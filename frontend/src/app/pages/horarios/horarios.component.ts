@@ -447,9 +447,9 @@ import { UserService } from 'src/app/services/user.service';
       this.validarHorario();
     }
 
-    disponibilizarHorario(dia: string, horario: string, categoria: string): void {
+    disponibilizarHorario(dia: string, horario: string, _categoria: string): void {
       const usuario = this.authService.getUsuarioAutenticado();
-      this.logger.log('Usuário autenticado:', usuario); // 👈 Adicione aqui
+      this.logger.log('Usuário autenticado:', usuario);
 
       const isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
       if (!isAdmin) {
@@ -461,86 +461,54 @@ import { UserService } from 'src/app/services/user.service';
         return;
       }
 
-      const diasAlvo = dia === 'todos' || this.diaSelecionado === 'todos' ? this.diasDaSemana : [dia];
+      const diaLower = dia.toLowerCase();
+      const slot = (this.horariosPorDia[diaLower] || []).find(s => s.horario === horario) as SlotHorario & { id: number };
+      if (!slot?.id) {
+        this.snackBar.open('Horário não encontrado.', 'Ciente', { duration: 3000 });
+        return;
+      }
 
-      this.horariosService
-        .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, true)
-        .subscribe({
-          next: horariosAtualizados => {
-            horariosAtualizados.forEach(h => {
-              const diaLower = h.dia.toLowerCase();
-              const lista = this.horariosPorDia[diaLower] ?? [];
-              const idx = lista.findIndex(s => s.horario === h.horario);
-              if (idx !== -1) {
-                lista[idx] = {
-                  ...lista[idx],
-                  status: h.status as SlotHorario['status'],
-                  usuarioId: h.usuarioId,
-                };
-              } else {
-                lista.push({
-                  horario: h.horario,
-                  status: h.status as SlotHorario['status'],
-                  usuarioId: h.usuarioId,
-                });
-              }
-              this.horariosPorDia[diaLower] = lista;
-            });
-            this.cdr.detectChanges();
-            this.snackBar.open('Horário disponibilizado', 'Ciente', { duration: 3000 });
-          },
-          error: () => {
-            this.snackBar.open(
-              'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.',
-              'Ciente',
-              { duration: 5000 }
-            );
-          },
-        });
+      this.horariosService.alterarStatusHorario(slot.id, 'DISPONIVEL').subscribe({
+        next: () => {
+          this.carregarHorariosDaSemana();
+          this.snackBar.open('Status atualizado com sucesso', 'Ciente', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open(
+            'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.',
+            'Ciente',
+            { duration: 5000 }
+          );
+        }
+      });
     }
 
     indisponibilizarHorario(
       dia: string,
       horario: string,
-      categoria: string
+      _categoria: string
     ): void {
-      const diasAlvo = dia === 'todos' || this.diaSelecionado === 'todos' ? this.diasDaSemana : [dia];
+      const diaLower = dia.toLowerCase();
+      const slot = (this.horariosPorDia[diaLower] || []).find(s => s.horario === horario) as SlotHorario & { id: number };
+      if (!slot?.id) {
+        this.snackBar.open('Horário não encontrado.', 'Ciente', { duration: 3000 });
+        return;
+      }
 
-      this.horariosService
-        .alterarDisponibilidadeEmDias(horario, diasAlvo, categoria, false)
-        .subscribe({
-          next: horariosAtualizados => {
-            horariosAtualizados.forEach(h => {
-              const diaLower = h.dia.toLowerCase();
-              const lista = this.horariosPorDia[diaLower] ?? [];
-              const idx = lista.findIndex(s => s.horario === h.horario);
-              if (idx !== -1) {
-                lista[idx] = {
-                  ...lista[idx],
-                  status: h.status as SlotHorario['status'],
-                  usuarioId: h.usuarioId,
-                };
-              } else {
-                lista.push({
-                  horario: h.horario,
-                  status: h.status as SlotHorario['status'],
-                  usuarioId: h.usuarioId,
-                });
-              }
-              this.horariosPorDia[diaLower] = lista;
-            });
-            this.cdr.detectChanges();
-            this.snackBar.open('Horário indisponibilizado', 'Ciente', { duration: 3000 });
-          },
-          error: (error: any) => {
-            this.logger.error('Erro ao indisponibilizar horário:', error);
-            this.snackBar.open(
-              'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.',
-              'Ciente',
-              { duration: 5000 }
-            );
-          },
-        });
+      this.horariosService.alterarStatusHorario(slot.id, 'INDISPONIVEL').subscribe({
+        next: () => {
+          this.carregarHorariosDaSemana();
+          this.snackBar.open('Status atualizado com sucesso', 'Ciente', { duration: 3000 });
+        },
+        error: (error: any) => {
+          this.logger.error('Erro ao indisponibilizar horário:', error);
+          this.snackBar.open(
+            'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.',
+            'Ciente',
+            { duration: 5000 }
+          );
+        }
+      });
     }
 
     adicionarHorarioIndividual(dia: string, horario: string, categoria: string): void { //Adiciona horário fixo na base
