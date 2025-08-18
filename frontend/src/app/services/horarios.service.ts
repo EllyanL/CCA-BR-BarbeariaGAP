@@ -280,6 +280,36 @@ export class HorariosService {
       .pipe(map(h => ({ ...h, status: this.normalizeStatus(h.status) })));
   }
 
+  alterarStatusHorario(horarioId: number, status: 'DISPONIVEL' | 'INDISPONIVEL'): Observable<Horario> {
+    const headers = this.getAuthHeaders();
+    return this.http
+      .put<Horario>(`${this.apiUrl}/${horarioId}/status`, { status }, { headers })
+      .pipe(
+        map(h => ({ ...h, status: this.normalizeStatus(h.status) })),
+        tap(h => {
+          const atuais = { ...this.horariosPorDiaSource.getValue() };
+          const diaLower = h.dia?.toLowerCase();
+          if (diaLower && atuais[diaLower]) {
+            const lista = [...atuais[diaLower]];
+            const idx = lista.findIndex(s => s.horario === h.horario);
+            if (idx !== -1) {
+              lista[idx] = {
+                ...lista[idx],
+                status: h.status as SlotHorario['status'],
+                usuarioId: h.usuarioId
+              };
+              atuais[diaLower] = lista;
+              this.horariosPorDiaSource.next(atuais);
+            }
+          }
+        }),
+        catchError((error: HttpErrorResponse) => {
+          this.logger.error('Erro ao alterar status do horário:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   alterarDisponibilidadeEmDias(horario: string, dias: string[], categoria: string, disponibilizar: boolean): Observable<Horario[]> {
     const requests = dias.map(d =>
       disponibilizar
