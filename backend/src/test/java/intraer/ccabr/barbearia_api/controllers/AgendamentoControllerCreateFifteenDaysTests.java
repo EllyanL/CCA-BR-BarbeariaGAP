@@ -14,6 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -72,7 +74,8 @@ class AgendamentoControllerCreateFifteenDaysTests {
         when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any()))
             .thenReturn(false);
 
-        doThrow(new IllegalArgumentException("Você só pode agendar uma vez a cada 15 dias."))
+        doThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Você só pode agendar novamente após 15 dias do último corte."))
             .when(agendamentoService).validarRegrasDeNegocio(any());
 
         ObjectMapper mapper = new ObjectMapper();
@@ -81,8 +84,8 @@ class AgendamentoControllerCreateFifteenDaysTests {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/agendamentos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-                .andExpect(MockMvcResultMatchers.status().isConflict())
-                .andExpect(MockMvcResultMatchers.content().string(
-                        "Você só pode marcar um corte a cada 15 dias."));
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value("Você só pode agendar novamente após 15 dias do último corte."));
     }
 }
