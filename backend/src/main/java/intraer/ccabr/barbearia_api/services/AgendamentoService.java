@@ -119,19 +119,22 @@ public class AgendamentoService {
     public void cancelarAgendamento(Long id, String canceladoPor) {
         agendamentoRepository.findById(id).ifPresent(agendamento -> {
             LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-            LocalDateTime limiteCancelamento = ZonedDateTime.now(ZONE_ID_SAO_PAULO)
-                .plusMinutes(30)
-                .toLocalDateTime();
-            if (agendamentoDateTime.isBefore(limiteCancelamento)) {
-                throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Desmarcação só permitida com 30 min de antecedência."
-                );
+            boolean isAdmin = "ADMIN".equalsIgnoreCase(canceladoPor);
+
+            if (!isAdmin) {
+                LocalDateTime limiteCancelamento = ZonedDateTime.now(ZONE_ID_SAO_PAULO)
+                    .plusMinutes(30)
+                    .toLocalDateTime();
+                if (agendamentoDateTime.isBefore(limiteCancelamento)) {
+                    throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Desmarcação só permitida com 30 min de antecedência."
+                    );
+                }
             }
 
-            agendamento.setStatus("CANCELADO");
-            String tipoCancelador = "ADMIN".equalsIgnoreCase(canceladoPor) ? "ADMIN" : "USUARIO";
-            agendamento.setCanceladoPor(tipoCancelador);
+            agendamento.setStatus(isAdmin ? "ADMIN_CANCELADO" : "CANCELADO");
+            agendamento.setCanceladoPor(isAdmin ? "ADMIN" : "USUARIO");
             agendamentoRepository.save(agendamento);
             marcarHorarioComoDisponivel(agendamento);
         });
