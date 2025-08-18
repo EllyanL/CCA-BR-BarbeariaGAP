@@ -209,6 +209,17 @@ public class HorarioService {
         try {
             Horario h = horarioRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Horário não encontrado para o ID: " + id));
+
+            boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+                    LocalTime.parse(h.getHorario()),
+                    h.getDia(),
+                    h.getCategoria()
+            );
+
+            if (hasAgendamentoAtivo) {
+                throw new IllegalArgumentException("Já existe agendamento ativo para este horário.");
+            }
+
             h.setStatus(status);
             return new HorarioDTO(horarioRepository.save(h));
         } catch (IllegalArgumentException e) {
