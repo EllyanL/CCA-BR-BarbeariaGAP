@@ -84,6 +84,7 @@ export class HorariosService {
           if (Array.isArray(lista)) {
             resultado[dia] = (resultado[dia] ?? []).concat(
               lista.map((h: any) => ({
+                id: h.id,
                 horario: h.horario,
                 status: this.normalizeStatus(h.status),
                 usuarioId: h.usuarioId
@@ -296,7 +297,8 @@ export class HorariosService {
               lista[idx] = {
                 ...lista[idx],
                 status: h.status as SlotHorario['status'],
-                usuarioId: h.usuarioId
+                usuarioId: h.usuarioId,
+                id: h.id
               };
               atuais[diaLower] = lista;
               this.horariosPorDiaSource.next(atuais);

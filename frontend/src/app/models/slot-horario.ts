@@ -1,4 +1,5 @@
 export interface SlotHorario {
+  id?: number;
   horario: string;
   status: 'DISPONIVEL' | 'AGENDADO' | 'INDISPONIVEL';
   usuarioId?: number | null;
