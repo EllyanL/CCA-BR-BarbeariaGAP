@@ -9,6 +9,7 @@ import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -202,11 +203,21 @@ public class HorarioService {
     }
     
 
-    public HorarioDTO alterarStatus(String dia, String horario, String categoria, HorarioStatus status) {
-        Horario h = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria)
-                .orElseThrow(() -> new RuntimeException("Horário não encontrado."));
-        h.setStatus(status);
-        return new HorarioDTO(horarioRepository.save(h));
+    @Transactional
+    @CacheEvict(value = "horarios", key = "#id")
+    public HorarioDTO alterarStatus(Long id, HorarioStatus status) {
+        try {
+            Horario h = horarioRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Horário não encontrado para o ID: " + id));
+            h.setStatus(status);
+            return new HorarioDTO(horarioRepository.save(h));
+        } catch (IllegalArgumentException e) {
+            logger.error("Erro ao alterar status do horário: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logger.error("Erro inesperado ao alterar status do horário", e);
+            throw new RuntimeException("Erro ao alterar status do horário", e);
+        }
     }
 
     public List<Horario> adicionarHorarioBaseParaTodos(String novoHorario) {
