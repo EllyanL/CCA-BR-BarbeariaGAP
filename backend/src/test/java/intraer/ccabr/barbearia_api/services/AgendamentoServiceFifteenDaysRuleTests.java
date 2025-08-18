@@ -18,6 +18,7 @@ import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import org.springframework.web.server.ResponseStatusException;
 
 class AgendamentoServiceFifteenDaysRuleTests {
     private AgendamentoService service;
@@ -50,7 +51,7 @@ class AgendamentoServiceFifteenDaysRuleTests {
         when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.of(ultimo));
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+        assertThrows(ResponseStatusException.class, () -> service.validarRegrasDeNegocio(ag));
     }
 
     @Test

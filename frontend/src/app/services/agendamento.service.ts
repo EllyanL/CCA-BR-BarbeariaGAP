@@ -64,10 +64,7 @@ export class AgendamentoService {
       tap({
         error: error => this.logger.error('❌ Erro no createAgendamento():', error)
       }),
-      catchError(error => {
-        const parsed = error?.error?.message || error?.error || error.message || error;
-        return throwError(() => parsed);
-      })
+      catchError(error => throwError(() => error))
     );
   }
   

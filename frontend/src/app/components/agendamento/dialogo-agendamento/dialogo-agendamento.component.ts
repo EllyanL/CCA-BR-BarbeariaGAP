@@ -256,20 +256,8 @@ import { Subscription } from 'rxjs';
           error => {
             this.logger.error('Erro ao criar agendamento:', error);
 
-            let message = this.errorMessages.AGENDAMENTO_CREATE_ERROR;
-
-            if (error.error?.code === 'FORA_DA_JANELA_PERMITIDA') {
-              message = 'Agendamentos são permitidos entre (Início + 10min) e (Fim − 30min).';
-            } else {
-              const backendMsg: string | undefined = error.error?.mensagem || error.error?.message;
-              if (backendMsg) {
-                if (backendMsg.toLowerCase().includes('15 dias')) {
-                  message = this.errorMessages.AGENDAMENTO_INTERVAL_ERROR;
-                } else {
-                  message = backendMsg;
-                }
-              }
-            }
+            const message = error?.error?.message || error?.error ||
+              this.errorMessages.AGENDAMENTO_CREATE_ERROR;
 
             this.errorMessage = message;
             this.snackBar.open(message, 'OK', { duration: 5000 });

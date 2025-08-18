@@ -15,6 +15,7 @@ import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import org.springframework.web.server.ResponseStatusException;
 
 class AgendamentoServiceTimeWindowTests {
     private AgendamentoService service;
@@ -45,7 +46,7 @@ class AgendamentoServiceTimeWindowTests {
         when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+        assertThrows(ResponseStatusException.class, () -> service.validarRegrasDeNegocio(ag));
     }
 
     @Test
@@ -62,7 +63,7 @@ class AgendamentoServiceTimeWindowTests {
         when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+        assertThrows(ResponseStatusException.class, () -> service.validarRegrasDeNegocio(ag));
     }
 
     @Test
@@ -79,6 +80,6 @@ class AgendamentoServiceTimeWindowTests {
         when(repo.findUltimoAgendamentoBySaram("123")).thenReturn(Optional.empty());
         when(repo.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> service.validarRegrasDeNegocio(ag));
+        assertThrows(ResponseStatusException.class, () -> service.validarRegrasDeNegocio(ag));
     }
 }

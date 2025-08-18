@@ -343,9 +343,11 @@ public class AgendamentoService {
         LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getInicio());
 
         if (ZonedDateTime.now(ZONE_ID_SAO_PAULO).toLocalDateTime().isBefore(inicioDaSemana)) {
-            throw new IllegalArgumentException(
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
                 "Agendamentos só são permitidos a partir de segunda às " +
-                config.getInicio().format(TIME_FORMATTER) + ".");
+                config.getInicio().format(TIME_FORMATTER) + "."
+            );
         }
 
         // 2. Horários válidos somente de segunda a sexta entre horárioInicio e horárioFim configurados
@@ -355,9 +357,11 @@ public class AgendamentoService {
         LocalTime fim = config.getFim();
 
         if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY) {
-            throw new IllegalArgumentException(
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
                 "Agendamentos são permitidos apenas de segunda a sexta das " +
-                inicio.format(TIME_FORMATTER) + " às " + fim.format(TIME_FORMATTER) + ".");
+                inicio.format(TIME_FORMATTER) + " às " + fim.format(TIME_FORMATTER) + "."
+            );
         }
 
         LocalTime limiteInicial = inicio.plusMinutes(10);
@@ -369,18 +373,24 @@ public class AgendamentoService {
 
         // bloqueia agendamentos em datas/horas já passadas
         if (!podeAgendarDataHora(agendamento.getData(), agendamento.getHora())) {
-            throw new IllegalArgumentException("Não é possível agendar horários passados.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar horários passados.");
         }
 
         LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
         if (agendamentoDateTime.isBefore(ZonedDateTime.now(ZONE_ID_SAO_PAULO).plusMinutes(15).toLocalDateTime())) {
-            throw new IllegalArgumentException("O agendamento deve ser feito com pelo menos 15 minutos de antecedência.");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "O agendamento deve ser feito com pelo menos 15 minutos de antecedência."
+            );
         }
     
         
         
         if (!podeAgendar15Dias(agendamento.getMilitar().getSaram(), agendamento.getData())) {
-            throw new IllegalArgumentException("Você só pode agendar uma vez a cada 15 dias.");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Você só pode agendar novamente após 15 dias do último corte."
+            );
         }
         
     
@@ -392,7 +402,7 @@ public class AgendamentoService {
             "CANCELADO");
     
         if (jaExiste) {
-            throw new IllegalArgumentException("Este horário já está agendado.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este horário já está agendado.");
         }
     }
     

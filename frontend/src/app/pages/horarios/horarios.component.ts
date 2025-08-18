@@ -776,29 +776,8 @@ import { UserService } from 'src/app/services/user.service';
         },
         error: (err: any) => {
           this.logger.error('Erro ao agendar:', err);
-          let message = 'Não foi possível realizar o agendamento. Tente novamente.';
-
-          if (err?.error?.code === 'FORA_DA_JANELA_PERMITIDA') {
-            message = 'Agendamentos são permitidos entre (Início + 10min) e (Fim − 30min).';
-          } else {
-            const backendMsg = err?.error?.message || err?.error || err?.message;
-            switch (backendMsg) {
-              case 'Horário indisponível':
-                message = 'Horário indisponível. Escolha outro horário.';
-                break;
-              case 'Não é possível agendar horários passados':
-                message = 'Não é possível agendar horários passados.';
-                break;
-              case 'Você só pode agendar uma vez a cada 15 dias':
-                message = 'Você só pode agendar uma vez a cada 15 dias.';
-                break;
-              default:
-                if (backendMsg) {
-                  message = backendMsg;
-                }
-            }
-          }
-
+          const message = err?.error?.message || err?.error || err?.message ||
+            'Não foi possível realizar o agendamento. Tente novamente.';
           this.snackBar.open(message, 'Ciente', { duration: 5000 });
         }
       });
