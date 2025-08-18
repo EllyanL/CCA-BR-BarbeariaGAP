@@ -250,7 +250,8 @@ import { Subscription } from 'rxjs';
             this.logger.log('Agendamento criado:', response);
             this.errorMessage = "";
             this.militar = response.militar || this.militar;
-            this.dialogRef.close(response);
+            this.snackBar.open('Agendamento realizado', 'Ciente', { duration: 3000 });
+            this.dialogRef.close({ sucesso: true, payload: response });
           },
           error => {
             this.logger.error('Erro ao criar agendamento:', error);
