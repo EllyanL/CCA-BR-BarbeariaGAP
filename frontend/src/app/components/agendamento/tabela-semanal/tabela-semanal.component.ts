@@ -330,14 +330,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.logger.error('Erro ao buscar dados do militar:', error);
         return of(null);
       })
-    ).subscribe((result: { sucesso?: boolean; payload?: Agendamento } | null) => {
+    ).subscribe((result: { sucesso?: boolean; payload?: Agendamento; mensagem?: string } | null) => {
       if (result?.sucesso && result.payload) {
         const agendamento = result.payload;
         this.logger.log('Dados recebidos do diálogo:', agendamento);
         this.agendamentos.push(agendamento);
         this.agendamentos = [...this.agendamentos];
         this.logger.log('Agendamentos atualizados:', this.agendamentos);
-        this.saveAgendamentos();
+
         if (this.horariosPorDia[diaSemanaFormatado]) {
           const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === hora);
           if (horarioIndex !== -1) {
@@ -346,6 +346,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
             this.horariosPorDia = { ...this.horariosPorDia };
           }
         }
+
+        this.saveAgendamentos();
+      } else if (result && result.sucesso === false) {
+        const message = (result as any).mensagem || (result as any).message || 'Falha ao realizar agendamento.';
+        this.snackBar.open(message, 'Ciente', { duration: 3000 });
       }
     });
   }
