@@ -295,7 +295,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return this.diasComData[index]; // Exemplo: "sexta - 07/06"
   }
   
-  agendarCorte(diaSemana: string, hora: string) {
+  abrirDialogoAgendamento(diaSemana: string, hora: string) {
     const diaSemanaFormatado = diaSemana.split(' - ')[0].trim().toLowerCase();
     const horarioDisponivel = this.horariosPorDia[diaSemanaFormatado]?.some(
       h => h.horario === hora && h.status === 'DISPONIVEL'
@@ -348,6 +348,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         this.saveAgendamentos();
+        // Recarrega os horários para refletir o novo agendamento
+        this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe();
       } else if (result && result.sucesso === false) {
         const message = (result as any).mensagem || (result as any).message || 'Falha ao realizar agendamento.';
         this.snackBar.open(message, 'Ciente', { duration: 3000 });

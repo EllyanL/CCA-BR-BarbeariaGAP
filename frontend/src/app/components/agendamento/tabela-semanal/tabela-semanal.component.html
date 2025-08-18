@@ -32,7 +32,7 @@
                 [disabled]="slot.status !== 'DISPONIVEL'"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
                 [ngClass]="statusClass(slot.status)"
-                (click)="agendarCorte(diasComData[i], hora)"
+                (click)="abrirDialogoAgendamento(diasComData[i], hora)"
               >
                 {{ formatarStatus(slot.status) }}
               </button>

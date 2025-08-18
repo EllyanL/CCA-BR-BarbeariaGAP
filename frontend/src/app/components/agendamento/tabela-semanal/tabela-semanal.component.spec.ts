@@ -67,7 +67,7 @@ describe('TabelaSemanalComponent', () => {
     component.horariosBaseSemana = [hora];
     component.horariosPorDia = { segunda: [{ horario: hora, status: 'DISPONIVEL' }] } as any;
 
-    component.agendarCorte(component.diasComData[0], hora);
+    component.abrirDialogoAgendamento(component.diasComData[0], hora);
 
     expect(snackSpy.open).toHaveBeenCalled();
     expect(dialogSpy.open).not.toHaveBeenCalled();
