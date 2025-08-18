@@ -369,11 +369,27 @@ public class HorarioService {
                 LocalTime hora = LocalTime.parse(h);
                 validarHorarioDentroIntervalo(hora);
                 validarIncrementoMeiaHora(hora);
-                Horario horarioEntity = horarioRepository
-                        .findByDiaAndHorarioAndCategoria(dia, h, categoria)
-                        .orElseGet(() -> new Horario(dia, h, categoria, HorarioStatus.INDISPONIVEL));
-                horarioEntity.setStatus(HorarioStatus.INDISPONIVEL);
-                afetados.add(horarioRepository.save(horarioEntity));
+
+                boolean agendado = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+                        hora,
+                        dia,
+                        categoria);
+                if (agendado) {
+                    // Se já houver agendamento, ignoramos este horário
+                    continue;
+                }
+
+                Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(dia, h, categoria);
+                if (existente.isPresent()) {
+                    Horario horarioEntity = existente.get();
+                    if (horarioEntity.getStatus() != HorarioStatus.INDISPONIVEL) {
+                        horarioEntity.setStatus(HorarioStatus.INDISPONIVEL);
+                        afetados.add(horarioRepository.save(horarioEntity));
+                    }
+                } else {
+                    Horario novoHorario = new Horario(dia, h, categoria, HorarioStatus.INDISPONIVEL);
+                    afetados.add(horarioRepository.save(novoHorario));
+                }
             } catch (Exception e) {
                 // Ignora erros de horários já processados ou inexistentes
                 logger.warn("Falha ao indisponibilizar horário {} em {}: {}", h, dia, e.getMessage());
