@@ -284,7 +284,8 @@ export class HorariosService {
   alterarStatusHorario(horarioId: number, status: 'DISPONIVEL' | 'INDISPONIVEL'): Observable<Horario> {
     const headers = this.getAuthHeaders();
     return this.http
-      .put<Horario>(`${this.apiUrl}/${horarioId}/status`, { status }, { headers })
+      // Ajustado para usar o endpoint `/horarios/{id}` sem o sufixo `/status`
+      .put<Horario>(`${this.apiUrl}/${horarioId}`, { status }, { headers })
       .pipe(
         map(h => ({ ...h, status: this.normalizeStatus(h.status) })),
         tap(h => {
