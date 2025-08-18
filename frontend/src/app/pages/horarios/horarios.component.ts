@@ -447,10 +447,8 @@ import { UserService } from 'src/app/services/user.service';
       this.validarHorario();
     }
 
-    disponibilizarHorario(dia: string, horario: string, _categoria: string): void {
+    disponibilizarHorario(dia: string, horario: string, categoria: string): void {
       const usuario = this.authService.getUsuarioAutenticado();
-      this.logger.log('Usuário autenticado:', usuario);
-
       const isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
       if (!isAdmin) {
         this.snackBar.open(
@@ -461,52 +459,39 @@ import { UserService } from 'src/app/services/user.service';
         return;
       }
 
-      const diaLower = dia.toLowerCase();
-      const slot = (this.horariosPorDia[diaLower] || []).find(s => s.horario === horario) as SlotHorario & { id: number };
-      if (!slot?.id) {
-        this.snackBar.open('Horário não encontrado.', 'Ciente', { duration: 3000 });
-        return;
+      if (this.configuracao) {
+        const inicio = this.toMinutes(this.configuracao.horarioInicio);
+        const fim = this.toMinutes(this.configuracao.horarioFim);
+        const horaMin = this.toMinutes(horario);
+        if (horaMin < inicio || horaMin > fim) {
+          this.snackBar.open('Horário fora da configuração permitida.', 'Ciente', { duration: 3000 });
+          return;
+        }
       }
 
-      this.horariosService.alterarStatusHorario(slot.id, 'DISPONIVEL').subscribe({
+      this.horariosService.disponibilizarHorario(dia, horario, categoria).subscribe({
         next: () => {
           this.carregarHorariosDaSemana();
-          this.snackBar.open('Status atualizado com sucesso', 'Ciente', { duration: 3000 });
+          this.snackBar.open('Horário disponibilizado com sucesso.', 'Ciente', { duration: 3000 });
         },
-        error: () => {
-          this.snackBar.open(
-            'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.',
-            'Ciente',
-            { duration: 5000 }
-          );
+        error: (error: any) => {
+          const mensagem = error?.error?.mensagem || error?.error?.message ||
+            'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.';
+          this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
         }
       });
     }
 
-    indisponibilizarHorario(
-      dia: string,
-      horario: string,
-      _categoria: string
-    ): void {
-      const diaLower = dia.toLowerCase();
-      const slot = (this.horariosPorDia[diaLower] || []).find(s => s.horario === horario) as SlotHorario & { id: number };
-      if (!slot?.id) {
-        this.snackBar.open('Horário não encontrado.', 'Ciente', { duration: 3000 });
-        return;
-      }
-
-      this.horariosService.alterarStatusHorario(slot.id, 'INDISPONIVEL').subscribe({
+    indisponibilizarHorario(dia: string, horario: string, categoria: string): void {
+      this.horariosService.indisponibilizarHorario(dia, horario, categoria).subscribe({
         next: () => {
           this.carregarHorariosDaSemana();
-          this.snackBar.open('Status atualizado com sucesso', 'Ciente', { duration: 3000 });
+          this.snackBar.open('Horário indisponibilizado com sucesso.', 'Ciente', { duration: 3000 });
         },
         error: (error: any) => {
-          this.logger.error('Erro ao indisponibilizar horário:', error);
-          this.snackBar.open(
-            'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.',
-            'Ciente',
-            { duration: 5000 }
-          );
+          const mensagem = error?.error?.mensagem || error?.error?.message ||
+            'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.';
+          this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
         }
       });
     }

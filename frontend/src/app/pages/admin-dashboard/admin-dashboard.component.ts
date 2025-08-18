@@ -160,7 +160,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
           this.dataSource.data = this.recent;
           this.applyFilters();
         }
-        this.horariosService.disponibilizarHorario(a.hora.slice(0,5), a.diaSemana, a.categoria)
+        this.horariosService.disponibilizarHorario(a.diaSemana, a.hora.slice(0,5), a.categoria)
           .subscribe({
             next: () => {
               this.horariosService.carregarHorariosDaSemana(a.categoria).subscribe({
