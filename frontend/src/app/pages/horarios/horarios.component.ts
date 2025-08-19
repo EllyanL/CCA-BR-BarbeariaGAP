@@ -9,7 +9,6 @@ import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
-import { ConfigHorarioService } from '../../services/config-horario.service';
 import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -71,8 +70,7 @@ import { UserService } from 'src/app/services/user.service';
       private userService: UserService,
       private serverTimeService: ServerTimeService,
       private logger: LoggingService,
-      private configuracoesService: ConfiguracoesAgendamentoService,
-      private configHorarioService: ConfigHorarioService
+      private configuracoesService: ConfiguracoesAgendamentoService
     ) {}
 
     private saveAgendamentos(): void {
@@ -104,11 +102,11 @@ import { UserService } from 'src/app/services/user.service';
       return h * 60 + m;
     }
 
-    private carregarConfigHorario(): void {
-      this.configHorarioService.get().subscribe({
-        next: ({ inicio, fim }) => {
-          this.inicioJanelaMin = this.toMinutes(inicio);
-          this.fimJanelaMin = this.toMinutes(fim);
+    private carregarConfiguracao(): void {
+      this.configuracoesService.getConfig().subscribe({
+        next: ({ horarioInicio, horarioFim }) => {
+          this.inicioJanelaMin = this.toMinutes(horarioInicio);
+          this.fimJanelaMin = this.toMinutes(horarioFim);
           this.inicioAgendavelMin = this.inicioJanelaMin + 10;
           this.fimAgendavelMin = this.fimJanelaMin - 30;
           this.aplicarJanelaHorarios();
@@ -145,10 +143,10 @@ import { UserService } from 'src/app/services/user.service';
       this.cdr.detectChanges();
       const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
-      this.carregarConfigHorario();
-      this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(cat => {
+      this.carregarConfiguracao();
+      this.recarregarGradeSub = this.configuracoesService.recarregarGrade$.subscribe(cat => {
         if (cat === this.categoriaSelecionada) {
-          this.carregarConfigHorario();
+          this.carregarConfiguracao();
           this.carregarHorariosBase();
           this.carregarHorariosDaSemana();
         }

@@ -1,6 +1,7 @@
 package intraer.ccabr.barbearia_api.services;
 
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
+import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.ConfiguracaoAgendamentoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,12 @@ class ConfiguracaoAgendamentoServiceTests {
     @Autowired
     private ConfiguracaoAgendamentoRepository repository;
 
+    @Autowired
+    private AgendamentoRepository agendamentoRepository;
+
     @Test
     void atualizarPersisteERefleteNovosHorarios() {
-        ConfiguracaoAgendamentoService service = new ConfiguracaoAgendamentoService(repository);
+        ConfiguracaoAgendamentoService service = new ConfiguracaoAgendamentoService(repository, agendamentoRepository);
 
         // Fallback defaults
         ConfiguracaoAgendamento fallback = service.buscarConfiguracao();
