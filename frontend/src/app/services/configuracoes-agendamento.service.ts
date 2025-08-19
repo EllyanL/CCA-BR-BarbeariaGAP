@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface ConfiguracaoAgendamento {
@@ -13,6 +13,8 @@ export interface ConfiguracaoAgendamento {
 })
 export class ConfiguracoesAgendamentoService {
   private readonly apiUrl = `${environment.apiUrl}/configuracoes`;
+  private reloadSubject = new Subject<string>();
+  recarregarGrade$ = this.reloadSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -22,6 +24,10 @@ export class ConfiguracoesAgendamentoService {
 
   updateConfig(config: ConfiguracaoAgendamento): Observable<ConfiguracaoAgendamento> {
     return this.http.put<ConfiguracaoAgendamento>(this.apiUrl, config);
+  }
+
+  emitirRecarregarGrade(categoria: string): void {
+    this.reloadSubject.next(categoria);
   }
 }
 

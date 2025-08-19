@@ -19,7 +19,6 @@ import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
-import { ConfigHorarioService } from 'src/app/services/config-horario.service';
 
 
 @Component({
@@ -94,8 +93,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     private authService: AuthService,
     private logger: LoggingService,
     private cdr: ChangeDetectorRef,
-    private configuracoesService: ConfiguracoesAgendamentoService,
-    private configHorarioService: ConfigHorarioService
+    private configuracoesService: ConfiguracoesAgendamentoService
   ) {}
 
   private saveAgendamentos(): void {
@@ -135,11 +133,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return h * 60 + m;
   }
 
-  private carregarConfigHorario(): void {
-    this.configHorarioService.get().subscribe({
-      next: ({ inicio, fim }) => {
-        this.inicioJanelaMin = this.toMinutes(inicio);
-        this.fimJanelaMin = this.toMinutes(fim);
+  private carregarConfiguracao(): void {
+    this.configuracoesService.getConfig().subscribe({
+      next: ({ horarioInicio, horarioFim }) => {
+        this.inicioJanelaMin = this.toMinutes(horarioInicio);
+        this.fimJanelaMin = this.toMinutes(horarioFim);
         this.inicioAgendavelMin = this.inicioJanelaMin + 10;
         this.fimAgendavelMin = this.fimJanelaMin - 30;
         this.aplicarJanelaHorarios();
@@ -173,10 +171,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       this.storageKey = `agendamentos-${usuario.cpf}`;
       this.cdr.detectChanges();
     }
-    this.carregarConfigHorario();
-    this.recarregarGradeSub = this.configHorarioService.recarregarGrade$.subscribe(cat => {
+    this.carregarConfiguracao();
+    this.recarregarGradeSub = this.configuracoesService.recarregarGrade$.subscribe(cat => {
       if (cat === this.categoria) {
-        this.carregarConfigHorario();
+        this.carregarConfiguracao();
         this.loadHorariosBase();
         this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
           next: h => {
@@ -272,7 +270,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     } else if (this.isCurrentRoute('/oficiais')) {
       this.categoria = 'OFICIAL';
     }
-    this.carregarConfigHorario();
+    this.carregarConfiguracao();
     this.horariosService.startPollingHorarios(this.categoria);
     this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
       next: horarios => {
