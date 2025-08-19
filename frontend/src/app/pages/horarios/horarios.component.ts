@@ -72,7 +72,11 @@ import { UserService } from 'src/app/services/user.service';
       private serverTimeService: ServerTimeService,
       private logger: LoggingService,
       private configuracoesService: ConfiguracoesAgendamentoService
-    ) {}
+    ) {
+      const usuario = this.authService.getUsuarioAutenticado();
+      this.usuarioLogado = usuario;
+      this.saramUsuario = usuario?.saram || '';
+    }
 
     private normalizeDia(d: string): string {
       return d
@@ -145,9 +149,7 @@ import { UserService } from 'src/app/services/user.service';
     }
 
 //---------------🔰Inicialização e Logout--------------------    
-  ngOnInit(): void {
-      this.usuarioLogado = this.authService.getUsuarioAutenticado();
-      this.saramUsuario = this.usuarioLogado?.saram || '';
+    ngOnInit(): void {
       this.cdr.detectChanges();
       const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
@@ -780,9 +782,7 @@ import { UserService } from 'src/app/services/user.service';
 
     isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
       const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
-      const resultado = saramAgendamento === this.saramUsuario;
-      console.log('[DEBUG] Comparando SARAM:', saramAgendamento, 'com', this.saramUsuario, '→', resultado);
-      return resultado;
+      return saramAgendamento === this.saramUsuario;
     }
     
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
@@ -801,22 +801,25 @@ import { UserService } from 'src/app/services/user.service';
 
     desmarcarAgendamento(agendamento: Agendamento): void {
       if (!agendamento?.id) return;
-    
+
       this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe({
         next: () => {
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
-          const dia = agendamento.diaSemana;
-          const hora = normalizeHora(agendamento.hora); // garante formato HH:mm
-          const idx = this.agendamentos.findIndex(a => a.id === agendamento.id);
-          if (idx !== -1) {
-            this.agendamentos[idx] = {
-              ...this.agendamentos[idx],
-              status: 'CANCELADO',
-              canceladoPor: 'USUARIO'
-            };
+
+          const dia = this.normalizeDia(agendamento.diaSemana);
+          const hora = normalizeHora(agendamento.hora);
+
+          const slotsDia = this.horariosPorDia[dia] || [];
+          const slotIndex = slotsDia.findIndex(s => s.horario === hora);
+          if (slotIndex !== -1) {
+            slotsDia[slotIndex] = { ...slotsDia[slotIndex], status: 'DISPONIVEL' };
+            this.horariosPorDia[dia] = [...slotsDia];
           }
 
+          this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
+
           this.saveAgendamentos();
+          this.carregarAgendamentos();
           this.carregarHorariosDaSemana();
         },
         error: (error: any) => {

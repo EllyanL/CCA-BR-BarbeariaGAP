@@ -69,7 +69,11 @@ export class OficiaisComponent implements OnInit {
     private horariosService: HorariosService,
     private logger: LoggingService,
     private authService: AuthService
-  ) {}
+  ) {
+    const usuario = this.authService.getUsuarioAutenticado();
+    this.saramUsuario = usuario?.saram || '';
+    this.idMilitarLogado = usuario?.id || null;
+  }
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
@@ -81,10 +85,6 @@ export class OficiaisComponent implements OnInit {
         this.logger.error('Erro ao carregar horários em OficiaisComponent:', error);
       }
     });
-
-    const usuario = this.authService.getUsuarioAutenticado();
-    this.saramUsuario = usuario?.saram || '';
-    this.idMilitarLogado = usuario?.id || null;
 
     this.dialog.open(OrientacoesComponent, {
       enterAnimationDuration: '1000ms'
