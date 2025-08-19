@@ -218,4 +218,51 @@ describe('HorariosComponent', () => {
     expect(indisponibilizarSpy).not.toHaveBeenCalled();
     expect(disponibilizarSpy).toHaveBeenCalledWith('segunda');
   });
+
+  it('carregarHorariosDaSemana normaliza horários com segundos', () => {
+    const horarios: HorariosPorDia = {
+      segunda: [{ horario: '08:00:00', status: 'DISPONIVEL' }],
+      terca: [], quarta: [], quinta: [], sexta: []
+    } as HorariosPorDia;
+
+    horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
+    horariosService.getHorariosBase.and.returnValue(of([]));
+
+    component.carregarHorariosDaSemana();
+
+    expect(component.horariosPorDia['segunda'][0].horario).toBe('08:00');
+    expect(component.getHorarioStatus('segunda', '08:00')).toBe('DISPONIVEL');
+  });
+
+  it('disponibilizarHorario normaliza horário com segundos e atualiza estado', () => {
+    authService.getUsuarioAutenticado.and.returnValue({ categoria: 'ADMIN' } as Militar);
+    horariosService.disponibilizarHorario.and.returnValue(of({} as any));
+    const horarios: HorariosPorDia = {
+      segunda: [{ horario: '08:00:00', status: 'DISPONIVEL' }],
+      terca: [], quarta: [], quinta: [], sexta: []
+    } as HorariosPorDia;
+    horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
+
+    component.disponibilizarHorario('segunda', '08:00:00', 'GRADUADO');
+
+    expect(horariosService.disponibilizarHorario)
+      .toHaveBeenCalledWith('segunda', '08:00', 'GRADUADO');
+    expect(component.horariosPorDia['segunda'][0].horario).toBe('08:00');
+    expect(component.getHorarioStatus('segunda', '08:00')).toBe('DISPONIVEL');
+  });
+
+  it('indisponibilizarHorario normaliza horário com segundos e atualiza estado', () => {
+    horariosService.indisponibilizarHorario.and.returnValue(of({} as any));
+    const horarios: HorariosPorDia = {
+      segunda: [{ horario: '08:00:00', status: 'INDISPONIVEL' }],
+      terca: [], quarta: [], quinta: [], sexta: []
+    } as HorariosPorDia;
+    horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
+
+    component.indisponibilizarHorario('segunda', '08:00:00', 'GRADUADO');
+
+    expect(horariosService.indisponibilizarHorario)
+      .toHaveBeenCalledWith('segunda', '08:00', 'GRADUADO');
+    expect(component.getHorarioStatus('segunda', '08:00')).toBe('INDISPONIVEL');
+  });
 });
