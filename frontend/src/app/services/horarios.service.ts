@@ -33,7 +33,7 @@ export class HorariosService {
   private readonly apiUrl = `${environment.apiUrl}/horarios`;
   private horariosPorDiaSource = new BehaviorSubject<HorariosPorDia>({
     segunda: [],
-    terça: [],
+    terca: [],
     quarta: [],
     quinta: [],
     sexta: []
@@ -45,6 +45,13 @@ export class HorariosService {
     private http: HttpClient,
     private logger: LoggingService
   ) {}
+
+  private normalizeDia(d: string): string {
+    return d
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+  }
 
   //---------------⏰ Gerenciamento de Horários---------------
 
@@ -70,7 +77,7 @@ export class HorariosService {
   }
 
   adicionarHorarioBase(horario: string, dia: string, categoria: string): Observable<any> {
-    const novoHorario = { horario, dia, categoria };
+    const novoHorario = { horario, dia: this.normalizeDia(dia), categoria };
     const headers = this.getAuthHeaders();
     return this.http.post(`${this.apiUrl}/adicionar`, novoHorario, { headers }).pipe(
       catchError((error: HttpErrorResponse) => {
@@ -83,7 +90,7 @@ export class HorariosService {
   }
 
   adicionarHorarioDia(horario: string, dia: string, categoria: string): Observable<any> {
-    const payload = { horario, dia, categoria };
+    const payload = { horario, dia: this.normalizeDia(dia), categoria };
     return this.http.post(`${this.apiUrl}/adicionar`, payload, { headers: this.getAuthHeaders() });
   }
 
@@ -92,7 +99,7 @@ export class HorariosService {
    */
   removerHorarioBase(horario: string, dia: string, categoria: string): Observable<boolean> {
     const url = `${this.apiUrl}/remover`;
-    const body = { horario, dia, categoria };
+    const body = { horario, dia: this.normalizeDia(dia), categoria };
     return this.http.request('delete', url, { body, responseType: 'text' }).pipe(
       map(response => response.toLowerCase().includes('sucesso')),
       catchError((error: HttpErrorResponse | ProgressEvent) => {
@@ -172,13 +179,13 @@ export class HorariosService {
   }
 
   disponibilizarHorario(dia: string, horario: string, categoria: string): Observable<Horario> {
-    const horarioRequest: HorarioRequest = { dia, horario, categoria };
+    const horarioRequest: HorarioRequest = { dia: this.normalizeDia(dia), horario, categoria };
     const headers = this.getAuthHeaders();
     return this.http.post<Horario>(`${this.apiUrl}/disponibilizar`, horarioRequest, { headers });
   }
 
   indisponibilizarHorario(dia: string, horario: string, categoria: string): Observable<Horario> {
-    const horarioRequest: HorarioRequest = { dia, horario, categoria };
+    const horarioRequest: HorarioRequest = { dia: this.normalizeDia(dia), horario, categoria };
     const headers = this.getAuthHeaders();
     return this.http.post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
   }
@@ -191,7 +198,7 @@ export class HorariosService {
       .pipe(
         tap(h => {
           const atuais = { ...this.horariosPorDiaSource.getValue() };
-          const diaLower = h.dia?.toLowerCase();
+          const diaLower = this.normalizeDia(h.dia ?? '');
           if (diaLower && atuais[diaLower]) {
             const lista = [...atuais[diaLower]];
             const idx = lista.findIndex(s => s.horario === h.horario);
@@ -225,7 +232,7 @@ export class HorariosService {
       tap(horarios => {
         const atuais = { ...this.horariosPorDiaSource.getValue() };
         horarios.forEach(h => {
-          const diaLower = h.dia.toLowerCase();
+          const diaLower = this.normalizeDia(h.dia);
           const lista = atuais[diaLower] ?? [];
           const idx = lista.findIndex(s => s.horario === h.horario);
           if (idx !== -1) {
@@ -239,7 +246,8 @@ export class HorariosService {
   }
 
   indisponibilizarTodosHorarios(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {
-    const url = `${this.apiUrl}/indisponibilizar/tudo/${encodeURIComponent(dia)}?categoria=${encodeURIComponent(categoria)}`;
+    const diaNorm = this.normalizeDia(dia);
+    const url = `${this.apiUrl}/indisponibilizar/tudo/${encodeURIComponent(diaNorm)}?categoria=${encodeURIComponent(categoria)}`;
     return this.http.post<HorarioResponse>(url, horarios, { headers: this.getAuthHeaders() }).pipe(
       tap(() => this.logger.log(`Todos os horários de ${dia} foram indisponibilizados.`)),
       catchError((error: HttpErrorResponse) => {
@@ -251,8 +259,8 @@ export class HorariosService {
 
   disponibilizarTodosHorariosComEndpoint(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {
     const horariosFormatados = horarios.map(h => h.slice(0, 5)); // 👈 garante HH:mm
-    
-    const url = `${this.apiUrl}/disponibilizar/tudo/${encodeURIComponent(dia)}?categoria=${encodeURIComponent(categoria)}`;
+    const diaNorm = this.normalizeDia(dia);
+    const url = `${this.apiUrl}/disponibilizar/tudo/${encodeURIComponent(diaNorm)}?categoria=${encodeURIComponent(categoria)}`;
     return this.http.post<HorarioResponse>(url, horariosFormatados, { headers: this.getAuthHeaders() }).pipe(
       tap(() => this.logger.log(`✅ Todos os horários de ${dia} foram disponibilizados.`)),
       catchError((error: HttpErrorResponse) => {

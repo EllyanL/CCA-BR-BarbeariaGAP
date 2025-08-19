@@ -61,7 +61,7 @@ describe('HorariosComponent', () => {
   it('carregarHorariosDaSemana utiliza status fornecido pelo backend', () => {
     const horarios: HorariosPorDia = {
       segunda: [{ horario: '08:00', status: 'AGENDADO' }],
-      terça: [], quarta: [], quinta: [], sexta: []
+      terca: [], quarta: [], quinta: [], sexta: []
     };
 
     horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
@@ -167,12 +167,17 @@ describe('HorariosComponent', () => {
     expect(snack.open).toHaveBeenCalled();
   });
 
-  it('toggleDia ignora dias com agendamento ativo', () => {
-    spyOn(component, 'temAgendado').and.returnValue(true);
+  it('temAgendado normaliza nomes com acento', () => {
+    component.agendamentos = [{ diaSemana: 'terca', hora: '08:00', categoria: 'GRADUADO' } as Agendamento];
+    expect(component.temAgendado('terça')).toBeTrue();
+  });
+
+  it('toggleDia ignora dia com agendamento ativo mesmo com acento', () => {
+    component.agendamentos = [{ diaSemana: 'terca', hora: '08:00', categoria: 'GRADUADO' } as Agendamento];
     const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
     const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
 
-    component.toggleDia('segunda');
+    component.toggleDia('terça');
 
     expect(indisponibilizarSpy).not.toHaveBeenCalled();
     expect(disponibilizarSpy).not.toHaveBeenCalled();
@@ -187,6 +192,18 @@ describe('HorariosComponent', () => {
     component.toggleDia('segunda');
 
     expect(indisponibilizarSpy).toHaveBeenCalledWith('segunda');
+    expect(disponibilizarSpy).not.toHaveBeenCalled();
+  });
+
+  it('toggleDia com dia acentuado chama indisponibilizarDia se existir horário disponível', () => {
+    component.horariosPorDia = { terca: [{ horario: '08:00', status: 'DISPONIVEL' }] } as unknown as HorariosPorDia;
+    component.agendamentos = [];
+    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
+    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
+
+    component.toggleDia('terça');
+
+    expect(indisponibilizarSpy).toHaveBeenCalledWith('terça');
     expect(disponibilizarSpy).not.toHaveBeenCalled();
   });
 
