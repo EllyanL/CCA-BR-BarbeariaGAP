@@ -77,26 +77,9 @@
       <table class="horarios">
         <thead class="horarios-header">
           <tr>
-            <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia">
+            <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia" (click)="toggleDia(dia)" [class.clickable]="isAdmin">
               <div class="dia-header">
-                <span>{{ dia | uppercase }}</span><span *ngIf="isAdmin">
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    aria-label="Disponibilizar dia"
-                    (click)="disponibilizarDia(dia)"
-                  >
-                    <mat-icon>check_circle</mat-icon>
-                  </button>
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    aria-label="Indisponibilizar dia"
-                    (click)="indisponibilizarDia(dia)"
-                  >
-                    <mat-icon>block</mat-icon>
-                  </button>
-                </span>
+                <span>{{ dia | uppercase }}</span>
               </div>
             </th>
           </tr>
