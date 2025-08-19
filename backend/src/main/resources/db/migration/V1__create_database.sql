@@ -3,8 +3,6 @@
 -- PostgreSQL
 -- =====================================================================
 
--- (Opcional) Coloque tudo sob uma transação:
-BEGIN;
 
 -- =====================================================================
 -- TABELA: militares
@@ -190,7 +188,3 @@ COMMENT ON COLUMN horarios.status IS 'DISPONIVEL | INDISPONIVEL';
 
 COMMENT ON TABLE configuracao_horario IS 'Janela de funcionamento (início/fim) configurada pelo admin.';
 
--- =====================================================================
--- Finaliza transação
--- =====================================================================
-COMMIT;
