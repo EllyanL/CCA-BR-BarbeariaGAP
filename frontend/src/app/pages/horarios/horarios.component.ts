@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
-import { normalizeHorariosPorDia } from '../../utils/horarios-utils';
+import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 
@@ -466,17 +466,19 @@ import { UserService } from 'src/app/services/user.service';
         return;
       }
 
+      const horarioNormalizado = normalizeHora(horario);
+
       if (this.configuracao) {
         const inicio = this.toMinutes(this.configuracao.horarioInicio);
         const fim = this.toMinutes(this.configuracao.horarioFim);
-        const horaMin = this.toMinutes(horario);
+        const horaMin = this.toMinutes(horarioNormalizado);
         if (horaMin < inicio || horaMin > fim) {
           this.snackBar.open('Horário fora da configuração permitida.', 'Ciente', { duration: 3000 });
           return;
         }
       }
 
-      this.horariosService.disponibilizarHorario(dia, horario, categoria).subscribe({
+      this.horariosService.disponibilizarHorario(dia, horarioNormalizado, categoria).subscribe({
         next: () => {
           this.carregarHorariosDaSemana();
           this.snackBar.open('Horário disponibilizado com sucesso.', 'Ciente', { duration: 3000 });
@@ -490,7 +492,8 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     indisponibilizarHorario(dia: string, horario: string, categoria: string): void {
-      this.horariosService.indisponibilizarHorario(dia, horario, categoria).subscribe({
+      const horarioNormalizado = normalizeHora(horario);
+      this.horariosService.indisponibilizarHorario(dia, horarioNormalizado, categoria).subscribe({
         next: () => {
           this.carregarHorariosDaSemana();
           this.snackBar.open('Horário indisponibilizado com sucesso.', 'Ciente', { duration: 3000 });
@@ -566,7 +569,8 @@ import { UserService } from 'src/app/services/user.service';
 
   getHorarioStatus(dia: string, hora: string): string {
       const diaKey = this.normalizeDia(dia);
-      return this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.status || 'DISPONIVEL';
+      const horaNorm = normalizeHora(hora);
+      return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === horaNorm)?.status || 'DISPONIVEL';
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
@@ -842,10 +846,10 @@ import { UserService } from 'src/app/services/user.service';
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
       const diaSemana = this.normalizeDia(dia.split(' - ')[0].trim());
-      const horaFormatada = hora.slice(0, 5);
+      const horaFormatada = normalizeHora(hora);
       return this.agendamentos.find(a =>
         this.normalizeDia(a.diaSemana) === diaSemana &&
-        a.hora.slice(0, 5) === horaFormatada &&
+        normalizeHora(a.hora) === horaFormatada &&
         a.status !== 'CANCELADO'
       );
     }
@@ -857,7 +861,7 @@ import { UserService } from 'src/app/services/user.service';
         next: () => {
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
           const dia = agendamento.diaSemana;
-          const hora = agendamento.hora.slice(0, 5); // garante formato HH:mm
+          const hora = normalizeHora(agendamento.hora); // garante formato HH:mm
           const idx = this.agendamentos.findIndex(a => a.id === agendamento.id);
           if (idx !== -1) {
             this.agendamentos[idx] = {
