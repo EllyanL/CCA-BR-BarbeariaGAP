@@ -219,6 +219,15 @@ describe('HorariosComponent', () => {
     expect(disponibilizarSpy).toHaveBeenCalledWith('segunda');
   });
 
+  it('getHorarioStatus considera apenas horas e minutos', () => {
+    component.horariosPorDia = {
+      segunda: [{ horario: '08:00:00', status: 'AGENDADO' }]
+    } as unknown as HorariosPorDia;
+
+    expect(component.getHorarioStatus('segunda', '08:00')).toBe('AGENDADO');
+    expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('AGENDADO');
+  });
+
   it('carregarHorariosDaSemana normaliza horários com segundos', () => {
     const horarios: HorariosPorDia = {
       segunda: [{ horario: '08:00:00', status: 'DISPONIVEL' }],
@@ -232,6 +241,7 @@ describe('HorariosComponent', () => {
 
     expect(component.horariosPorDia['segunda'][0].horario).toBe('08:00');
     expect(component.getHorarioStatus('segunda', '08:00')).toBe('DISPONIVEL');
+    expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('DISPONIVEL');
   });
 
   it('disponibilizarHorario normaliza horário com segundos e atualiza estado', () => {
@@ -249,6 +259,7 @@ describe('HorariosComponent', () => {
       .toHaveBeenCalledWith('segunda', '08:00', 'GRADUADO');
     expect(component.horariosPorDia['segunda'][0].horario).toBe('08:00');
     expect(component.getHorarioStatus('segunda', '08:00')).toBe('DISPONIVEL');
+    expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('DISPONIVEL');
   });
 
   it('indisponibilizarHorario normaliza horário com segundos e atualiza estado', () => {
@@ -264,5 +275,6 @@ describe('HorariosComponent', () => {
     expect(horariosService.indisponibilizarHorario)
       .toHaveBeenCalledWith('segunda', '08:00', 'GRADUADO');
     expect(component.getHorarioStatus('segunda', '08:00')).toBe('INDISPONIVEL');
+    expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('INDISPONIVEL');
   });
 });
