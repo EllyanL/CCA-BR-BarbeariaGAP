@@ -90,29 +90,30 @@
               <div class="horarios-botao-container" [ngSwitch]="getHorarioStatus(dia, horario)">
                 <!-- ADMIN -->
                 <ng-container *ngIf="isAdmin; else visualizacaoUsuario">
-                  <button *ngSwitchCase="'DISPONIVEL'" class="botao-hora-disponivel" mat-raised-button color="primary"
-                          (click)="indisponibilizarHorario(dia, horario, categoriaSelecionada)">
-                    <b>{{ horario }}</b>
-                  </button>
+                  <ng-container *ngIf="getSlot(dia, horario) as slot">
+                    <button *ngSwitchCase="'DISPONIVEL'" class="botao-hora-disponivel" mat-raised-button color="primary"
+                            (click)="toggleHorario(dia, slot)">
+                      <b>{{ horario }}</b>
+                    </button>
 
-                  <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button
-                          (click)="disponibilizarHorario(dia, horario, categoriaSelecionada)">
-                          <b>{{ horario }}</b>
-                  </button>
+                    <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button
+                            (click)="toggleHorario(dia, slot)">
+                            <b>{{ horario }}</b>
+                    </button>
 
-                  <ng-container *ngSwitchCase="'AGENDADO'">
-                    <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
-                      <button *ngIf="agendamento" (click)="abrirModalAgendamento(agendamento)" mat-raised-button class="botao-hora-agendado">
-                        <mat-icon>lock</mat-icon>
-                        {{ formatarStatus('AGENDADO') }}
-                      </button>
+                    <ng-container *ngSwitchCase="'AGENDADO'">
+                      <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
+                        <button *ngIf="agendamento" (click)="abrirModalAgendamento(agendamento)" mat-raised-button class="botao-hora-agendado">
+                          <mat-icon>lock</mat-icon>
+                          {{ formatarStatus('AGENDADO') }}
+                        </button>
+                      </ng-container>
                     </ng-container>
+
+                    <button *ngSwitchCase="'REALIZADO'" class="botao-hora-indisponivel" mat-raised-button disabled>
+                      {{ formatarStatus('AGENDADO') }}
+                    </button>
                   </ng-container>
-
-                  <button *ngSwitchCase="'REALIZADO'" class="botao-hora-indisponivel" mat-raised-button disabled>
-                    {{ formatarStatus('AGENDADO') }}
-                  </button>
-
 
                   <ng-container *ngSwitchDefault>
                     <button mat-raised-button class="botao-hora-adicionar" color="accent"

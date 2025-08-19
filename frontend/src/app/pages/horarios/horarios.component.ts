@@ -454,58 +454,6 @@ import { UserService } from 'src/app/services/user.service';
       this.validarHorario();
     }
 
-    disponibilizarHorario(dia: string, horario: string, categoria: string): void {
-      const usuario = this.authService.getUsuarioAutenticado();
-      const isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
-      if (!isAdmin) {
-        this.snackBar.open(
-          'Somente administradores podem disponibilizar horários. Solicite acesso ao administrador.',
-          'Ciente',
-          { duration: 3000 }
-        );
-        return;
-      }
-
-      const horarioNormalizado = horario.slice(0, 5);
-
-      if (this.configuracao) {
-        const inicio = this.toMinutes(this.configuracao.horarioInicio);
-        const fim = this.toMinutes(this.configuracao.horarioFim);
-        const horaMin = this.toMinutes(horarioNormalizado);
-        if (horaMin < inicio || horaMin > fim) {
-          this.snackBar.open('Horário fora da configuração permitida.', 'Ciente', { duration: 3000 });
-          return;
-        }
-      }
-
-      this.horariosService.disponibilizarHorario(dia, horarioNormalizado, categoria).subscribe({
-        next: () => {
-          this.carregarHorariosDaSemana();
-          this.snackBar.open('Horário disponibilizado com sucesso.', 'Ciente', { duration: 3000 });
-        },
-        error: (error: any) => {
-          const mensagem = error?.error?.mensagem || error?.error?.message ||
-            'Falha ao disponibilizar o horário. Verifique a conexão ou tente novamente.';
-          this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
-        }
-      });
-    }
-
-    indisponibilizarHorario(dia: string, horario: string, categoria: string): void {
-      const horarioNormalizado = horario.slice(0, 5);
-      this.horariosService.indisponibilizarHorario(dia, horarioNormalizado, categoria).subscribe({
-        next: () => {
-          this.carregarHorariosDaSemana();
-          this.snackBar.open('Horário indisponibilizado com sucesso.', 'Ciente', { duration: 3000 });
-        },
-        error: (error: any) => {
-          const mensagem = error?.error?.mensagem || error?.error?.message ||
-            'Falha ao indisponibilizar o horário. Verifique a conexão e tente novamente.';
-          this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
-        }
-      });
-    }
-
     adicionarHorarioIndividual(dia: string, horario: string, categoria: string): void { //Adiciona horário fixo na base
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: () => {
@@ -567,10 +515,41 @@ import { UserService } from 'src/app/services/user.service';
     }
         
 
-  getHorarioStatus(dia: string, hora: string): string {
+  getSlot(dia: string, hora: string): SlotHorario | undefined {
       const diaKey = this.normalizeDia(dia);
-      const slot = this.horariosPorDia[diaKey]?.find(h => h.horario.slice(0, 5) === hora.slice(0, 5));
-      return slot?.status || 'DISPONIVEL';
+      return this.horariosPorDia[diaKey]?.find(h => h.horario.slice(0, 5) === hora.slice(0, 5));
+    }
+
+  getHorarioStatus(dia: string, hora: string): string {
+      return this.getSlot(dia, hora)?.status || 'DISPONIVEL';
+    }
+
+  toggleHorario(dia: string, slot: SlotHorario): void {
+      if (!slot.id) {
+        return;
+      }
+      const novoStatus: SlotHorario['status'] = slot.status === 'DISPONIVEL' ? 'INDISPONIVEL' : 'DISPONIVEL';
+      this.horariosService.alterarStatusHorario(slot.id, novoStatus).subscribe({
+        next: () => {
+          const diaKey = this.normalizeDia(dia);
+          const lista = this.horariosPorDia[diaKey] || [];
+          const idx = lista.findIndex(s => s.id === slot.id);
+          if (idx !== -1) {
+            lista[idx] = { ...lista[idx], status: novoStatus };
+            this.horariosPorDia[diaKey] = lista;
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
+          }
+          const msg = novoStatus === 'DISPONIVEL'
+            ? 'Horário disponibilizado com sucesso.'
+            : 'Horário indisponibilizado com sucesso.';
+          this.snackBar.open(msg, 'Ciente', { duration: 3000 });
+        },
+        error: (error: any) => {
+          const mensagem = error?.error?.mensagem || error?.error?.message ||
+            'Falha ao alterar o status do horário. Verifique a conexão e tente novamente.';
+          this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
+        }
+      });
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
@@ -735,7 +714,10 @@ import { UserService } from 'src/app/services/user.service';
 
       const isAdmin = militarAutenticado.categoria?.toUpperCase() === 'ADMIN';
       if (isAdmin) {
-        this.indisponibilizarHorario(dia, horario, this.categoriaSelecionada);
+        const slot = this.getSlot(dia, horario);
+        if (slot) {
+          this.toggleHorario(dia, slot);
+        }
       } else {
         this.agendarHorario(dia, horario);
       }
