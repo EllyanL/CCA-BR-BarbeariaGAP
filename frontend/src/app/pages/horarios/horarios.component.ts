@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
+import { normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 
@@ -277,7 +278,8 @@ import { UserService } from 'src/app/services/user.service';
     carregarHorariosDaSemana(): void {
       this.horariosService.carregarHorariosDaSemana(this.categoriaSelecionada).subscribe({
         next: (horarios: HorariosPorDia) => {
-          this.horariosPorDia = horarios || {};
+          const normalizados = normalizeHorariosPorDia(horarios || {});
+          this.horariosPorDia = normalizados;
           this.aplicarJanelaHorarios();
           this.cdr.detectChanges();
         },

@@ -8,6 +8,7 @@ import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
 import { SlotHorario, HorariosPorDia } from '../models/slot-horario';
+import { normalizeHorariosPorDia } from '../utils/horarios-utils';
 
 interface HorarioResponse {
   mensagem: string;
@@ -59,6 +60,7 @@ export class HorariosService {
     return this.http
       .get<HorariosPorDia>(`${this.apiUrl}/categoria/${categoria}`)
       .pipe(
+        map(horarios => normalizeHorariosPorDia(horarios)),
         catchError((error) => {
           this.logger.error('❌ Erro ao carregar horários da semana:', error);
           return throwError(() => error);
@@ -157,7 +159,7 @@ export class HorariosService {
   }
 
   atualizarHorarios(novosHorarios: HorariosPorDia) {
-    this.horariosPorDiaSource.next(novosHorarios);
+    this.horariosPorDiaSource.next(normalizeHorariosPorDia(novosHorarios));
   }
 
   startPollingHorarios(categoria: string, intervalMs: number = 30000): void {
