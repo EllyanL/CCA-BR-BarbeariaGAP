@@ -3,13 +3,15 @@
 -- PostgreSQL
 -- =====================================================================
 
+-- (Opcional) Coloque tudo sob uma transação:
+BEGIN;
 
 -- =====================================================================
 -- TABELA: militares
 -- =====================================================================
 -- DROP TABLE IF EXISTS agendamentos CASCADE;
 -- DROP TABLE IF EXISTS horarios CASCADE;
--- DROP TABLE IF EXISTS configuracoes_agendamento CASCADE;
+-- DROP TABLE IF EXISTS configuracao_horario CASCADE;
 -- DROP TABLE IF EXISTS militares CASCADE;
 
 CREATE TABLE militares (
@@ -104,20 +106,20 @@ CREATE INDEX idx_horarios_categoria_dia ON horarios (categoria, dia, horario);
 CREATE INDEX idx_horarios_status        ON horarios (status);
 
 -- =====================================================================
--- TABELA: configuracoes_agendamento (janela de funcionamento)
+-- TABELA: configuracao_horario (janela de funcionamento)
 -- =====================================================================
-CREATE TABLE configuracoes_agendamento (
-    id              SERIAL PRIMARY KEY,
-    horario_inicio  TIME WITHOUT TIME ZONE NOT NULL,
-    horario_fim     TIME WITHOUT TIME ZONE NOT NULL,
-    atualizado_em   TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE configuracao_horario (
+    id          SERIAL PRIMARY KEY,
+    inicio      TIME WITHOUT TIME ZONE NOT NULL,
+    fim         TIME WITHOUT TIME ZONE NOT NULL,
+    atualizado_em TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT ck_conf_horario_intervalo
-        CHECK (horario_inicio < horario_fim)
+        CHECK (inicio < fim)
 );
 
 -- Semente padrão (08:00 às 18:00)
-INSERT INTO configuracoes_agendamento (id, horario_inicio, horario_fim)
+INSERT INTO configuracao_horario (id, inicio, fim)
 VALUES (1, '08:00', '18:00');
 
 -- =====================================================================
@@ -186,5 +188,9 @@ COMMENT ON COLUMN agendamentos.cancelado_por IS 'Quem cancelou: USUARIO | ADMIN'
 COMMENT ON TABLE horarios IS 'Grade base por dia da semana/categoria. Representa disponibilidade visual.';
 COMMENT ON COLUMN horarios.status IS 'DISPONIVEL | INDISPONIVEL';
 
-COMMENT ON TABLE configuracoes_agendamento IS 'Janela de funcionamento (início/fim) configurada pelo admin.';
+COMMENT ON TABLE configuracao_horario IS 'Janela de funcionamento (início/fim) configurada pelo admin.';
 
+-- =====================================================================
+-- Finaliza transação
+-- =====================================================================
+COMMIT;

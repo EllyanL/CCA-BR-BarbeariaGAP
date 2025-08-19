@@ -1,5 +1,7 @@
 -- Recreates horarios table and seeds default time slots
-CREATE TABLE IF NOT EXISTS horarios (
+DROP TABLE IF EXISTS horarios CASCADE;
+
+CREATE TABLE horarios (
     id         SERIAL PRIMARY KEY,
     dia        VARCHAR(10) NOT NULL,
     horario    TIME WITHOUT TIME ZONE NOT NULL,
@@ -13,8 +15,8 @@ CREATE TABLE IF NOT EXISTS horarios (
         UNIQUE (dia, horario, categoria)
 );
 
-CREATE INDEX IF NOT EXISTS idx_horarios_categoria_dia ON horarios (categoria, dia, horario);
-CREATE INDEX IF NOT EXISTS idx_horarios_status        ON horarios (status);
+CREATE INDEX idx_horarios_categoria_dia ON horarios (categoria, dia, horario);
+CREATE INDEX idx_horarios_status        ON horarios (status);
 
 -- Seed default schedule slots
 DO $$
@@ -32,9 +34,9 @@ BEGIN
     FOR d IN SELECT unnest(ARRAY['segunda','terca','quarta','quinta','sexta']) LOOP
       FOR c IN SELECT unnest(ARRAY['GRADUADO','OFICIAL']) LOOP
         INSERT INTO horarios (dia, horario, categoria, status)
-        VALUES (d, h, c, 'DISPONIVEL')
-        ON CONFLICT (dia, horario, categoria) DO NOTHING;
+        VALUES (d, h, c, 'DISPONIVEL');
       END LOOP;
     END LOOP;
   END LOOP;
 END $$;
+
