@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -41,31 +42,35 @@ public class HorarioController {
     @PostMapping("/adicionar")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> adicionarHorarioPersonalizado(@RequestBody Map<String, String> request) {
-        String horario = request.get("horario");
+        String horarioStr = request.get("horario");
         String dia = request.get("dia");
         String categoria = request.get("categoria");
 
-        if (horario == null || dia == null || categoria == null ||
-            horario.isBlank() || dia.isBlank() || categoria.isBlank()) {
+        if (horarioStr == null || dia == null || categoria == null ||
+            horarioStr.isBlank() || dia.isBlank() || categoria.isBlank()) {
             return ResponseEntity.badRequest().body("Campos obrigatórios: horario, dia, categoria.");
         }
 
-        if (horarioRepository.existsByDiaAndHorarioAndCategoria(dia, horario, categoria)) {
+        LocalTime hora = LocalTime.parse(horarioStr);
+
+        if (horarioRepository.existsByDiaAndHorarioAndCategoria(dia, hora, categoria)) {
             return ResponseEntity.ok("Horário já existente, nenhuma ação realizada.");
         }
 
-        Horario novo = new Horario(dia, horario, categoria, HorarioStatus.DISPONIVEL);
+        Horario novo = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
         horarioRepository.save(novo);
         return ResponseEntity.ok(new HorarioDTO(novo));
     }
     @DeleteMapping("/remover")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> removerHorarioPersonalizado(@RequestBody Map<String, String> request) {
-        String horario = request.get("horario");
+        String horarioStr = request.get("horario");
         String dia = request.get("dia");
         String categoria = request.get("categoria");
 
-        boolean removido = horarioService.removerHorarioPersonalizado(dia, horario, categoria);
+        LocalTime hora = LocalTime.parse(horarioStr);
+
+        boolean removido = horarioService.removerHorarioPersonalizado(dia, hora, categoria);
         String mensagem = removido ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
         return ResponseEntity.ok(mensagem);
     }
@@ -85,8 +90,9 @@ public class HorarioController {
             horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+        LocalTime hora = LocalTime.parse(horarioDTO.getHorario());
         Horario horarioIndisponibilizado = horarioService.indisponibilizarHorario(
-                horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+                horarioDTO.getDia(), hora, horarioDTO.getCategoria());
         if (horarioIndisponibilizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -101,8 +107,9 @@ public class HorarioController {
             horarioDTO.getCategoria() == null || horarioDTO.getCategoria().trim().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+        LocalTime hora = LocalTime.parse(horarioDTO.getHorario());
         Horario horarioDisponibilizado = horarioService.disponibilizarHorario(
-                horarioDTO.getDia(), horarioDTO.getHorario(), horarioDTO.getCategoria());
+                horarioDTO.getDia(), hora, horarioDTO.getCategoria());
         if (horarioDisponibilizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -112,14 +119,16 @@ public class HorarioController {
     @PostMapping("/indisponibilizar/tudo/{dia}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> indisponibilizarTodosHorarios(@PathVariable String dia, @RequestBody List<String> horarios, @RequestParam String categoria) {
-        Map<String, Object> response = horarioService.indisponibilizarTodosHorarios(dia, horarios, categoria);
+        List<LocalTime> horas = horarios.stream().map(LocalTime::parse).toList();
+        Map<String, Object> response = horarioService.indisponibilizarTodosHorarios(dia, horas, categoria);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/disponibilizar/tudo/{dia}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> disponibilizarTodosHorarios(@PathVariable String dia, @RequestBody List<String> horarios, @RequestParam String categoria) {
-        Map<String, Object> response = horarioService.disponibilizarTodosHorarios(dia, horarios, categoria);
+        List<LocalTime> horas = horarios.stream().map(LocalTime::parse).toList();
+        Map<String, Object> response = horarioService.disponibilizarTodosHorarios(dia, horas, categoria);
         return ResponseEntity.ok(response);
     }
     

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
+import java.time.LocalTime;
 
 
 @Entity
@@ -26,8 +27,8 @@ public class Horario {
     @Column(nullable = false, length = 15)
     private String dia;
 
-    @Column(nullable = false, length = 10)
-    private String horario;
+    @Column(nullable = false)
+    private LocalTime horario;
 
     @Column(nullable = false, length = 15)
     private String categoria;
@@ -37,7 +38,7 @@ public class Horario {
     private HorarioStatus status = HorarioStatus.DISPONIVEL;
 
 
-    public Horario(String dia, String horario, String categoria, HorarioStatus status) {
+    public Horario(String dia, LocalTime horario, String categoria, HorarioStatus status) {
         this.dia = dia;
         this.horario = horario;
         this.categoria = categoria;

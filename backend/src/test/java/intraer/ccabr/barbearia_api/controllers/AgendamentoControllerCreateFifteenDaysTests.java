@@ -67,8 +67,8 @@ class AgendamentoControllerCreateFifteenDaysTests {
         militar.setCategoria(UserRole.GRADUADO);
         when(militarRepository.findByCpf("111")).thenReturn(Optional.of(militar));
 
-        Horario horario = new Horario("segunda", "09:00", "GRADUADO", HorarioStatus.DISPONIVEL);
-        when(horarioRepository.findByDiaAndHorarioAndCategoria("segunda", "09:00", "GRADUADO"))
+        Horario horario = new Horario("segunda", LocalTime.parse("09:00"), "GRADUADO", HorarioStatus.DISPONIVEL);
+        when(horarioRepository.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("09:00"), "GRADUADO"))
             .thenReturn(Optional.of(horario));
 
         when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoria(any(), any(), any(), any()))

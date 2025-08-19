@@ -33,14 +33,14 @@ class HorarioServiceConfiguracaoTests {
 
     @Test
     void disponibilizarHorarioForaDoIntervaloLancaExcecao() {
-        assertThrows(IllegalArgumentException.class, () -> service.disponibilizarHorario("segunda", "08:00", "GRADUADO"));
+        assertThrows(IllegalArgumentException.class, () -> service.disponibilizarHorario("segunda", LocalTime.parse("08:00"), "GRADUADO"));
     }
 
     @Test
     void getHorariosUnicosRespeitaHorarioInicioConfigurado() {
         when(horarioRepo.findAll()).thenReturn(List.of(
-            new Horario("segunda", "08:00", "GRADUADO", HorarioStatus.DISPONIVEL),
-            new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL)
+            new Horario("segunda", LocalTime.parse("08:00"), "GRADUADO", HorarioStatus.DISPONIVEL),
+            new Horario("segunda", LocalTime.parse("10:00"), "GRADUADO", HorarioStatus.DISPONIVEL)
         ));
 
         List<String> result = service.getHorariosUnicos();
@@ -55,10 +55,10 @@ class HorarioServiceConfiguracaoTests {
 
     @Test
     void disponibilizarHorarioInexistenteRetornaNull() {
-        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("10:00"), "GRADUADO"))
                 .thenReturn(java.util.Optional.empty());
 
-        Horario result = service.disponibilizarHorario("segunda", "10:00", "GRADUADO");
+        Horario result = service.disponibilizarHorario("segunda", LocalTime.parse("10:00"), "GRADUADO");
 
         assertNull(result);
         verify(horarioRepo, never()).save(any());
@@ -66,10 +66,10 @@ class HorarioServiceConfiguracaoTests {
 
     @Test
     void indisponibilizarHorarioInexistenteRetornaNull() {
-        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("10:00"), "GRADUADO"))
                 .thenReturn(java.util.Optional.empty());
 
-        Horario result = service.indisponibilizarHorario("segunda", "10:00", "GRADUADO");
+        Horario result = service.indisponibilizarHorario("segunda", LocalTime.parse("10:00"), "GRADUADO");
 
         assertNull(result);
         verify(horarioRepo, never()).save(any());
@@ -77,11 +77,11 @@ class HorarioServiceConfiguracaoTests {
 
     @Test
     void removerHorarioPersonalizadoExistenteDeletaRegistro() {
-        Horario h = new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL);
-        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+        Horario h = new Horario("segunda", LocalTime.parse("10:00"), "GRADUADO", HorarioStatus.DISPONIVEL);
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("10:00"), "GRADUADO"))
                 .thenReturn(java.util.Optional.of(h));
 
-        boolean result = service.removerHorarioPersonalizado("segunda", "10:00", "GRADUADO");
+        boolean result = service.removerHorarioPersonalizado("segunda", LocalTime.parse("10:00"), "GRADUADO");
 
         assertTrue(result);
         verify(horarioRepo).delete(h);
@@ -89,10 +89,10 @@ class HorarioServiceConfiguracaoTests {
 
     @Test
     void removerHorarioPersonalizadoInexistenteRetornaFalse() {
-        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("10:00"), "GRADUADO"))
                 .thenReturn(java.util.Optional.empty());
 
-        boolean result = service.removerHorarioPersonalizado("segunda", "10:00", "GRADUADO");
+        boolean result = service.removerHorarioPersonalizado("segunda", LocalTime.parse("10:00"), "GRADUADO");
 
         assertFalse(result);
         verify(horarioRepo, never()).delete(any());
@@ -100,14 +100,14 @@ class HorarioServiceConfiguracaoTests {
 
     @Test
     void indisponibilizarHorarioAlteraStatusParaIndisponivel() {
-        Horario h = new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL);
-        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "10:00", "GRADUADO"))
+        Horario h = new Horario("segunda", LocalTime.parse("10:00"), "GRADUADO", HorarioStatus.DISPONIVEL);
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("10:00"), "GRADUADO"))
                 .thenReturn(java.util.Optional.of(h));
         when(agendamentoRepo.existsByHoraAndDiaSemanaAndCategoria(LocalTime.parse("10:00"), "segunda", "GRADUADO"))
                 .thenReturn(false);
         when(horarioRepo.save(any(Horario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Horario result = service.indisponibilizarHorario("segunda", "10:00", "GRADUADO");
+        Horario result = service.indisponibilizarHorario("segunda", LocalTime.parse("10:00"), "GRADUADO");
 
         assertEquals(HorarioStatus.INDISPONIVEL, result.getStatus());
         verify(horarioRepo, never()).delete(any());
@@ -118,14 +118,14 @@ class HorarioServiceConfiguracaoTests {
         when(configService.buscarConfiguracao()).thenReturn(
             new ConfiguracaoAgendamento(1L, LocalTime.of(8,0), LocalTime.of(16,0), null));
 
-        Horario h = new Horario("segunda", "16:00", "GRADUADO", HorarioStatus.INDISPONIVEL);
-        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", "16:00", "GRADUADO"))
+        Horario h = new Horario("segunda", LocalTime.parse("16:00"), "GRADUADO", HorarioStatus.INDISPONIVEL);
+        when(horarioRepo.findByDiaAndHorarioAndCategoria("segunda", LocalTime.parse("16:00"), "GRADUADO"))
                 .thenReturn(java.util.Optional.of(h));
         when(agendamentoRepo.existsByHoraAndDiaSemanaAndCategoria(LocalTime.parse("16:00"), "segunda", "GRADUADO"))
                 .thenReturn(false);
         when(horarioRepo.save(any(Horario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Horario result = service.disponibilizarHorario("segunda", "16:00", "GRADUADO");
+        Horario result = service.disponibilizarHorario("segunda", LocalTime.parse("16:00"), "GRADUADO");
 
         assertEquals(HorarioStatus.DISPONIVEL, result.getStatus());
     }

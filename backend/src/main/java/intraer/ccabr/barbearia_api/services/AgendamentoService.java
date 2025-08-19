@@ -65,10 +65,9 @@ public class AgendamentoService {
 
     @Transactional
     public Agendamento criarAgendamentoTransactional(Agendamento agendamento) {
-        String horaFormatada = agendamento.getHora().format(TIME_FORMATTER);
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
             agendamento.getDiaSemana(),
-            horaFormatada,
+            agendamento.getHora(),
             agendamento.getCategoria()
         );
 
@@ -211,7 +210,8 @@ public class AgendamentoService {
         for (Map<String, Object> diaMap : horariosPorDia) {
             String dia = (String) diaMap.get("dia");
             @SuppressWarnings("unchecked")
-            List<String> horarios = (List<String>) diaMap.get("horarios");
+            List<String> horariosStr = (List<String>) diaMap.get("horarios");
+            List<LocalTime> horarios = horariosStr.stream().map(LocalTime::parse).toList();
 
             List<Agendamento> agendamentos = agendamentoRepository.findByDataAndDiaSemanaAndHoraInAndCategoria(data, dia, horarios, categoria);
 
@@ -219,7 +219,7 @@ public class AgendamentoService {
             for (Agendamento agendamento : agendamentos) {
                 agendamentosPorHorario.put(agendamento.getHora().format(TIME_FORMATTER), agendamento);
             }
-            for (String horario : horarios) {
+            for (String horario : horariosStr) {
                 agendamentosPorHorario.putIfAbsent(horario, null);
             }
             resultado.put(dia, agendamentosPorHorario);
@@ -229,12 +229,9 @@ public class AgendamentoService {
     }
 
     public void marcarHorarioComoIndisponivel(Agendamento agendamento) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-        String horaFormatada = agendamento.getHora().format(formatter);
-    
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
             agendamento.getDiaSemana(),
-            horaFormatada,
+            agendamento.getHora(),
             agendamento.getCategoria()
         );
     
@@ -249,16 +246,15 @@ public class AgendamentoService {
     }
     
     public void marcarHorarioComoAgendado(Agendamento agendamento) {
-        String horaFormatada = agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm"));
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
             agendamento.getDiaSemana(),
-            horaFormatada,
+            agendamento.getHora(),
             agendamento.getCategoria()
         );
 
         Horario horario = horarioOpt.orElseGet(() -> new Horario(
             agendamento.getDiaSemana(),
-            horaFormatada,
+            agendamento.getHora(),
             agendamento.getCategoria(),
             HorarioStatus.AGENDADO
         ));
@@ -268,16 +264,15 @@ public class AgendamentoService {
     }
 
     public void marcarHorarioComoDisponivel(Agendamento agendamento) {
-        String horaFormatada = agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm"));
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
             agendamento.getDiaSemana(),
-            horaFormatada,
+            agendamento.getHora(),
             agendamento.getCategoria()
         );
 
         Horario horario = horarioOpt.orElseGet(() -> new Horario(
             agendamento.getDiaSemana(),
-            horaFormatada,
+            agendamento.getHora(),
             agendamento.getCategoria(),
             HorarioStatus.DISPONIVEL
         ));
@@ -307,10 +302,9 @@ public class AgendamentoService {
             throw new IllegalArgumentException("Horário já agendado para a categoria.");
         }
 
-        String horaFormatada = novaHora.format(DateTimeFormatter.ofPattern("HH:mm"));
         Optional<Horario> novoHorarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
             novoDia,
-            horaFormatada,
+            novaHora,
             agendamento.getCategoria()
         );
 

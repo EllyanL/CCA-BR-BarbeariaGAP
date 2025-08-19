@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,9 +18,9 @@ public interface HorarioRepository extends JpaRepository<Horario, Long> {
 
     List<Horario> findByDiaAndCategoriaOrderByHorarioAsc(String dia, String categoria);
 
-    Optional<Horario> findByDiaAndHorarioAndCategoria(String dia, String horario, String categoria);
+    Optional<Horario> findByDiaAndHorarioAndCategoria(String dia, LocalTime horario, String categoria);
 
-    boolean existsByDiaAndHorarioAndCategoria(String dia, String horario, String categoria);
+    boolean existsByDiaAndHorarioAndCategoria(String dia, LocalTime horario, String categoria);
 
     List<Horario> findByCategoria(String categoria);
 
@@ -28,5 +29,5 @@ public interface HorarioRepository extends JpaRepository<Horario, Long> {
     @Transactional
     @Modifying
     @Query("DELETE FROM Horario h WHERE h.dia = :dia AND h.horario IN :horarios AND h.categoria = :categoria")
-    void deleteByDiaAndHorarioInAndCategoria(String dia, List<String> horarios, String categoria);
+    void deleteByDiaAndHorarioInAndCategoria(String dia, List<LocalTime> horarios, String categoria);
 }

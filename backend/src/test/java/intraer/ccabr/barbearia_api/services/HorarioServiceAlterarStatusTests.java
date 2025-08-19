@@ -31,7 +31,7 @@ class HorarioServiceAlterarStatusTests {
 
     @Test
     void alterarStatusComAgendamentoAtivoLancaExcecao() {
-        Horario h = new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL);
+        Horario h = new Horario("segunda", LocalTime.parse("10:00"), "GRADUADO", HorarioStatus.DISPONIVEL);
         h.setId(1L);
         when(horarioRepo.findById(1L)).thenReturn(Optional.of(h));
         when(agendamentoRepo.existsByHoraAndDiaSemanaAndCategoria(LocalTime.parse("10:00"), "segunda", "GRADUADO")).thenReturn(true);
@@ -42,7 +42,7 @@ class HorarioServiceAlterarStatusTests {
 
     @Test
     void alterarStatusSemAgendamentoAtualizaHorario() {
-        Horario h = new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.DISPONIVEL);
+        Horario h = new Horario("segunda", LocalTime.parse("10:00"), "GRADUADO", HorarioStatus.DISPONIVEL);
         h.setId(1L);
         when(horarioRepo.findById(1L)).thenReturn(Optional.of(h));
         when(agendamentoRepo.existsByHoraAndDiaSemanaAndCategoria(LocalTime.parse("10:00"), "segunda", "GRADUADO")).thenReturn(false);

@@ -2,7 +2,6 @@ package intraer.ccabr.barbearia_api.controllers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -91,9 +90,8 @@ public class AgendamentoController {
         agendamento.setCategoria(dto.getCategoria());
 
         // Busca horário para validação
-        String horaStr = agendamento.getHora().format(DateTimeFormatter.ofPattern("HH:mm"));
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            agendamento.getDiaSemana(), horaStr, agendamento.getCategoria()
+            agendamento.getDiaSemana(), agendamento.getHora(), agendamento.getCategoria()
         );
 
         if (horarioOpt.isEmpty()) {

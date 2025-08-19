@@ -91,7 +91,7 @@ class AgendamentoControllerCancelTests {
     void cancelMoreThan30MinutesAheadSucceedsAndUpdatesHorario() throws Exception {
         LocalDateTime future = LocalDateTime.now().plusMinutes(40);
         Agendamento agendamento = buildAgendamento(future, "123456789");
-        Horario horario = new Horario("segunda", agendamento.getHora().toString(), "GRADUADO", HorarioStatus.AGENDADO);
+        Horario horario = new Horario("segunda", agendamento.getHora(), "GRADUADO", HorarioStatus.AGENDADO);
 
         doAnswer(invocation -> {
             agendamento.setStatus("CANCELADO");
