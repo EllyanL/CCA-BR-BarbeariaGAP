@@ -6,7 +6,7 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { HorariosComponent } from './horarios.component';
 import { HorariosService } from '../../services/horarios.service';
-import { HorariosPorDia } from '../../models/slot-horario';
+import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
 import { ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -24,7 +24,7 @@ describe('HorariosComponent', () => {
   let configService: jasmine.SpyObj<ConfiguracoesAgendamentoService>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'disponibilizarHorario', 'indisponibilizarHorario'], { horariosPorDia$: of({}) });
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'alterarStatusHorario', 'atualizarHorarios'], { horariosPorDia$: of({}) });
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos', 'createAgendamento']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
@@ -159,14 +159,6 @@ describe('HorariosComponent', () => {
     expect(snack.open).toHaveBeenCalled();
   });
 
-  it('disponibilizarHorario bloqueia horários fora da configuração', () => {
-    authService.getUsuarioAutenticado.and.returnValue({categoria: 'ADMIN'} as Militar);
-      component.configuracao = {horarioInicio: '08:00', horarioFim: '18:00'};
-    component.disponibilizarHorario('segunda', '07:00', 'GRADUADO');
-    expect(horariosService.disponibilizarHorario).not.toHaveBeenCalled();
-    expect(snack.open).toHaveBeenCalled();
-  });
-
   it('temAgendado normaliza nomes com acento', () => {
     component.agendamentos = [{ diaSemana: 'terca', hora: '08:00', categoria: 'GRADUADO' } as Agendamento];
     expect(component.temAgendado('terça')).toBeTrue();
@@ -244,37 +236,14 @@ describe('HorariosComponent', () => {
     expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('DISPONIVEL');
   });
 
-  it('disponibilizarHorario normaliza horário com segundos e atualiza estado', () => {
-    authService.getUsuarioAutenticado.and.returnValue({ categoria: 'ADMIN' } as Militar);
-    horariosService.disponibilizarHorario.and.returnValue(of({} as any));
-    const horarios: HorariosPorDia = {
-      segunda: [{ horario: '08:00:00', status: 'DISPONIVEL' }],
-      terca: [], quarta: [], quinta: [], sexta: []
-    } as HorariosPorDia;
-    horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
-
-    component.disponibilizarHorario('segunda', '08:00:00', 'GRADUADO');
-
-    expect(horariosService.disponibilizarHorario)
-      .toHaveBeenCalledWith('segunda', '08:00', 'GRADUADO');
-    expect(component.horariosPorDia['segunda'][0].horario).toBe('08:00');
-    expect(component.getHorarioStatus('segunda', '08:00')).toBe('DISPONIVEL');
-    expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('DISPONIVEL');
+  it('toggleHorario alterna status e chama serviço', () => {
+    const slot: SlotHorario = { id: 1, horario: '08:00', status: 'DISPONIVEL' } as SlotHorario;
+    component.horariosPorDia = { segunda: [slot], terca: [], quarta: [], quinta: [], sexta: [] } as HorariosPorDia;
+    horariosService.alterarStatusHorario.and.returnValue(of({} as any));
+    component.toggleHorario('segunda', slot);
+    expect(horariosService.alterarStatusHorario).toHaveBeenCalledWith(1, 'INDISPONIVEL');
+    expect(horariosService.atualizarHorarios).toHaveBeenCalled();
+    expect(component.horariosPorDia['segunda'][0].status).toBe('INDISPONIVEL');
   });
 
-  it('indisponibilizarHorario normaliza horário com segundos e atualiza estado', () => {
-    horariosService.indisponibilizarHorario.and.returnValue(of({} as any));
-    const horarios: HorariosPorDia = {
-      segunda: [{ horario: '08:00:00', status: 'INDISPONIVEL' }],
-      terca: [], quarta: [], quinta: [], sexta: []
-    } as HorariosPorDia;
-    horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
-
-    component.indisponibilizarHorario('segunda', '08:00:00', 'GRADUADO');
-
-    expect(horariosService.indisponibilizarHorario)
-      .toHaveBeenCalledWith('segunda', '08:00', 'GRADUADO');
-    expect(component.getHorarioStatus('segunda', '08:00')).toBe('INDISPONIVEL');
-    expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('INDISPONIVEL');
-  });
 });
