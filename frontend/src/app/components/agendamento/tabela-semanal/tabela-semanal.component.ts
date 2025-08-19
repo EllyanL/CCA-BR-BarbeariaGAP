@@ -58,7 +58,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   militarLogado: string = '';
   omMilitar: string = '';
   cpfMilitarLogado: string = '';
-  saramMilitarLogado: string = '';
   postos: string[] = ['AP', '2T', '1T', 'CP', 'MJ', 'TC', 'CL', 'BG', 'MB', 'TB'];
   graduacoes = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 
@@ -242,7 +241,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.militarLogado = userData[0].nomeDeGuerra;
           this.omMilitar = userData[0].om;
           this.cpfMilitarLogado = userData[0].cpf;
-          this.saramMilitarLogado = userData[0].saram;
           // this.idMilitarLogado = userData[0].id;
           this.idMilitarLogado = userData[0].id ?? null;
 
@@ -512,11 +510,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
-    const saramRef = this.saramUsuario || this.saramMilitarLogado;
-    return !!agendamento && (
-      agendamento.militar?.saram === saramRef ||
-      agendamento.militar?.id === this.idMilitarLogado
-    );
+    const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
+    return !!agendamento && saramAgendamento === this.saramUsuario;
   }
   
 

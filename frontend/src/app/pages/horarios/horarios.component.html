@@ -131,7 +131,7 @@
               <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
                 <button mat-raised-button
                         class="botao-hora-agendado"
-                        [disabled]="!isAgendamentoDoMilitarLogado(agendamento) || !isAgendamentoDesmarcavel(agendamento)"
+                        [disabled]="!(isAgendamentoDoMilitarLogado(agendamento) && isAgendamentoDesmarcavel(agendamento))"
                         (click)="handleClick(agendamento)">
                   <mat-icon>lock</mat-icon>
                   {{ formatarStatus('AGENDADO') }}
