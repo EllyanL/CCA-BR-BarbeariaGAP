@@ -466,7 +466,7 @@ import { UserService } from 'src/app/services/user.service';
         return;
       }
 
-      const horarioNormalizado = normalizeHora(horario);
+      const horarioNormalizado = horario.slice(0, 5);
 
       if (this.configuracao) {
         const inicio = this.toMinutes(this.configuracao.horarioInicio);
@@ -492,7 +492,7 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     indisponibilizarHorario(dia: string, horario: string, categoria: string): void {
-      const horarioNormalizado = normalizeHora(horario);
+      const horarioNormalizado = horario.slice(0, 5);
       this.horariosService.indisponibilizarHorario(dia, horarioNormalizado, categoria).subscribe({
         next: () => {
           this.carregarHorariosDaSemana();
@@ -569,8 +569,8 @@ import { UserService } from 'src/app/services/user.service';
 
   getHorarioStatus(dia: string, hora: string): string {
       const diaKey = this.normalizeDia(dia);
-      const horaNorm = normalizeHora(hora);
-      return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === horaNorm)?.status || 'DISPONIVEL';
+      const slot = this.horariosPorDia[diaKey]?.find(h => h.horario.slice(0, 5) === hora.slice(0, 5));
+      return slot?.status || 'DISPONIVEL';
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
@@ -846,10 +846,10 @@ import { UserService } from 'src/app/services/user.service';
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
       const diaSemana = this.normalizeDia(dia.split(' - ')[0].trim());
-      const horaFormatada = normalizeHora(hora);
+      const horaFormatada = hora.slice(0, 5);
       return this.agendamentos.find(a =>
         this.normalizeDia(a.diaSemana) === diaSemana &&
-        normalizeHora(a.hora) === horaFormatada &&
+        a.hora.slice(0, 5) === horaFormatada &&
         a.status !== 'CANCELADO'
       );
     }
