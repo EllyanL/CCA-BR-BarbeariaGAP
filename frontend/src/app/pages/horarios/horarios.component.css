@@ -114,6 +114,10 @@
   color: white;
 }
 
+.horarios-header-dia.clickable {
+  cursor: pointer;
+}
+
 .dia-header {
   display: inline-flex;
   align-items: center;

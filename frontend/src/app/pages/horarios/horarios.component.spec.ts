@@ -166,4 +166,39 @@ describe('HorariosComponent', () => {
     expect(horariosService.disponibilizarHorario).not.toHaveBeenCalled();
     expect(snack.open).toHaveBeenCalled();
   });
+
+  it('toggleDia ignora dias com agendamento ativo', () => {
+    spyOn(component, 'temAgendado').and.returnValue(true);
+    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
+    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
+
+    component.toggleDia('segunda');
+
+    expect(indisponibilizarSpy).not.toHaveBeenCalled();
+    expect(disponibilizarSpy).not.toHaveBeenCalled();
+  });
+
+  it('toggleDia chama indisponibilizarDia se existir horário disponível', () => {
+    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'DISPONIVEL' }] } as unknown as HorariosPorDia;
+    spyOn(component, 'temAgendado').and.returnValue(false);
+    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
+    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
+
+    component.toggleDia('segunda');
+
+    expect(indisponibilizarSpy).toHaveBeenCalledWith('segunda');
+    expect(disponibilizarSpy).not.toHaveBeenCalled();
+  });
+
+  it('toggleDia chama disponibilizarDia se não houver horário disponível', () => {
+    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }] } as unknown as HorariosPorDia;
+    spyOn(component, 'temAgendado').and.returnValue(false);
+    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
+    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
+
+    component.toggleDia('segunda');
+
+    expect(indisponibilizarSpy).not.toHaveBeenCalled();
+    expect(disponibilizarSpy).toHaveBeenCalledWith('segunda');
+  });
 });

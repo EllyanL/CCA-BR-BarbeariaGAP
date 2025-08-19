@@ -561,6 +561,22 @@ import { UserService } from 'src/app/services/user.service';
     }
     
 //-----------------☀️Gerenciamento de Dias-----------------
+    toggleDia(dia: string): void {
+      if (this.temAgendado(dia)) {
+        return;
+      }
+
+      const diaKey = dia.toLowerCase();
+      const horarios = this.horariosPorDia[diaKey] || [];
+      const existeDisponivel = horarios.some(h => h.status === 'DISPONIVEL');
+
+      if (existeDisponivel) {
+        this.indisponibilizarDia(dia);
+      } else {
+        this.disponibilizarDia(dia);
+      }
+    }
+
     indisponibilizarDia(dia: string): void { //Atualiza status de horários
       const horarios = this.horariosBaseSemana;
       if (!horarios || horarios.length === 0) return;
