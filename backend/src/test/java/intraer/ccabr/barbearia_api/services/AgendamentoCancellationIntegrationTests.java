@@ -44,7 +44,7 @@ class AgendamentoCancellationIntegrationTests {
         m.setCategoria(UserRole.GRADUADO);
         militarRepository.save(m);
 
-        Horario horario = new Horario("segunda", "08:00", "GRADUADO", HorarioStatus.AGENDADO);
+        Horario horario = new Horario("segunda", LocalTime.parse("08:00"), "GRADUADO", HorarioStatus.AGENDADO);
         horarioRepository.save(horario);
 
         Agendamento ag = new Agendamento();
@@ -59,7 +59,7 @@ class AgendamentoCancellationIntegrationTests {
 
         Agendamento atualizado = agendamentoRepository.findById(ag.getId()).orElseThrow();
         Horario updated = horarioRepository.findByDiaAndHorarioAndCategoria(
-                "segunda", "08:00", "GRADUADO").orElseThrow();
+                "segunda", LocalTime.parse("08:00"), "GRADUADO").orElseThrow();
 
         assertEquals("CANCELADO", atualizado.getStatus());
         assertEquals("USUARIO", atualizado.getCanceladoPor());

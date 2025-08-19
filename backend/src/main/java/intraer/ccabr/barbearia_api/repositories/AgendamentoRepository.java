@@ -17,7 +17,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Agendamento> findByDataAndDiaSemanaAndHoraInAndCategoria(
             @Param("data") LocalDate data,
             @Param("diaSemana") String diaSemana,
-            @Param("horas") List<String> horas,
+            @Param("horas") List<LocalTime> horas,
             @Param("categoria") String categoria
     );
 

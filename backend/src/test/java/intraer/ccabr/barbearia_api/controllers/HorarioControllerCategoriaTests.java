@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import java.time.LocalTime;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,9 +34,9 @@ class HorarioControllerCategoriaTests {
     @Test
     @WithMockUser(roles = "GRADUADO")
     void listarPorCategoriaRetornaStatusSemTransformacao() throws Exception {
-        horarioRepository.save(new Horario("segunda", "08:00", "GRADUADO", HorarioStatus.DISPONIVEL));
-        horarioRepository.save(new Horario("segunda", "09:00", "GRADUADO", HorarioStatus.INDISPONIVEL));
-        horarioRepository.save(new Horario("segunda", "10:00", "GRADUADO", HorarioStatus.AGENDADO));
+        horarioRepository.save(new Horario("segunda", LocalTime.parse("08:00"), "GRADUADO", HorarioStatus.DISPONIVEL));
+        horarioRepository.save(new Horario("segunda", LocalTime.parse("09:00"), "GRADUADO", HorarioStatus.INDISPONIVEL));
+        horarioRepository.save(new Horario("segunda", LocalTime.parse("10:00"), "GRADUADO", HorarioStatus.AGENDADO));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/horarios/categoria/{categoria}", "GRADUADO"))
             .andExpect(status().isOk())
