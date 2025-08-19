@@ -60,7 +60,18 @@ export class HorariosService {
     return this.http
       .get<HorariosPorDia>(`${this.apiUrl}/categoria/${categoria}`)
       .pipe(
-        map(horarios => normalizeHorariosPorDia(horarios)),
+        map((horarios) => {
+          return Object.fromEntries(
+            Object.entries(horarios || {}).map(([dia, slots]) => {
+              const normalizedDia = this.normalizeDia(dia);
+              const normalizedSlots = (slots || []).map((slot) => ({
+                ...slot,
+                horario: slot.horario.slice(0, 5),
+              }));
+              return [normalizedDia, normalizedSlots];
+            })
+          ) as HorariosPorDia;
+        }),
         catchError((error) => {
           this.logger.error('❌ Erro ao carregar horários da semana:', error);
           return throwError(() => error);
