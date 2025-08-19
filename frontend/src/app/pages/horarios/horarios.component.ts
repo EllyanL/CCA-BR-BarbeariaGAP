@@ -35,7 +35,7 @@ import { UserService } from 'src/app/services/user.service';
     diaSelecionado: string = 'segunda';
     horariosPorDia: HorariosPorDia = {
       segunda: [],
-      terça: [],
+      terca: [],
       quarta: [],
       quinta: [],
       sexta: [],
@@ -72,6 +72,13 @@ import { UserService } from 'src/app/services/user.service';
       private logger: LoggingService,
       private configuracoesService: ConfiguracoesAgendamentoService
     ) {}
+
+    private normalizeDia(d: string): string {
+      return d
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+    }
 
     private saveAgendamentos(): void {
       if (this.storageKey) {
@@ -282,7 +289,7 @@ import { UserService } from 'src/app/services/user.service';
     /** Garante que todos os dias existam como arrays (nunca null) */
     private normalizarEstrutura(h: HorariosPorDia | null | undefined): HorariosPorDia {
       // Ajuste os nomes conforme seu contrato real
-      const dias = ['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+      const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
       const out: any = {};
     
       for (const d of dias) {
@@ -536,7 +543,7 @@ import { UserService } from 'src/app/services/user.service';
         next: () => {
           this.horariosBaseSemana = this.horariosBaseSemana.filter(h => h !== horario);
           diasAlvo.forEach(dia => {
-            const diaKey = dia.toLowerCase();
+            const diaKey = this.normalizeDia(dia);
             if (this.horariosPorDia[diaKey]) {
               this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
             }
@@ -556,7 +563,7 @@ import { UserService } from 'src/app/services/user.service';
         
 
   getHorarioStatus(dia: string, hora: string): string {
-      const diaKey = dia.toLowerCase();
+      const diaKey = this.normalizeDia(dia);
       return this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.status || 'DISPONIVEL';
     }
     
@@ -566,7 +573,7 @@ import { UserService } from 'src/app/services/user.service';
         return;
       }
 
-      const diaKey = dia.toLowerCase();
+      const diaKey = this.normalizeDia(dia);
       const horarios = this.horariosPorDia[diaKey] || [];
       const existeDisponivel = horarios.some(h => h.status === 'DISPONIVEL');
 
@@ -650,10 +657,11 @@ import { UserService } from 'src/app/services/user.service';
     }
 //--------------📅Gerenciamento de Agendamento-------------
     temAgendado(dia: string): boolean {
+      const diaNorm = this.normalizeDia(dia);
       return (
         Array.isArray(this.agendamentos) &&
         this.agendamentos.some(
-          (a) => a.diaSemana?.toLowerCase() === dia.toLowerCase()
+          (a) => this.normalizeDia(a.diaSemana ?? '') === diaNorm
         )
       );
     }
@@ -665,7 +673,7 @@ import { UserService } from 'src/app/services/user.service';
             this.agendamentos = agendamentos
               .map(a => ({
                 ...a,
-                diaSemana: a.diaSemana.trim().toLowerCase(),
+                diaSemana: this.normalizeDia(a.diaSemana.trim()),
                 hora: a.hora.trim()
               }))
               .filter(a => {
@@ -699,7 +707,7 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     todosIndisponiveis(dia: string): boolean {
-      const diaKey = dia.toLowerCase();
+      const diaKey = this.normalizeDia(dia);
       const horarios = this.horariosPorDia[diaKey] || [];
       return (
         horarios.length > 0 && horarios.every((h) => h.status === 'INDISPONIVEL')
@@ -753,7 +761,7 @@ import { UserService } from 'src/app/services/user.service';
       const agendamento: Agendamento = {
         data: this.converterParaDataISO(dia),
         hora: horario,
-        diaSemana: dia.split(' - ')[0].toLowerCase(),
+        diaSemana: this.normalizeDia(dia.split(' - ')[0]),
         categoria: this.categoriaSelecionada
       };
     
@@ -831,10 +839,10 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
-      const diaSemana = dia.split(' - ')[0].trim().toLowerCase();
+      const diaSemana = this.normalizeDia(dia.split(' - ')[0].trim());
       const horaFormatada = hora.slice(0, 5);
       return this.agendamentos.find(a =>
-        a.diaSemana.toLowerCase() === diaSemana &&
+        this.normalizeDia(a.diaSemana) === diaSemana &&
         a.hora.slice(0, 5) === horaFormatada &&
         a.status !== 'CANCELADO'
       );
