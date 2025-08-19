@@ -10,7 +10,7 @@ import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
-import { DialogoAgendamentoRealizadoComponent } from 'src/app/components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
+import { DialogoAgendamentoComponent } from 'src/app/components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -246,7 +246,7 @@ import { UserService } from 'src/app/services/user.service';
     selecionarHorario(dia: string, horario: string): void {
       const status = this.getHorarioStatus(dia, horario);
       if (status === 'DISPONIVEL') {
-        this.agendarHorario(dia, horario); // Usuário comum tenta agendar
+        this.abrirDialogoAgendamento(dia, horario);
       } else if (status === 'INDISPONIVEL') {
         this.snackBar.open(
           'Horário indisponivel; provavelmente já reservado ou bloqueado. Escolha outro.',
@@ -719,76 +719,39 @@ import { UserService } from 'src/app/services/user.service';
           this.toggleHorario(dia, slot);
         }
       } else {
-        this.agendarHorario(dia, horario);
+        this.abrirDialogoAgendamento(dia, horario);
       }
     }
 
-    agendarHorario(dia: string, horario: string): void {
-      if (!this.authService.isAuthenticated()) {
-        this.snackBar.open('Usuário não autenticado. Faça login para agendar.', 'Ciente', { duration: 5000 });
-        this.router.navigate(['/auth/login']);
-        return;
-      }
-    
-      const usuario = this.authService.getUsuarioAutenticado();
-      if (!usuario) {
-        this.snackBar.open('Não foi possível encontrar seus dados de usuário. Faça login novamente.', 'Ciente', { duration: 5000 });
-        this.authService.logout();
-        this.router.navigate(['/auth/login']);
-        return;
-      }
+    private abrirDialogoAgendamento(dia: string, horario: string): void {
+      const ref = this.dialog.open(DialogoAgendamentoComponent, {
+        data: { diaSemana: dia, hora: horario, categoria: this.categoriaSelecionada }
+      });
 
-      const dataIso = this.converterParaDataISO(dia);
-      const agendamentoDate = new Date(`${dataIso}T${horario}`);
-      const agora = new Date(Date.now() + this.timeOffsetMs);
-      if (agendamentoDate.getTime() < agora.getTime()) {
-        this.snackBar.open('Não é possível agendar horários passados.', 'Ciente', { duration: 3000 });
-        return;
-      }
+      ref.afterClosed().subscribe(r => {
+        if (r?.sucesso) {
+          const novoAgendamento: Agendamento | undefined = r.payload;
+          const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+          const horariosDoDia = this.horariosPorDia[diaKey] || [];
+          const index = horariosDoDia.findIndex(h => h.horario === horario);
 
-      const agendamento: Agendamento = {
-        data: this.converterParaDataISO(dia),
-        hora: horario,
-        diaSemana: this.normalizeDia(dia.split(' - ')[0]),
-        categoria: this.categoriaSelecionada
-      };
-    
-      this.agendamentoService.createAgendamento(agendamento).subscribe({
-        next: (res: Agendamento) => {
-          const novoAgendamento = res;
-          const status = (res?.status as SlotHorario['status']) || 'AGENDADO';
-          const confirmDialog = this.dialog.open(DialogoAgendamentoRealizadoComponent, {
-            width: '400px'
-          });
+          if (index !== -1) {
+            horariosDoDia[index].status = 'AGENDADO';
+          } else {
+            horariosDoDia.push({ horario, status: 'AGENDADO' });
+          }
 
-          confirmDialog.afterClosed().subscribe(() => {
-            const diaKey = agendamento.diaSemana;
-            const horariosDoDia = this.horariosPorDia[diaKey] || [];
-            const index = horariosDoDia.findIndex(h => h.horario === horario);
+          this.horariosPorDia[diaKey] = [...horariosDoDia];
 
-            if (index !== -1) {
-              horariosDoDia[index].status = status;
-            } else {
-              horariosDoDia.push({ horario, status });
-            }
-
-            this.horariosPorDia[diaKey] = [...horariosDoDia];
-
-            if (novoAgendamento) {
-              this.agendamentos.push(novoAgendamento);
-              this.agendamentos = [...this.agendamentos];
-            }
-
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
+          if (novoAgendamento) {
+            this.agendamentos.push(novoAgendamento);
+            this.agendamentos = [...this.agendamentos];
             this.saveAgendamentos();
-            this.cdr.detectChanges();
-          });
-        },
-        error: (err: any) => {
-          this.logger.error('Erro ao agendar:', err);
-          const message = err?.error?.message || err?.error || err?.message ||
-            'Não foi possível realizar o agendamento. Tente novamente.';
-          this.snackBar.open(message, 'Ciente', { duration: 5000 });
+          }
+
+          this.horariosService.atualizarHorarios(this.horariosPorDia);
+          this.carregarHorariosDaSemana();
+          this.cdr.detectChanges();
         }
       });
     }
