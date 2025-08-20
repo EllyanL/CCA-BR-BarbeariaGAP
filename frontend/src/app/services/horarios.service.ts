@@ -1,8 +1,8 @@
-import { BehaviorSubject, Observable, Subscription, forkJoin, interval, throwError, from, of } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin, throwError, from, of } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
 import { HorarioDTO } from '../models/horario-dto';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { catchError, map, startWith, switchMap, tap, mergeMap, toArray } from 'rxjs/operators';
+import { catchError, map, tap, mergeMap, toArray } from 'rxjs/operators';
 
 import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
@@ -41,7 +41,7 @@ export class HorariosService {
     sexta: []
   });
   horariosPorDia$ = this.horariosPorDiaSource.asObservable();
-  private pollingSub?: Subscription;
+  private eventSource?: EventSource;
 
   constructor(
     private http: HttpClient,
@@ -174,22 +174,24 @@ export class HorariosService {
     this.horariosPorDiaSource.next(normalizeHorariosPorDia(novosHorarios));
   }
 
-  startPollingHorarios(categoria: string, intervalMs: number = 30000): void {
+  startPollingHorarios(categoria: string): void {
     this.stopPollingHorarios();
-    this.pollingSub = interval(intervalMs)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.carregarHorariosDaSemana(categoria))
-      )
-      .subscribe({
+    const source = new EventSource(`${this.apiUrl}/stream`);
+    this.eventSource = source;
+    source.onmessage = () => {
+      this.carregarHorariosDaSemana(categoria).subscribe({
         next: horarios => this.atualizarHorarios(horarios),
-        error: err => this.logger.error('Erro no polling de horários:', err)
+        error: err => this.logger.error('Erro ao atualizar horários via SSE:', err)
       });
+    };
+    source.onerror = err => {
+      this.logger.error('Erro no stream de horários:', err);
+    };
   }
 
   stopPollingHorarios(): void {
-    this.pollingSub?.unsubscribe();
-    this.pollingSub = undefined;
+    this.eventSource?.close();
+    this.eventSource = undefined;
   }
 
   disponibilizarHorario(dia: string, horario: string, categoria: string): Observable<Horario> {

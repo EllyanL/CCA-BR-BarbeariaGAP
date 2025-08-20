@@ -6,12 +6,14 @@ import intraer.ccabr.barbearia_api.models.Horario;
 
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
 import intraer.ccabr.barbearia_api.services.HorarioService;
+import intraer.ccabr.barbearia_api.services.HorarioUpdateService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,15 +26,22 @@ import java.util.Map;
 public class HorarioController {
     private final HorarioService horarioService;
     private final HorarioRepository horarioRepository;
+    private final HorarioUpdateService horarioUpdateService;
     private static final Logger logger = LoggerFactory.getLogger(HorarioController.class);
 
-    public HorarioController(HorarioService horarioService, HorarioRepository horarioRepository) {
+    public HorarioController(HorarioService horarioService, HorarioRepository horarioRepository, HorarioUpdateService horarioUpdateService) {
         this.horarioService = horarioService;
         this.horarioRepository = horarioRepository;
+        this.horarioUpdateService = horarioUpdateService;
     }
     @GetMapping
     public Map<String, Map<String, List<Horario>>> getTodosHorarios() {
         return horarioService.getTodosHorarios();
+    }
+
+    @GetMapping("/stream")
+    public SseEmitter streamHorarios() {
+        return horarioUpdateService.subscribe();
     }
 
     @GetMapping(params = "categoria")
@@ -64,7 +73,9 @@ public class HorarioController {
 
         Horario novo = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
         horarioRepository.save(novo);
-        return ResponseEntity.ok(new HorarioDTO(novo));
+        HorarioDTO dto = new HorarioDTO(novo);
+        horarioUpdateService.sendUpdate(dto);
+        return ResponseEntity.ok(dto);
     }
     @DeleteMapping("/remover")
     @PreAuthorize("hasRole('ADMIN')")
@@ -76,6 +87,7 @@ public class HorarioController {
         LocalTime hora = LocalTime.parse(horarioStr);
 
         boolean removido = horarioService.removerHorarioPersonalizado(dia, hora, categoria);
+        horarioUpdateService.sendUpdate("refresh");
         String mensagem = removido ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
         return ResponseEntity.ok(mensagem);
     }
@@ -101,7 +113,9 @@ public class HorarioController {
         if (horarioIndisponibilizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(new HorarioDTO(horarioIndisponibilizado));
+        HorarioDTO dto = new HorarioDTO(horarioIndisponibilizado);
+        horarioUpdateService.sendUpdate(dto);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/disponibilizar")
@@ -118,7 +132,9 @@ public class HorarioController {
         if (horarioDisponibilizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        return ResponseEntity.ok(new HorarioDTO(horarioDisponibilizado));
+        HorarioDTO dto = new HorarioDTO(horarioDisponibilizado);
+        horarioUpdateService.sendUpdate(dto);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/indisponibilizar/tudo/{dia}")
@@ -126,6 +142,7 @@ public class HorarioController {
     public ResponseEntity<Map<String, Object>> indisponibilizarTodosHorarios(@PathVariable String dia, @RequestBody List<String> horarios, @RequestParam String categoria) {
         List<LocalTime> horas = horarios.stream().map(LocalTime::parse).toList();
         Map<String, Object> response = horarioService.indisponibilizarTodosHorarios(dia, horas, categoria);
+        horarioUpdateService.sendUpdate("refresh");
         return ResponseEntity.ok(response);
     }
 
@@ -134,6 +151,7 @@ public class HorarioController {
     public ResponseEntity<Map<String, Object>> disponibilizarTodosHorarios(@PathVariable String dia, @RequestBody List<String> horarios, @RequestParam String categoria) {
         List<LocalTime> horas = horarios.stream().map(LocalTime::parse).toList();
         Map<String, Object> response = horarioService.disponibilizarTodosHorarios(dia, horas, categoria);
+        horarioUpdateService.sendUpdate("refresh");
         return ResponseEntity.ok(response);
     }
 
@@ -150,6 +168,7 @@ public class HorarioController {
         if (atualizado == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+        horarioUpdateService.sendUpdate(atualizado);
         return ResponseEntity.ok(atualizado);
     }
 
@@ -172,6 +191,7 @@ public class HorarioController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         Map<String, List<HorarioDTO>> atualizados = horarioService.toggleDia(dia, categoria, status);
+        horarioUpdateService.sendUpdate("refresh");
         return ResponseEntity.ok(atualizados);
     }
     
@@ -190,6 +210,7 @@ public class HorarioController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
         HorarioDTO atualizado = horarioService.alterarStatus(id, status);
+        horarioUpdateService.sendUpdate(atualizado);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
                 .body(atualizado);
