@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { HorariosComponent } from './horarios.component';
 import { HorariosService } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
+import { HorarioDTO } from '../../models/horario-dto';
 import { ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -234,7 +235,7 @@ describe('HorariosComponent', () => {
   it('toggleHorario alterna status e chama serviço', () => {
     const slot: SlotHorario = { id: 1, horario: '08:00', status: 'DISPONIVEL' } as SlotHorario;
     component.horariosPorDia = { segunda: [slot], terca: [], quarta: [], quinta: [], sexta: [] } as HorariosPorDia;
-    horariosService.toggleSlot.and.returnValue(of({ id: 1, horario: '08:00', status: 'INDISPONIVEL' } as any));
+    horariosService.toggleSlot.and.returnValue(of({ id: 1, horario: '08:00', status: 'INDISPONIVEL' } as HorarioDTO));
     component.toggleHorario('segunda', '08:00');
     expect(horariosService.toggleSlot).toHaveBeenCalledWith('segunda', '08:00', component.categoriaSelecionada);
     expect(horariosService.atualizarHorarios).toHaveBeenCalled();
