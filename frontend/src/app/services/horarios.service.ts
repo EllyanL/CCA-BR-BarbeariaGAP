@@ -203,6 +203,18 @@ export class HorariosService {
     return this.http.post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
   }
 
+  toggleSlot(dia: string, horario: string, categoria: string): Observable<Horario> {
+    const body: HorarioRequest = { dia: this.normalizeDia(dia), horario, categoria };
+    return this.http
+      .put<Horario>(`${this.apiUrl}/toggle`, body, { headers: this.getAuthHeaders() })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          this.logger.error('Erro ao alternar horário:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   alterarStatusHorario(horarioId: number, status: 'DISPONIVEL' | 'INDISPONIVEL'): Observable<Horario> {
     const headers = this.getAuthHeaders();
     return this.http

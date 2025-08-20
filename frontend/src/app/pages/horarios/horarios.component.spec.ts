@@ -24,7 +24,7 @@ describe('HorariosComponent', () => {
   let configService: jasmine.SpyObj<ConfiguracoesAgendamentoService>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'alterarStatusHorario', 'atualizarHorarios', 'toggleDia'], { horariosPorDia$: of({}) });
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'toggleSlot', 'atualizarHorarios', 'toggleDia'], { horariosPorDia$: of({}) });
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos', 'createAgendamento']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
@@ -225,12 +225,12 @@ describe('HorariosComponent', () => {
     expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('DISPONIVEL');
   });
 
-  it('toggleSlot alterna status e chama serviço', () => {
+  it('toggleHorario alterna status e chama serviço', () => {
     const slot: SlotHorario = { id: 1, horario: '08:00', status: 'DISPONIVEL' } as SlotHorario;
     component.horariosPorDia = { segunda: [slot], terca: [], quarta: [], quinta: [], sexta: [] } as HorariosPorDia;
-    horariosService.alterarStatusHorario.and.returnValue(of({} as any));
-    component.toggleSlot('segunda', '08:00');
-    expect(horariosService.alterarStatusHorario).toHaveBeenCalledWith(1, 'INDISPONIVEL');
+    horariosService.toggleSlot.and.returnValue(of({ id: 1, horario: '08:00', status: 'INDISPONIVEL' } as any));
+    component.toggleHorario('segunda', '08:00');
+    expect(horariosService.toggleSlot).toHaveBeenCalledWith('segunda', '08:00', component.categoriaSelecionada);
     expect(horariosService.atualizarHorarios).toHaveBeenCalled();
     expect(component.horariosPorDia['segunda'][0].status).toBe('INDISPONIVEL');
   });
