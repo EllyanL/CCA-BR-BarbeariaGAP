@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
+import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
@@ -554,7 +555,7 @@ import { UserService } from 'src/app/services/user.service';
     const categoria = this.categoriaSelecionada;
 
     this.horariosService.toggleSlot(diaKey, hhmm, categoria).subscribe({
-      next: (h) => {
+      next: (h: HorarioDTO) => {
         const atualizado: SlotHorario = {
           id: h.id,
           horario: normalizeHora(h.horario),

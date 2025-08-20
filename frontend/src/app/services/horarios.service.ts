@@ -1,5 +1,6 @@
 import { BehaviorSubject, Observable, Subscription, forkJoin, interval, throwError, from, of } from 'rxjs';
 import { Horario, HorarioRequest } from '../models/horario';
+import { HorarioDTO } from '../models/horario-dto';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, map, startWith, switchMap, tap, mergeMap, toArray } from 'rxjs/operators';
 
@@ -203,10 +204,10 @@ export class HorariosService {
     return this.http.post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
   }
 
-  toggleSlot(dia: string, horario: string, categoria: string): Observable<Horario> {
+  toggleSlot(dia: string, horario: string, categoria: string): Observable<HorarioDTO> {
     const body: HorarioRequest = { dia: this.normalizeDia(dia), horario, categoria };
     return this.http
-      .put<Horario>(`${this.apiUrl}/toggle`, body, { headers: this.getAuthHeaders() })
+      .put<HorarioDTO>(`${this.apiUrl}/toggle`, body, { headers: this.getAuthHeaders() })
       .pipe(
         catchError((error: HttpErrorResponse) => {
           this.logger.error('Erro ao alternar horário:', error);
