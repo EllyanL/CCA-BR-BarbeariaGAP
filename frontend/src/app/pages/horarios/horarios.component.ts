@@ -137,6 +137,7 @@ import { UserService } from 'src/app/services/user.service';
         const arr = this.horariosPorDia[dia] || [];
         this.horariosPorDia[dia] = arr.filter(h => inRange(h.horario));
       });
+      this.horariosPorDia = { ...this.horariosPorDia };
       this.cdr.markForCheck?.();
       this.cdr.detectChanges();
     }
@@ -221,9 +222,9 @@ import { UserService } from 'src/app/services/user.service';
             this.horariosService.startPollingHorarios(this.categoriaSelecionada);
             this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
               next: h => {
-                this.horariosPorDia = h;
+                this.horariosPorDia = { ...h };
                 this.aplicarJanelaHorarios();
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
               },
               error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
             });
@@ -246,7 +247,7 @@ import { UserService } from 'src/app/services/user.service';
 
 //---------------⏰ Gerenciamento de Horários---------------
     selecionarHorario(dia: string, horario: string): void {
-      const status = this.getHorarioStatus(dia, horario);
+      const status = this.getStatus(dia, horario);
       if (status === 'DISPONIVEL') {
         this.abrirDialogoAgendamento(dia, horario);
       } else if (status === 'INDISPONIVEL') {
@@ -269,21 +270,21 @@ import { UserService } from 'src/app/services/user.service';
         .carregarHorariosDaSemana(this.categoriaSelecionada)
         .subscribe({
           next: (horarios: HorariosPorDia) => {
-            this.horariosPorDia = horarios;
+            this.horariosPorDia = { ...horarios };
             this.aplicarJanelaHorarios();
-            this.cdr.detectChanges();
+            this.cdr.markForCheck();
           },
           error: (err: any) => this.logger.error('Erro ao carregar horários:', err)
         });
     }
-    
+
     carregarHorariosDaSemana(): void {
       this.horariosService.carregarHorariosDaSemana(this.categoriaSelecionada).subscribe({
         next: (horarios: HorariosPorDia) => {
           const normalizados = normalizeHorariosPorDia(horarios || {});
-          this.horariosPorDia = normalizados;
+          this.horariosPorDia = { ...normalizados };
           this.aplicarJanelaHorarios();
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         },
         error: err => this.logger.error('Erro ao carregar horários:', err)
       });
@@ -503,7 +504,8 @@ import { UserService } from 'src/app/services/user.service';
               this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
             }
           });
-
+          this.horariosPorDia = { ...this.horariosPorDia };
+          this.cdr.markForCheck();
           this.carregarHorariosDaSemana();
           const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
           this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: 3000 });
@@ -517,42 +519,61 @@ import { UserService } from 'src/app/services/user.service';
     }
         
 
+  getStatus(dia: string, hhmm: string): SlotHorario['status'] | undefined {
+    const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+    const hora = normalizeHora(hhmm);
+    return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === hora)?.status;
+  }
+
   getSlot(dia: string, hora: string): SlotHorario | undefined {
-      const diaKey = this.normalizeDia(dia);
-      return this.horariosPorDia[diaKey]?.find(h => h.horario.slice(0, 5) === hora.slice(0, 5));
+    const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+    const hhmm = normalizeHora(hora);
+    return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === hhmm);
+  }
+
+  getHorarioStatus(dia: string, hora: string): SlotHorario['status'] | undefined {
+    return this.getStatus(dia, hora);
+  }
+
+  toggleSlot(dia: string, hhmm: string): void {
+    const slot = this.getSlot(dia, hhmm);
+    if (!slot?.id) {
+      return;
     }
 
-  getHorarioStatus(dia: string, hora: string): string {
-      return this.getSlot(dia, hora)?.status || 'DISPONIVEL';
-    }
-
-  toggleHorario(dia: string, slot: SlotHorario): void {
-      if (!slot.id) {
-        return;
+    if (slot.status === 'AGENDADO') {
+      const agendamento = this.getAgendamentoParaDiaHora(dia, hhmm);
+      if (agendamento) {
+        this.abrirModalAgendamento(agendamento);
       }
-      const novoStatus: SlotHorario['status'] = slot.status === 'DISPONIVEL' ? 'INDISPONIVEL' : 'DISPONIVEL';
-      this.horariosService.alterarStatusHorario(slot.id, novoStatus).subscribe({
-        next: () => {
-          const diaKey = this.normalizeDia(dia);
-          const lista = this.horariosPorDia[diaKey] || [];
-          const idx = lista.findIndex(s => s.id === slot.id);
-          if (idx !== -1) {
-            lista[idx] = { ...lista[idx], status: novoStatus };
-            this.horariosPorDia[diaKey] = lista;
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
-          }
-          const msg = novoStatus === 'DISPONIVEL'
-            ? 'Horário disponibilizado com sucesso.'
-            : 'Horário indisponibilizado com sucesso.';
-          this.snackBar.open(msg, 'Ciente', { duration: 3000 });
-        },
-        error: (error: any) => {
-          const mensagem = error?.error?.mensagem || error?.error?.message ||
-            'Falha ao alterar o status do horário. Verifique a conexão e tente novamente.';
-          this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
-        }
-      });
+      return;
     }
+
+    const novoStatus: SlotHorario['status'] = slot.status === 'DISPONIVEL' ? 'INDISPONIVEL' : 'DISPONIVEL';
+    this.horariosService.alterarStatusHorario(slot.id, novoStatus).subscribe({
+      next: () => {
+        const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+        const lista = this.horariosPorDia[diaKey] || [];
+        const idx = lista.findIndex(s => s.id === slot.id);
+        if (idx !== -1) {
+          lista[idx] = { ...lista[idx], status: novoStatus };
+          this.horariosPorDia[diaKey] = [...lista];
+          this.horariosPorDia = { ...this.horariosPorDia };
+          this.horariosService.atualizarHorarios(this.horariosPorDia);
+          this.cdr.markForCheck();
+        }
+        const msg = novoStatus === 'DISPONIVEL'
+          ? 'Horário disponibilizado com sucesso.'
+          : 'Horário indisponibilizado com sucesso.';
+        this.snackBar.open(msg, 'Ciente', { duration: 3000 });
+      },
+      error: (error: any) => {
+        const mensagem = error?.error?.mensagem || error?.error?.message ||
+          'Falha ao alterar o status do horário. Verifique a conexão e tente novamente.';
+        this.snackBar.open(mensagem, 'Ciente', { duration: 5000 });
+      }
+    });
+  }
     
 //-----------------☀️Gerenciamento de Dias-----------------
     toggleDia(dia: string): void {
@@ -716,10 +737,7 @@ import { UserService } from 'src/app/services/user.service';
 
       const isAdmin = militarAutenticado.categoria?.toUpperCase() === 'ADMIN';
       if (isAdmin) {
-        const slot = this.getSlot(dia, horario);
-        if (slot) {
-          this.toggleHorario(dia, slot);
-        }
+        this.toggleSlot(dia, horario);
       } else {
         this.abrirDialogoAgendamento(dia, horario);
       }
@@ -744,6 +762,7 @@ import { UserService } from 'src/app/services/user.service';
           }
 
           this.horariosPorDia[diaKey] = [...horariosDoDia];
+          this.horariosPorDia = { ...this.horariosPorDia };
 
           if (novoAgendamento) {
             this.agendamentos.push(novoAgendamento);
@@ -753,7 +772,7 @@ import { UserService } from 'src/app/services/user.service';
 
           this.horariosService.atualizarHorarios(this.horariosPorDia);
           this.carregarHorariosDaSemana();
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         }
       });
     }
@@ -791,10 +810,10 @@ import { UserService } from 'src/app/services/user.service';
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
       const diaSemana = this.normalizeDia(dia.split(' - ')[0].trim());
-      const horaFormatada = hora.slice(0, 5);
+      const horaFormatada = normalizeHora(hora);
       return this.agendamentos.find(a =>
         this.normalizeDia(a.diaSemana) === diaSemana &&
-        a.hora.slice(0, 5) === horaFormatada &&
+        normalizeHora(a.hora) === horaFormatada &&
         a.status !== 'CANCELADO'
       );
     }
@@ -814,6 +833,7 @@ import { UserService } from 'src/app/services/user.service';
           if (slotIndex !== -1) {
             slotsDia[slotIndex] = { ...slotsDia[slotIndex], status: 'DISPONIVEL' };
             this.horariosPorDia[dia] = [...slotsDia];
+            this.horariosPorDia = { ...this.horariosPorDia };
           }
 
           this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
@@ -821,6 +841,7 @@ import { UserService } from 'src/app/services/user.service';
           this.saveAgendamentos();
           this.carregarAgendamentos();
           this.carregarHorariosDaSemana();
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           this.logger.error('Erro ao desmarcar agendamento:', error);

@@ -69,7 +69,7 @@ describe('HorariosComponent', () => {
 
     component.carregarHorariosDaSemana();
 
-    const status = component.getHorarioStatus('segunda', '08:00');
+    const status = component.getStatus('segunda', '08:00');
     expect(status).toBe('AGENDADO');
   });
 
@@ -225,11 +225,11 @@ describe('HorariosComponent', () => {
     expect(component.getHorarioStatus('segunda', '08:00:00')).toBe('DISPONIVEL');
   });
 
-  it('toggleHorario alterna status e chama serviço', () => {
+  it('toggleSlot alterna status e chama serviço', () => {
     const slot: SlotHorario = { id: 1, horario: '08:00', status: 'DISPONIVEL' } as SlotHorario;
     component.horariosPorDia = { segunda: [slot], terca: [], quarta: [], quinta: [], sexta: [] } as HorariosPorDia;
     horariosService.alterarStatusHorario.and.returnValue(of({} as any));
-    component.toggleHorario('segunda', slot);
+    component.toggleSlot('segunda', '08:00');
     expect(horariosService.alterarStatusHorario).toHaveBeenCalledWith(1, 'INDISPONIVEL');
     expect(horariosService.atualizarHorarios).toHaveBeenCalled();
     expect(component.horariosPorDia['segunda'][0].status).toBe('INDISPONIVEL');
