@@ -137,8 +137,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       next: ({ horarioInicio, horarioFim }) => {
         this.inicioJanelaMin = this.toMinutes(horarioInicio);
         this.fimJanelaMin = this.toMinutes(horarioFim);
-        this.inicioAgendavelMin = this.inicioJanelaMin + 10;
-        this.fimAgendavelMin = this.fimJanelaMin - 30;
+        this.inicioAgendavelMin = this.inicioJanelaMin;
+        this.fimAgendavelMin = this.fimJanelaMin;
         this.aplicarJanelaHorarios();
       },
       error: err => this.logger.error('Erro ao carregar janela de horários:', err)
@@ -160,7 +160,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   isHoraAgendavel(hora: string): boolean {
     const m = this.toMinutes(hora);
-    return m >= this.inicioAgendavelMin && m <= this.fimAgendavelMin;
+    return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
   }
 
   ngOnInit(): void {
