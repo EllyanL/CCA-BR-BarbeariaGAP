@@ -15,13 +15,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.LocalDate;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.text.Normalizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -148,6 +145,15 @@ public class HorarioService {
         };
     }
 
+    private String normalizeDia(String dia) {
+        if (dia == null) {
+            return null;
+        }
+        return Normalizer.normalize(dia, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase();
+    }
+
     public Map<String, List<HorarioDTO>> listarHorariosAgrupadosPorCategoria(String categoria) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
         List<Horario> horarios = horarioRepository.findByCategoria(categoria).stream()
@@ -173,32 +179,43 @@ public class HorarioService {
 
             dto.setStatus(normalizeStatus(status));
 
-            DayOfWeek diaSemana = parseDiaSemana(h.getDia());
-            LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
-            LocalDate dataSlot = hoje.with(TemporalAdjusters.nextOrSame(diaSemana));
-            LocalDateTime slotDateTime = LocalDateTime.of(dataSlot, h.getHorario());
-            LocalDateTime agora = LocalDateTime.now(ZoneId.of("America/Sao_Paulo"));
-            if (slotDateTime.isBefore(agora)) {
-                dto.setStatus("INDISPONIVEL");
-            }
-
             return dto;
         }).toList();
 
         return dtos.stream().collect(Collectors.groupingBy(HorarioDTO::getDia));
     }
 
-    private DayOfWeek parseDiaSemana(String dia) {
-        return switch (dia.toLowerCase(Locale.ROOT)) {
-            case "segunda" -> DayOfWeek.MONDAY;
-            case "terça", "terca" -> DayOfWeek.TUESDAY;
-            case "quarta" -> DayOfWeek.WEDNESDAY;
-            case "quinta" -> DayOfWeek.THURSDAY;
-            case "sexta" -> DayOfWeek.FRIDAY;
-            case "sábado", "sabado" -> DayOfWeek.SATURDAY;
-            case "domingo" -> DayOfWeek.SUNDAY;
-            default -> throw new IllegalArgumentException("Dia inválido: " + dia);
-        };
+    @Transactional
+    public Map<String, List<HorarioDTO>> toggleHorario(String dia, String horario, String categoria) {
+        String diaNorm = normalizeDia(dia);
+        LocalTime horaNorm = LocalTime.parse(horario, TIME_FORMATTER);
+
+        horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horaNorm, categoria)
+                .ifPresent(h -> {
+                    if (h.getStatus() != HorarioStatus.AGENDADO) {
+                        h.setStatus(h.getStatus() == HorarioStatus.DISPONIVEL
+                                ? HorarioStatus.INDISPONIVEL
+                                : HorarioStatus.DISPONIVEL);
+                        horarioRepository.save(h);
+                    }
+                });
+
+        return listarHorariosAgrupadosPorCategoria(categoria);
+    }
+
+    @Transactional
+    public Map<String, List<HorarioDTO>> toggleDia(String dia, String categoria, HorarioStatus acao) {
+        String diaNorm = normalizeDia(dia);
+
+        List<Horario> horarios = horarioRepository.findByDiaAndCategoria(diaNorm, categoria);
+        for (Horario h : horarios) {
+            if (h.getStatus() != HorarioStatus.AGENDADO) {
+                h.setStatus(acao);
+            }
+        }
+        horarioRepository.saveAll(horarios);
+
+        return listarHorariosAgrupadosPorCategoria(categoria);
     }
     
 
