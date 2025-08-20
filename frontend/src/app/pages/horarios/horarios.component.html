@@ -90,40 +90,37 @@
         <tbody class="horarios-body">
           <tr *ngFor="let horario of horariosBaseSemana; trackBy: trackByHorario">
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-coluna-dia">
-              <div class="horarios-botao-container" [ngSwitch]="getHorarioStatus(dia, horario)">
+              <div class="horarios-botao-container">
                 <!-- ADMIN -->
                 <ng-container *ngIf="isAdmin; else visualizacaoUsuario">
-                  <ng-container *ngIf="getSlot(dia, horario) as slot">
-                    <button *ngSwitchCase="'DISPONIVEL'" class="botao-hora-disponivel" mat-raised-button color="primary"
-                            (click)="toggleHorario(dia, slot)">
-                      <b>{{ horario }}</b>
-                    </button>
-
-                    <button *ngSwitchCase="'INDISPONIVEL'" class="botao-hora-indisponivel" mat-raised-button
-                            (click)="toggleHorario(dia, slot)">
-                            <b>{{ horario }}</b>
-                    </button>
-
-                    <ng-container *ngSwitchCase="'AGENDADO'">
-                      <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
-                        <button *ngIf="agendamento" (click)="abrirModalAgendamento(agendamento)" mat-raised-button class="botao-hora-agendado">
+                  <ng-container *ngIf="getSlot(dia, horario); else adicionar">
+                    <button mat-raised-button
+                            (click)="toggleSlot(dia, horario)"
+                            [ngClass]="{
+                              'botao-hora-disponivel': getStatus(dia, horario) === 'DISPONIVEL',
+                              'botao-hora-indisponivel': getStatus(dia, horario) === 'INDISPONIVEL',
+                              'botao-hora-agendado': getStatus(dia, horario) === 'AGENDADO'
+                            }">
+                      <ng-container [ngSwitch]="getStatus(dia, horario)">
+                        <ng-container *ngSwitchCase="'AGENDADO'">
                           <mat-icon>lock</mat-icon>
                           {{ formatarStatus('AGENDADO') }}
-                        </button>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'REALIZADO'">
+                          {{ formatarStatus('AGENDADO') }}
+                        </ng-container>
+                        <ng-container *ngSwitchDefault>
+                          <b>{{ horario }}</b>
+                        </ng-container>
                       </ng-container>
-                    </ng-container>
-
-                    <button *ngSwitchCase="'REALIZADO'" class="botao-hora-indisponivel" mat-raised-button disabled>
-                      {{ formatarStatus('AGENDADO') }}
                     </button>
                   </ng-container>
-
-                  <ng-container *ngSwitchDefault>
+                  <ng-template #adicionar>
                     <button mat-raised-button class="botao-hora-adicionar" color="accent"
                             (click)="adicionarHorarioIndividual(dia, horario, categoriaSelecionada)">
                       Adicionar
                     </button>
-                  </ng-container>
+                  </ng-template>
                 </ng-container>
 
             <!-- USUÁRIO -->
@@ -138,19 +135,19 @@
                 </button>
               </ng-container>
 
-              <button *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'DISPONIVEL'"
+              <button *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getStatus(dia, horario) === 'DISPONIVEL'"
                       mat-raised-button
                       color="primary"
                       (click)="selecionarHorario(dia, horario)">
                 {{ horario }}
               </button>
 
-              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'INDISPONIVEL'"
+              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getStatus(dia, horario) === 'INDISPONIVEL'"
                     class="horario-indisponivel">
                 Indisponível
               </span>
 
-              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getHorarioStatus(dia, horario) === 'REALIZADO'"
+              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getStatus(dia, horario) === 'REALIZADO'"
                     class="horario-indisponivel">
                 {{ formatarStatus('AGENDADO') }}
               </span>

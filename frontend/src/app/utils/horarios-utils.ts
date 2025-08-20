@@ -4,7 +4,16 @@ import { HorariosPorDia } from '../models/slot-horario';
  * Normaliza uma string de horário garantindo o formato HH:mm.
  */
 export function normalizeHora(hora: string): string {
-  return hora?.slice(0, 5);
+  if (!hora) {
+    return hora as any;
+  }
+  const clean = hora
+    .replace(/\u00A0/g, '')
+    .trim();
+  const [h = '', m = ''] = clean.split(':');
+  const hh = h.padStart(2, '0');
+  const mm = m.padStart(2, '0');
+  return `${hh}:${mm}`.slice(0, 5);
 }
 
 /**
