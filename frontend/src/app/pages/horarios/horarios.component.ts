@@ -120,8 +120,8 @@ import { UserService } from 'src/app/services/user.service';
         next: ({ horarioInicio, horarioFim }) => {
           this.inicioJanelaMin = this.toMinutes(horarioInicio);
           this.fimJanelaMin = this.toMinutes(horarioFim);
-          this.inicioAgendavelMin = this.inicioJanelaMin + 10;
-          this.fimAgendavelMin = this.fimJanelaMin - 30;
+          this.inicioAgendavelMin = this.inicioJanelaMin;
+          this.fimAgendavelMin = this.fimJanelaMin;
           this.aplicarJanelaHorarios();
         },
         error: err => this.logger.error('Erro ao carregar janela de horários:', err)
@@ -146,8 +146,8 @@ import { UserService } from 'src/app/services/user.service';
     
 
     isHoraAgendavel(hora: string): boolean {
-      const m = this.toMinutes(hora);
-      return m >= this.inicioAgendavelMin && m <= this.fimAgendavelMin;
+    const m = this.toMinutes(hora);
+    return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
     }
 
 //---------------🔰Inicialização e Logout--------------------    
