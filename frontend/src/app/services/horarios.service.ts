@@ -288,7 +288,15 @@ export class HorariosService {
     return this.http.post(`${this.apiUrl}/agendar`, agendamento, { responseType: 'text' as 'json' }).pipe(
       catchError((error: HttpErrorResponse) => {
         this.logger.error('Erro ao agendar horário:', error);
-        return throwError(() => new Error("Erro ao agendar"));
+
+        let message = error.error?.message || error.error || 'Erro ao agendar';
+        if (error.status === 400 || error.status === 422) {
+          message = message || (error.status === 400
+            ? 'Você só pode agendar novamente após 15 dias'
+            : 'Não é possível agendar horários passados');
+        }
+
+        return throwError(() => new Error(message));
       })
     );
   }

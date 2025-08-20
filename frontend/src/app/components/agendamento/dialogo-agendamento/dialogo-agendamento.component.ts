@@ -256,8 +256,15 @@ import { Subscription } from 'rxjs';
           error => {
             this.logger.error('Erro ao criar agendamento:', error);
 
-            const message = error?.error?.message || error?.error ||
-              this.errorMessages.AGENDAMENTO_CREATE_ERROR;
+            let message = error?.error?.message || error?.error || '';
+
+            if (error.status === 400 || error.status === 422) {
+              message = message || (error.status === 400
+                ? 'Você só pode agendar novamente após 15 dias'
+                : 'Não é possível agendar horários passados');
+            } else {
+              message = message || this.errorMessages.AGENDAMENTO_CREATE_ERROR;
+            }
 
             this.errorMessage = message;
             this.snackBar.open(message, 'OK', { duration: 5000 });
