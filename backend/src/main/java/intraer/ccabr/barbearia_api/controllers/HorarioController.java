@@ -139,15 +139,18 @@ public class HorarioController {
 
     @PutMapping("/toggle")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, List<HorarioDTO>>> toggleHorario(@RequestBody Map<String, String> payload) {
+    public ResponseEntity<HorarioDTO> toggleHorario(@RequestBody Map<String, String> payload) {
         String dia = payload.get("dia");
         String horario = payload.get("horario");
         String categoria = payload.get("categoria");
         if (dia == null || horario == null || categoria == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        Map<String, List<HorarioDTO>> atualizados = horarioService.toggleHorario(dia, horario, categoria);
-        return ResponseEntity.ok(atualizados);
+        HorarioDTO atualizado = horarioService.toggleHorario(dia, horario, categoria);
+        if (atualizado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(atualizado);
     }
 
     @PutMapping("/toggle-dia")

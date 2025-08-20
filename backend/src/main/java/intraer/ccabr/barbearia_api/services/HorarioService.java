@@ -186,21 +186,30 @@ public class HorarioService {
     }
 
     @Transactional
-    public Map<String, List<HorarioDTO>> toggleHorario(String dia, String horario, String categoria) {
+    public HorarioDTO toggleHorario(String dia, String horario, String categoria) {
         String diaNorm = normalizeDia(dia);
         LocalTime horaNorm = LocalTime.parse(horario, TIME_FORMATTER);
 
-        horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horaNorm, categoria)
-                .ifPresent(h -> {
-                    if (h.getStatus() != HorarioStatus.AGENDADO) {
-                        h.setStatus(h.getStatus() == HorarioStatus.DISPONIVEL
-                                ? HorarioStatus.INDISPONIVEL
-                                : HorarioStatus.DISPONIVEL);
-                        horarioRepository.save(h);
-                    }
-                });
+        Optional<Horario> opt = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horaNorm, categoria);
+        if (opt.isEmpty()) {
+            return null;
+        }
 
-        return listarHorariosAgrupadosPorCategoria(categoria);
+        Horario h = opt.get();
+        if (h.getStatus() != HorarioStatus.AGENDADO) {
+            h.setStatus(h.getStatus() == HorarioStatus.DISPONIVEL
+                    ? HorarioStatus.INDISPONIVEL
+                    : HorarioStatus.DISPONIVEL);
+            h = horarioRepository.save(h);
+        }
+
+        HorarioDTO dto = new HorarioDTO();
+        dto.setId(h.getId());
+        dto.setDia(diaNorm);
+        dto.setHorario(h.getHorario().format(TIME_FORMATTER));
+        dto.setCategoria(h.getCategoria() != null ? h.getCategoria().toUpperCase() : null);
+        dto.setStatus(normalizeStatus(h.getStatus().name()));
+        return dto;
     }
 
     @Transactional
