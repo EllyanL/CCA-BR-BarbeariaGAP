@@ -70,10 +70,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
   usuarioCarregado = false;
+  agendamentoBloqueado = false;
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
   private storageKey: string = '';
   private recarregarGradeSub?: Subscription;
+  private desbloqueioTimeout?: any;
+  private avisoBloqueioMostrado = false;
 
   private inicioJanelaMin: number = 0;
   private fimJanelaMin: number = 24 * 60;
@@ -140,6 +143,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.inicioAgendavelMin = this.inicioJanelaMin;
         this.fimAgendavelMin = this.fimJanelaMin;
         this.aplicarJanelaHorarios();
+        this.desabilitarTodosOsBotoes();
       },
       error: err => this.logger.error('Erro ao carregar janela de horários:', err)
     });
@@ -192,10 +196,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.snackBar.open('Atenção: horário do dispositivo diferente do servidor.', 'Ciente', { duration: 5000 });
         }
         this.initAfterTime();
+        this.desabilitarTodosOsBotoes();
       },
       error: (err) => {
         this.logger.error('Erro ao obter hora do servidor:', err);
         this.initAfterTime();
+        this.desabilitarTodosOsBotoes();
       }
     });
   }
@@ -591,40 +597,51 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private desabilitarBotoesPorHorario(): boolean {
+    clearTimeout(this.desbloqueioTimeout);
+
     const now = new Date(Date.now() + this.timeOffsetMs);
     const dayOfWeek = now.getDay();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+    const minutosAtuais = now.getHours() * 60 + now.getMinutes();
 
-    const startHour = 9;
-    const startMinute = 0;
-    const endHour = 18;
-    const endMinute = 0;
+    const inicioExpediente = this.inicioJanelaMin;
+    const fimExpediente = this.fimJanelaMin;
+    const inicioLiberado = Math.max(0, inicioExpediente - 30);
 
-    const INICIO_EXPEDIENTE = startHour * 60 + startMinute;
-    const FIM_EXPEDIENTE = endHour * 60 + endMinute;
+    const diaUtil = dayOfWeek >= 1 && dayOfWeek <= 5;
 
-    const horariosPorDia: Record<number, { inicio: number; fim: number }> = {
-      1: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
-      2: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
-      3: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
-      4: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE },
-      5: { inicio: INICIO_EXPEDIENTE, fim: FIM_EXPEDIENTE }
-    };
-
-    const janela = horariosPorDia[dayOfWeek];
-
-    if (janela) {
-      const minutosAtuais = hours * 60 + minutes;
-      if (minutosAtuais >= janela.inicio && minutosAtuais <= janela.fim) {
-        this.feedbackMessageTitle = '';
-        return false;
-      }
+    if (diaUtil && minutosAtuais >= inicioLiberado && minutosAtuais <= fimExpediente) {
+      this.feedbackMessageTitle = '';
+      this.agendamentoBloqueado = false;
+      this.avisoBloqueioMostrado = false;
+      return false;
     }
 
-    this.feedbackMessageTitle =
-      'Só é possível agendar entre 9h e 18h de segunda a sexta. Aguarde!';
+    this.agendamentoBloqueado = true;
+
+    if (minutosAtuais < inicioLiberado) {
+      const hh = Math.floor(inicioLiberado / 60).toString().padStart(2, '0');
+      const mm = (inicioLiberado % 60).toString().padStart(2, '0');
+      this.feedbackMessageTitle = `Agendamentos disponíveis a partir das ${hh}:${mm}.`;
+      const ms = (inicioLiberado - minutosAtuais) * 60 * 1000;
+      this.desbloqueioTimeout = setTimeout(() => this.desabilitarBotoesPorHorario(), ms);
+    } else {
+      const inicioStr = this.formatHora(inicioExpediente);
+      const fimStr = this.formatHora(fimExpediente);
+      this.feedbackMessageTitle = `Só é possível agendar entre ${inicioStr} e ${fimStr} de segunda a sexta. Aguarde!`;
+    }
+
+    if (!this.avisoBloqueioMostrado) {
+      this.snackBar.open(this.feedbackMessageTitle, 'Ciente', { duration: 5000 });
+      this.avisoBloqueioMostrado = true;
+    }
+
     return true;
+  }
+
+  private formatHora(totalMin: number): string {
+    const hh = Math.floor(totalMin / 60).toString().padStart(2, '0');
+    const mm = (totalMin % 60).toString().padStart(2, '0');
+    return `${hh}:${mm}`;
   }
 
   private getNomeDeGuerraMilitarLogado(): string {
@@ -741,6 +758,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.horariosSub?.unsubscribe();
     this.recarregarGradeSub?.unsubscribe();
     this.horariosService.stopPollingHorarios();
+    clearTimeout(this.desbloqueioTimeout);
   }
 
 }

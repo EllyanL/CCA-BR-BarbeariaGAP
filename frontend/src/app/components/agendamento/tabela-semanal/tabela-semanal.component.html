@@ -11,7 +11,7 @@
     </ng-template>
 
     <!-- Tabela Principal -->
-    <table class="tabela">
+    <table class="tabela" *ngIf="!agendamentoBloqueado">
       <thead class="tabela-header">
         <tr>
           <th>HORÁRIO</th>

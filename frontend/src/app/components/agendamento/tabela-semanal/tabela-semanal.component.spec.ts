@@ -32,7 +32,7 @@ describe('TabelaSemanalComponent', () => {
         { provide: MatSnackBar, useValue: snackSpy },
         {
           provide: ConfiguracoesAgendamentoService,
-          useValue: { getConfig: () => of({ horarioInicio: '08:00', horarioFim: '09:00' }) }
+          useValue: { getConfig: () => of({ horarioInicio: '09:00', horarioFim: '18:00' }) }
         }
       ]
     });
@@ -40,6 +40,7 @@ describe('TabelaSemanalComponent', () => {
     component = fixture.componentInstance;
     component.idMilitarLogado = 1;
     fixture.detectChanges();
+    snackSpy.open.calls.reset();
   });
 
   it('should create', () => {
@@ -88,15 +89,15 @@ describe('TabelaSemanalComponent', () => {
       expect(component.feedbackMessageTitle).toBe('');
     });
 
-    it('bloqueia agendamento na segunda-feira às 8h30', () => {
-      const mondayEarly = new Date('2023-01-02T08:30:00');
+    it('bloqueia agendamento na segunda-feira antes da liberação', () => {
+      const mondayEarly = new Date('2023-01-02T08:00:00');
       jasmine.clock().install();
       jasmine.clock().mockDate(mondayEarly);
 
       const result = (component as any)['desabilitarBotoesPorHorario']();
       expect(result).toBeTrue();
       expect(component.feedbackMessageTitle).toBe(
-        'Só é possível agendar entre 9h e 18h de segunda a sexta. Aguarde!'
+        'Agendamentos disponíveis a partir das 08:30.'
       );
     });
 
@@ -108,7 +109,7 @@ describe('TabelaSemanalComponent', () => {
       const result = (component as any)['desabilitarBotoesPorHorario']();
       expect(result).toBeTrue();
       expect(component.feedbackMessageTitle).toBe(
-        'Só é possível agendar entre 9h e 18h de segunda a sexta. Aguarde!'
+        'Só é possível agendar entre 09:00 e 18:00 de segunda a sexta. Aguarde!'
       );
     });
   });
