@@ -613,10 +613,11 @@ import { UserService } from 'src/app/services/user.service';
         this.horariosService
           .toggleDia({ dia: diaKey, categoria: this.categoriaSelecionada, acao })
           .subscribe({
-            next: slots => {
-              const normalizado = normalizeHorariosPorDia({ [diaKey]: slots });
-              this.horariosPorDia[diaKey] = normalizado[diaKey];
-              this.horariosPorDia = { ...this.horariosPorDia };
+            next: horarios => {
+              const normalizado = normalizeHorariosPorDia(horarios);
+              this.horariosPorDia = normalizado;
+              this.horariosService.atualizarHorarios(this.horariosPorDia);
+              this.cdr.markForCheck();
               const msg = acao === 'DISPONIBILIZAR' ? `Dia ${dia} disponibilizado.` : `Dia ${dia} indisponibilizado.`;
               this.snackBar.open(msg, 'Ciente', { duration: 3000 });
             },
