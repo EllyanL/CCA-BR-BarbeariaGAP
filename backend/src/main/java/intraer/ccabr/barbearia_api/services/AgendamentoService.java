@@ -371,10 +371,10 @@ public class AgendamentoService {
         }
 
         LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-        if (agendamentoDateTime.isBefore(ZonedDateTime.now(ZONE_ID_SAO_PAULO).plusMinutes(15).toLocalDateTime())) {
+        if (agendamentoDateTime.isBefore(ZonedDateTime.now(ZONE_ID_SAO_PAULO).plusMinutes(30).toLocalDateTime())) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                "O agendamento deve ser feito com pelo menos 15 minutos de antecedência."
+                "O agendamento deve ser feito com pelo menos 30 minutos de antecedência."
             );
         }
     

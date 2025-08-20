@@ -305,8 +305,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const dataISO = this.getDataFromDiaSemana(diaSemana);
     const agendamentoDate = new Date(`${dataISO}T${hora.slice(0, 5)}`);
     const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
-    if (diffMs < 15 * 60 * 1000) {
-      this.snackBar.open('O agendamento precisa ser feito com no mínimo 15 minutos de antecedência.', 'Ciente', { duration: 3000 });
+    if (diffMs < 30 * 60 * 1000) {
+      this.snackBar.open('O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.', 'Ciente', { duration: 3000 });
       return;
     }
   
