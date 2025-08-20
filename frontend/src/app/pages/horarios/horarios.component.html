@@ -90,7 +90,7 @@
                 <ng-container *ngIf="isAdmin; else visualizacaoUsuario">
                   <ng-container *ngIf="getSlot(dia, horario); else adicionar">
                     <button mat-raised-button
-                            (click)="toggleSlot(dia, horario)"
+                            (click)="toggleHorario(dia, horario)"
                             [ngClass]="{
                               'botao-hora-disponivel': getStatus(dia, horario) === 'DISPONIVEL',
                               'botao-hora-indisponivel': getStatus(dia, horario) === 'INDISPONIVEL',

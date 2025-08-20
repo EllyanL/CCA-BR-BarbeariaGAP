@@ -536,7 +536,7 @@ import { UserService } from 'src/app/services/user.service';
     return this.getStatus(dia, hora);
   }
 
-  toggleSlot(dia: string, hhmm: string): void {
+  toggleHorario(dia: string, hhmm: string): void {
     const slot = this.getSlot(dia, hhmm);
     if (!slot?.id) {
       return;
@@ -550,20 +550,32 @@ import { UserService } from 'src/app/services/user.service';
       return;
     }
 
-    const novoStatus: SlotHorario['status'] = slot.status === 'DISPONIVEL' ? 'INDISPONIVEL' : 'DISPONIVEL';
-    this.horariosService.alterarStatusHorario(slot.id, novoStatus).subscribe({
-      next: () => {
-        const diaKey = this.normalizeDia(dia.split(' - ')[0]);
-        const lista = this.horariosPorDia[diaKey] || [];
-        const idx = lista.findIndex(s => s.id === slot.id);
-        if (idx !== -1) {
-          lista[idx] = { ...lista[idx], status: novoStatus };
-          this.horariosPorDia[diaKey] = [...lista];
-          this.horariosPorDia = { ...this.horariosPorDia };
-          this.horariosService.atualizarHorarios(this.horariosPorDia);
-          this.cdr.markForCheck();
-        }
-        const msg = novoStatus === 'DISPONIVEL'
+    const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+    const categoria = this.categoriaSelecionada;
+
+    this.horariosService.toggleSlot(diaKey, hhmm, categoria).subscribe({
+      next: (h) => {
+        const atualizado: SlotHorario = {
+          id: h.id,
+          horario: normalizeHora(h.horario),
+          status: h.status as SlotHorario['status'],
+          usuarioId: h.usuarioId
+        };
+
+        const keyAtual = `${diaKey}|${atualizado.horario}|${categoria}`;
+        const mapa = new Map<string, SlotHorario>();
+        (this.horariosPorDia[diaKey] || []).forEach(s => {
+          const k = `${diaKey}|${normalizeHora(s.horario)}|${categoria}`;
+          mapa.set(k, s);
+        });
+        mapa.set(keyAtual, atualizado);
+
+        this.horariosPorDia[diaKey] = Array.from(mapa.values());
+        this.horariosPorDia = { ...this.horariosPorDia };
+        this.horariosService.atualizarHorarios(this.horariosPorDia);
+        this.cdr.markForCheck();
+
+        const msg = atualizado.status === 'DISPONIVEL'
           ? 'Horário disponibilizado com sucesso.'
           : 'Horário indisponibilizado com sucesso.';
         this.snackBar.open(msg, 'Ciente', { duration: 3000 });
@@ -691,7 +703,7 @@ import { UserService } from 'src/app/services/user.service';
 
       const isAdmin = militarAutenticado.categoria?.toUpperCase() === 'ADMIN';
       if (isAdmin) {
-        this.toggleSlot(dia, horario);
+        this.toggleHorario(dia, horario);
       } else {
         this.abrirDialogoAgendamento(dia, horario);
       }
