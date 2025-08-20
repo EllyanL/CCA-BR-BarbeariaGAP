@@ -101,9 +101,6 @@
                           <mat-icon>lock</mat-icon>
                           {{ formatarStatus('AGENDADO') }}
                         </ng-container>
-                        <ng-container *ngSwitchCase="'REALIZADO'">
-                          {{ formatarStatus('AGENDADO') }}
-                        </ng-container>
                         <ng-container *ngSwitchDefault>
                           <b>{{ horario }}</b>
                         </ng-container>
@@ -142,10 +139,6 @@
                 Indisponível
               </span>
 
-              <span *ngIf="!getAgendamentoParaDiaHora(dia, horario) && getStatus(dia, horario) === 'REALIZADO'"
-                    class="horario-indisponivel">
-                {{ formatarStatus('AGENDADO') }}
-              </span>
             </ng-template>
               </div>
             </td>
