@@ -78,12 +78,7 @@
         <thead class="horarios-header">
           <tr>
             <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia" (click)="toggleDia(dia)" [class.clickable]="isAdmin">
-              <div class="dia-header">
-                <span>{{ dia | uppercase }}</span>
-                <button mat-icon-button (click)="toggleDia(dia); $event.stopPropagation()">
-                  <mat-icon>more_horiz</mat-icon>
-                </button>
-              </div>
+              <span>{{ dia | uppercase }}</span>
             </th>
           </tr>
         </thead>
