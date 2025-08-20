@@ -34,6 +34,11 @@ public class HorarioController {
     public Map<String, Map<String, List<Horario>>> getTodosHorarios() {
         return horarioService.getTodosHorarios();
     }
+
+    @GetMapping(params = "categoria")
+    public ResponseEntity<Map<String, List<HorarioDTO>>> getHorariosSemanaPorCategoria(@RequestParam String categoria) {
+        return ResponseEntity.ok(horarioService.listarHorariosAgrupadosPorCategoria(categoria));
+    }
     @GetMapping("/base")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<String>> getHorariosBase() {
@@ -130,6 +135,41 @@ public class HorarioController {
         List<LocalTime> horas = horarios.stream().map(LocalTime::parse).toList();
         Map<String, Object> response = horarioService.disponibilizarTodosHorarios(dia, horas, categoria);
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/toggle")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, List<HorarioDTO>>> toggleHorario(@RequestBody Map<String, String> payload) {
+        String dia = payload.get("dia");
+        String horario = payload.get("horario");
+        String categoria = payload.get("categoria");
+        if (dia == null || horario == null || categoria == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Map<String, List<HorarioDTO>> atualizados = horarioService.toggleHorario(dia, horario, categoria);
+        return ResponseEntity.ok(atualizados);
+    }
+
+    @PutMapping("/toggle-dia")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, List<HorarioDTO>>> toggleDia(@RequestBody Map<String, String> payload) {
+        String dia = payload.get("dia");
+        String categoria = payload.get("categoria");
+        String acao = payload.get("acao");
+        if (dia == null || categoria == null || acao == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        HorarioStatus status;
+        try {
+            status = HorarioStatus.valueOf(acao.toUpperCase());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        if (status == HorarioStatus.AGENDADO) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        Map<String, List<HorarioDTO>> atualizados = horarioService.toggleDia(dia, categoria, status);
+        return ResponseEntity.ok(atualizados);
     }
     
     @GetMapping("/categoria/{categoria}")
