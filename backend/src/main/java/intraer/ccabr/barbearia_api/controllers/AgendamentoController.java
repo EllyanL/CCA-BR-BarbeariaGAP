@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.services.AgendamentoService;
+import intraer.ccabr.barbearia_api.services.HorarioUpdateService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -54,17 +55,21 @@ public class AgendamentoController {
 
     private final HorarioRepository horarioRepository;
 
+    private final HorarioUpdateService horarioUpdateService;
+
 
     public AgendamentoController(
         AgendamentoService agendamentoService,
         AgendamentoRepository agendamentoRepository,
         MilitarRepository militarRepository,
-        HorarioRepository horarioRepository
+        HorarioRepository horarioRepository,
+        HorarioUpdateService horarioUpdateService
     ) {
         this.agendamentoService = agendamentoService;
         this.agendamentoRepository = agendamentoRepository;
         this.militarRepository = militarRepository;
         this.horarioRepository = horarioRepository;
+        this.horarioUpdateService = horarioUpdateService;
     }
 
     @PostMapping
@@ -120,6 +125,7 @@ public class AgendamentoController {
         agendamentoService.validarRegrasDeNegocio(agendamento);
         try {
             Agendamento saved = agendamentoService.criarAgendamentoTransactional(agendamento);
+            horarioUpdateService.sendUpdate("refresh");
             return new ResponseEntity<>(new AgendamentoDTO(saved), HttpStatus.CREATED);
         } catch (DataIntegrityViolationException e) {
             return buildResponse("Horário indisponível", HttpStatus.CONFLICT);
@@ -252,6 +258,7 @@ public class AgendamentoController {
 
         Optional<Agendamento> atualizado = agendamentoService.atualizarAgendamento(id, dto.getData(), dto.getHora(), dto.getDiaSemana());
         if (atualizado.isPresent()) {
+            horarioUpdateService.sendUpdate("refresh");
             return ResponseEntity.ok(new AgendamentoDTO(atualizado.get()));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Agendamento não encontrado.");
@@ -291,6 +298,7 @@ public class AgendamentoController {
 
             final String canceladoPor = isAdmin ? "ADMIN" : "USUARIO";
             agendamentoService.cancelarAgendamento(id, canceladoPor);
+            horarioUpdateService.sendUpdate("refresh");
             return ResponseEntity.noContent().build();
         }
 
