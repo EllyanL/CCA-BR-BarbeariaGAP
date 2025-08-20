@@ -590,10 +590,6 @@ import { UserService } from 'src/app/services/user.service';
     
 //-----------------☀️Gerenciamento de Dias-----------------
     toggleDia(dia: string): void {
-      if (this.temAgendado(dia)) {
-        return;
-      }
-
       const diaKey = this.normalizeDia(dia);
       const horarios = this.horariosPorDia[diaKey] || [];
       const acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' = horarios.some(h => h.status === 'DISPONIVEL')
