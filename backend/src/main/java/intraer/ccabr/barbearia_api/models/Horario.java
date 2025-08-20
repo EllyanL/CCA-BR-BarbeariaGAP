@@ -11,6 +11,7 @@ import java.time.LocalTime;
 @Entity
 @Table(
     name = "horarios",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"dia", "horario", "categoria"}),
     indexes = {
         @Index(name = "idx_dia_horario_categoria", columnList = "dia, horario, categoria")
     }
