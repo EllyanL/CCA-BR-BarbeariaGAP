@@ -270,6 +270,21 @@ export class HorariosService {
     );
   }
 
+  toggleDia(payload: { dia: string; categoria: string; acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' }): Observable<SlotHorario[]> {
+    const body = {
+      ...payload,
+      dia: this.normalizeDia(payload.dia)
+    };
+    return this.http
+      .post<SlotHorario[]>(`${this.apiUrl}/toggle-dia`, body, { headers: this.getAuthHeaders() })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          this.logger.error('Erro ao alternar dia:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   disponibilizarTodosHorariosComEndpoint(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {
     const horariosFormatados = horarios.map(h => h.slice(0, 5)); // 👈 garante HH:mm
     const diaNorm = this.normalizeDia(dia);

@@ -12,6 +12,7 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { DialogoAgendamentoComponent } from 'src/app/components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
+import { ConfirmarToggleDiaComponent } from 'src/app/components/confirmar-toggle-dia/confirmar-toggle-dia.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -583,85 +584,38 @@ import { UserService } from 'src/app/services/user.service';
 
       const diaKey = this.normalizeDia(dia);
       const horarios = this.horariosPorDia[diaKey] || [];
-      const existeDisponivel = horarios.some(h => h.status === 'DISPONIVEL');
+      const acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' = horarios.some(h => h.status === 'DISPONIVEL')
+        ? 'INDISPONIBILIZAR'
+        : 'DISPONIBILIZAR';
 
-      if (existeDisponivel) {
-        this.indisponibilizarDia(dia);
-      } else {
-        this.disponibilizarDia(dia);
-      }
-    }
+      const dialogRef = this.dialog.open(ConfirmarToggleDiaComponent, {
+        width: '400px',
+        data: { dia, acao }
+      });
 
-    indisponibilizarDia(dia: string): void { //Atualiza status de horários
-      const horarios = this.horariosBaseSemana;
-      if (!horarios || horarios.length === 0) return;
+      dialogRef.afterClosed().subscribe((confirmado: boolean) => {
+        if (!confirmado) {
+          return;
+        }
 
-      const dias = dia === 'todos' ? this.diasDaSemana : [dia];
-
-      from(dias)
-        .pipe(
-          concatMap((d) =>
-            this.horariosService
-              .indisponibilizarTodosHorarios(d, horarios, this.categoriaSelecionada)
-              .pipe(
-                tap(() => {
-                  this.carregarHorariosDaSemana();
-                  this.snackBar.open(
-                    `Dia ${d} marcado como indisponivel`,
-                    'Ciente',
-                    { duration: 3000 }
-                  );
-                }),
-                catchError(() => {
-                  this.snackBar.open(
-                    `Falha ao indisponibilizar o dia ${d}.`,
-                    'Ciente',
-                    { duration: 3000 }
-                  );
-                  return of(null);
-                })
-              )
-          )
-        )
-        .subscribe();
-    }
-
-    disponibilizarDia(dia: string): void { //Atualiza status de horários
-      const horariosFormatados = this.horariosBaseSemana.map((h) =>
-        h.length === 5 ? `${h}:00` : h
-      );
-      const dias = dia === 'todos' ? this.diasDaSemana : [dia];
-
-      from(dias)
-        .pipe(
-          concatMap((d) =>
-            this.horariosService
-              .disponibilizarTodosHorariosComEndpoint(
-                d,
-                horariosFormatados,
-                this.categoriaSelecionada
-              )
-              .pipe(
-                tap(() => {
-                  this.carregarHorariosDaSemana();
-                  this.snackBar.open(
-                    `Dia ${d} liberado para ${this.categoriaSelecionada}`,
-                    'Ciente',
-                    { duration: 3000 }
-                  );
-                }),
-                catchError(() => {
-                  this.snackBar.open(
-                    `Falha ao disponibilizar o dia ${d}. Verifique a conexão e tente novamente.`,
-                    'Ciente',
-                    { duration: 5000 }
-                  );
-                  return of(null);
-                })
-              )
-          )
-        )
-        .subscribe();
+        this.horariosService
+          .toggleDia({ dia: diaKey, categoria: this.categoriaSelecionada, acao })
+          .subscribe({
+            next: slots => {
+              const normalizado = normalizeHorariosPorDia({ [diaKey]: slots });
+              this.horariosPorDia[diaKey] = normalizado[diaKey];
+              this.horariosPorDia = { ...this.horariosPorDia };
+              const msg = acao === 'DISPONIBILIZAR' ? `Dia ${dia} disponibilizado.` : `Dia ${dia} indisponibilizado.`;
+              this.snackBar.open(msg, 'Ciente', { duration: 3000 });
+            },
+            error: () => {
+              const msg = acao === 'DISPONIBILIZAR'
+                ? `Falha ao disponibilizar o dia ${dia}.`
+                : `Falha ao indisponibilizar o dia ${dia}.`;
+              this.snackBar.open(msg, 'Ciente', { duration: 5000 });
+            }
+          });
+      });
     }
 //--------------📅Gerenciamento de Agendamento-------------
     temAgendado(dia: string): boolean {

@@ -24,7 +24,7 @@ describe('HorariosComponent', () => {
   let configService: jasmine.SpyObj<ConfiguracoesAgendamentoService>;
 
   beforeEach(() => {
-    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'alterarStatusHorario', 'atualizarHorarios'], { horariosPorDia$: of({}) });
+    horariosService = jasmine.createSpyObj('HorariosService', ['carregarHorariosDaSemana', 'getHorariosBase', 'startPollingHorarios', 'stopPollingHorarios', 'adicionarHorarioBase', 'adicionarHorarioDia', 'adicionarHorarioBaseEmDias', 'alterarDisponibilidadeEmDias', 'alterarStatusHorario', 'atualizarHorarios', 'toggleDia'], { horariosPorDia$: of({}) });
     agendamentoService = jasmine.createSpyObj('AgendamentoService', ['getAgendamentos', 'createAgendamento']);
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
@@ -32,7 +32,8 @@ describe('HorariosComponent', () => {
 
     const userService = { userData$: of([{ cpf: '123', saram: '1' }]) } as Partial<UserService>;
     const route = { queryParams: of({}) } as Partial<ActivatedRoute>;
-    const dialog = { open: () => {} } as unknown as MatDialog;
+    const dialog = jasmine.createSpyObj('MatDialog', ['open']);
+    dialog.open.and.returnValue({ afterClosed: () => of(true) } as any);
     snack = jasmine.createSpyObj('MatSnackBar', ['open']);
     const router = { navigate: jasmine.createSpy('navigate') } as Partial<Router>;
 
@@ -155,49 +156,48 @@ describe('HorariosComponent', () => {
 
   it('toggleDia ignora dia com agendamento ativo mesmo com acento', () => {
     component.agendamentos = [{ diaSemana: 'terca', hora: '08:00', categoria: 'GRADUADO' } as Agendamento];
-    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
-    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
 
     component.toggleDia('terça');
 
-    expect(indisponibilizarSpy).not.toHaveBeenCalled();
-    expect(disponibilizarSpy).not.toHaveBeenCalled();
+    expect(horariosService.toggleDia).not.toHaveBeenCalled();
   });
 
-  it('toggleDia chama indisponibilizarDia se existir horário disponível', () => {
-    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'DISPONIVEL' }] } as unknown as HorariosPorDia;
-    spyOn(component, 'temAgendado').and.returnValue(false);
-    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
-    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
-
-    component.toggleDia('segunda');
-
-    expect(indisponibilizarSpy).toHaveBeenCalledWith('segunda');
-    expect(disponibilizarSpy).not.toHaveBeenCalled();
-  });
-
-  it('toggleDia com dia acentuado chama indisponibilizarDia se existir horário disponível', () => {
-    component.horariosPorDia = { terca: [{ horario: '08:00', status: 'DISPONIVEL' }] } as unknown as HorariosPorDia;
+  it('toggleDia chama serviço com ação INDISPONIBILIZAR quando existe horário disponível', () => {
+    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'DISPONIVEL' }] } as HorariosPorDia;
     component.agendamentos = [];
-    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
-    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
-
-    component.toggleDia('terça');
-
-    expect(indisponibilizarSpy).toHaveBeenCalledWith('terça');
-    expect(disponibilizarSpy).not.toHaveBeenCalled();
-  });
-
-  it('toggleDia chama disponibilizarDia se não houver horário disponível', () => {
-    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }] } as unknown as HorariosPorDia;
-    spyOn(component, 'temAgendado').and.returnValue(false);
-    const indisponibilizarSpy = spyOn(component, 'indisponibilizarDia');
-    const disponibilizarSpy = spyOn(component, 'disponibilizarDia');
+    horariosService.toggleDia.and.returnValue(of([]));
 
     component.toggleDia('segunda');
 
-    expect(indisponibilizarSpy).not.toHaveBeenCalled();
-    expect(disponibilizarSpy).toHaveBeenCalledWith('segunda');
+    expect(horariosService.toggleDia).toHaveBeenCalledWith({
+      dia: 'segunda',
+      categoria: component.categoriaSelecionada,
+      acao: 'INDISPONIBILIZAR'
+    });
+  });
+
+  it('toggleDia chama serviço com ação DISPONIBILIZAR quando não existe horário disponível', () => {
+    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }] } as HorariosPorDia;
+    component.agendamentos = [];
+    horariosService.toggleDia.and.returnValue(of([]));
+
+    component.toggleDia('segunda');
+
+    expect(horariosService.toggleDia).toHaveBeenCalledWith({
+      dia: 'segunda',
+      categoria: component.categoriaSelecionada,
+      acao: 'DISPONIBILIZAR'
+    });
+  });
+
+  it('toggleDia aborta quando diálogo é cancelado', () => {
+    component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'DISPONIVEL' }] } as HorariosPorDia;
+    component.agendamentos = [];
+    (TestBed.inject(MatDialog) as any).open.and.returnValue({ afterClosed: () => of(false) });
+
+    component.toggleDia('segunda');
+
+    expect(horariosService.toggleDia).not.toHaveBeenCalled();
   });
 
   it('getHorarioStatus considera apenas horas e minutos', () => {
