@@ -154,18 +154,24 @@ describe('HorariosComponent', () => {
     expect(component.temAgendado('terça')).toBeTrue();
   });
 
-  it('toggleDia ignora dia com agendamento ativo mesmo com acento', () => {
+  it('toggleDia chama serviço mesmo com agendamento ativo', () => {
     component.agendamentos = [{ diaSemana: 'terca', hora: '08:00', categoria: 'GRADUADO' } as Agendamento];
+    component.horariosPorDia = { terca: [] } as HorariosPorDia;
+    horariosService.toggleDia.and.returnValue(of({} as HorariosPorDia));
 
     component.toggleDia('terça');
 
-    expect(horariosService.toggleDia).not.toHaveBeenCalled();
+    expect(horariosService.toggleDia).toHaveBeenCalledWith({
+      dia: 'terca',
+      categoria: component.categoriaSelecionada,
+      acao: 'DISPONIBILIZAR'
+    });
   });
 
   it('toggleDia chama serviço com ação INDISPONIBILIZAR quando existe horário disponível', () => {
     component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'DISPONIVEL' }] } as HorariosPorDia;
     component.agendamentos = [];
-    horariosService.toggleDia.and.returnValue(of([]));
+    horariosService.toggleDia.and.returnValue(of({} as HorariosPorDia));
 
     component.toggleDia('segunda');
 
@@ -179,7 +185,7 @@ describe('HorariosComponent', () => {
   it('toggleDia chama serviço com ação DISPONIBILIZAR quando não existe horário disponível', () => {
     component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }] } as HorariosPorDia;
     component.agendamentos = [];
-    horariosService.toggleDia.and.returnValue(of([]));
+    horariosService.toggleDia.and.returnValue(of({} as HorariosPorDia));
 
     component.toggleDia('segunda');
 
