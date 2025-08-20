@@ -166,9 +166,14 @@ public class AgendamentoService {
         logger.debug("⏱️ [DEBUG] Data/Hora do agendamento: {}", agendamentoDateTime);
         logger.debug("⏱️ [DEBUG] Data/Hora atual (ajustada): {}", agora);
     
+        // Permitir agendamentos com pelo menos 30 minutos de antecedência
+        if (agendamentoDateTime.minusMinutes(30).isBefore(agora)) {
+            return false;
+        }
+
         // Permitir agendamentos no mesmo minuto ou posterior
         return !agendamentoDateTime.isBefore(agora);
-    }    
+    }
 
     public boolean isAgendamentoPassado(Agendamento agendamento) {
         ZonedDateTime agora = ZonedDateTime.now(ZONE_ID_SAO_PAULO);
