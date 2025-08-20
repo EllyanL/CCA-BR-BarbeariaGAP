@@ -282,13 +282,15 @@ export class HorariosService {
     );
   }
 
-  toggleDia(payload: { dia: string; categoria: string; acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' }): Observable<SlotHorario[]> {
+  toggleDia(
+    payload: { dia: string; categoria: string; acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' }
+  ): Observable<HorariosPorDia> {
     const body = {
       ...payload,
       dia: this.normalizeDia(payload.dia)
     };
     return this.http
-      .post<SlotHorario[]>(`${this.apiUrl}/toggle-dia`, body, { headers: this.getAuthHeaders() })
+      .put<HorariosPorDia>(`${this.apiUrl}/toggle-dia`, body, { headers: this.getAuthHeaders() })
       .pipe(
         catchError((error: HttpErrorResponse) => {
           this.logger.error('Erro ao alternar dia:', error);
