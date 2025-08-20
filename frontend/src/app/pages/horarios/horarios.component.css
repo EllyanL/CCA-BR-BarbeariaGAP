@@ -203,6 +203,11 @@ mat-icon {
   color: white !important;
 }
 
+.horario-indisponivel {
+  color: #f44336;
+  font-weight: bold;
+}
+
 .botao-hora-agendado {
   background-color: #bdbdbd !important;
   color: white !important;
