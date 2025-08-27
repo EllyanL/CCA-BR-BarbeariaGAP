@@ -61,6 +61,8 @@ public class AgendamentoService {
         if (militar != null) {
             agendamento.setMilitar(militar);
         }
+        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
+        agendamento.setDiaSemana(dia);
         return agendamentoRepository.save(agendamento);
     }
 
