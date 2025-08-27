@@ -290,8 +290,8 @@ public class HorarioService {
 
     @Transactional
     public Horario disponibilizarHorario(String dia, LocalTime horario, String categoria) {
-        String diaNorm = normalizeDia(dia);
-        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horario, categoria);
+        dia = normalizeDia(dia);
+        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
         if (horarioOpt.isEmpty()) {
             return null;
         }
@@ -302,7 +302,7 @@ public class HorarioService {
 
         boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horario,
-                diaNorm,
+                dia,
                 categoria
         );
 
@@ -324,8 +324,8 @@ public class HorarioService {
 
     @Transactional
     public Horario indisponibilizarHorario(String dia, LocalTime horario, String categoria) {
-        String diaNorm = normalizeDia(dia);
-        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horario, categoria);
+        dia = normalizeDia(dia);
+        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
         if (horarioOpt.isEmpty()) {
             return null;
         }
@@ -335,7 +335,7 @@ public class HorarioService {
         validarIncrementoMeiaHora(horario);
         boolean hasAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                 horario,
-                diaNorm,
+                dia,
                 categoria
         );
 
@@ -349,9 +349,9 @@ public class HorarioService {
 
     @Transactional
     public Map<String, Object> disponibilizarTodosHorarios(String dia, List<LocalTime> horarios, String categoria) {
-        String diaNorm = normalizeDia(dia);
+        dia = normalizeDia(dia);
         Map<String, Object> response = new HashMap<>();
-        response.put("mensagem", "Horários processados para " + diaNorm + " (" + categoria + ")");
+        response.put("mensagem", "Horários processados para " + dia + " (" + categoria + ")");
 
         List<Horario> afetados = new ArrayList<>();
         for (LocalTime h : horarios) {
@@ -361,7 +361,7 @@ public class HorarioService {
 
                 boolean agendado = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                         h,
-                        diaNorm,
+                        dia,
                         categoria);
                 if (agendado) {
                     // Se já houver agendamento, ignoramos este horário
@@ -369,13 +369,13 @@ public class HorarioService {
                 }
 
                 Horario horarioEntity = horarioRepository
-                        .findByDiaAndHorarioAndCategoria(diaNorm, h, categoria)
-                        .orElseGet(() -> new Horario(diaNorm, h, categoria, HorarioStatus.DISPONIVEL));
+                        .findByDiaAndHorarioAndCategoria(dia, h, categoria)
+                        .orElseGet(() -> new Horario(dia, h, categoria, HorarioStatus.DISPONIVEL));
                 horarioEntity.setStatus(HorarioStatus.DISPONIVEL);
                 afetados.add(horarioRepository.save(horarioEntity));
             } catch (Exception e) {
                 // Ignora erros de horários já processados ou inválidos
-                logger.warn("Falha ao disponibilizar horário {} em {}: {}", h, diaNorm, e.getMessage());
+                logger.warn("Falha ao disponibilizar horário {} em {}: {}", h, dia, e.getMessage());
             }
         }
 
@@ -387,9 +387,9 @@ public class HorarioService {
 
     @Transactional
     public Map<String, Object> indisponibilizarTodosHorarios(String dia, List<LocalTime> horarios, String categoria) {
-        String diaNorm = normalizeDia(dia);
+        dia = normalizeDia(dia);
         Map<String, Object> response = new HashMap<>();
-        response.put("mensagem", "Horários indisponibilizados para " + diaNorm + " (" + categoria + ")");
+        response.put("mensagem", "Horários indisponibilizados para " + dia + " (" + categoria + ")");
 
         List<Horario> afetados = new ArrayList<>();
         for (LocalTime h : horarios) {
@@ -399,14 +399,14 @@ public class HorarioService {
 
                 boolean agendado = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
                         h,
-                        diaNorm,
+                        dia,
                         categoria);
                 if (agendado) {
                     // Se já houver agendamento, ignoramos este horário
                     continue;
                 }
 
-                Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, h, categoria);
+                Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(dia, h, categoria);
                 if (existente.isPresent()) {
                     Horario horarioEntity = existente.get();
                     if (horarioEntity.getStatus() != HorarioStatus.INDISPONIVEL) {
@@ -414,12 +414,12 @@ public class HorarioService {
                         afetados.add(horarioRepository.save(horarioEntity));
                     }
                 } else {
-                    Horario novoHorario = new Horario(diaNorm, h, categoria, HorarioStatus.INDISPONIVEL);
+                    Horario novoHorario = new Horario(dia, h, categoria, HorarioStatus.INDISPONIVEL);
                     afetados.add(horarioRepository.save(novoHorario));
                 }
             } catch (Exception e) {
                 // Ignora erros de horários já processados ou inexistentes
-                logger.warn("Falha ao indisponibilizar horário {} em {}: {}", h, diaNorm, e.getMessage());
+                logger.warn("Falha ao indisponibilizar horário {} em {}: {}", h, dia, e.getMessage());
             }
         }
 

@@ -195,13 +195,13 @@ export class HorariosService {
   }
 
   disponibilizarHorario(dia: string, horario: string, categoria: string): Observable<Horario> {
-    const horarioRequest: HorarioRequest = { dia: this.normalizeDia(dia), horario, categoria };
+    const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
     return this.http.post<Horario>(`${this.apiUrl}/disponibilizar`, horarioRequest, { headers });
   }
 
   indisponibilizarHorario(dia: string, horario: string, categoria: string): Observable<Horario> {
-    const horarioRequest: HorarioRequest = { dia: this.normalizeDia(dia), horario, categoria };
+    const horarioRequest: HorarioRequest = { dia, horario, categoria };
     const headers = this.getAuthHeaders();
     return this.http.post<Horario>(`${this.apiUrl}/indisponibilizar`, horarioRequest, { headers });
   }
@@ -274,8 +274,7 @@ export class HorariosService {
   }
 
   indisponibilizarTodosHorarios(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {
-    const diaNorm = this.normalizeDia(dia);
-    const url = `${this.apiUrl}/indisponibilizar/tudo/${encodeURIComponent(diaNorm)}?categoria=${encodeURIComponent(categoria)}`;
+    const url = `${this.apiUrl}/indisponibilizar/tudo/${encodeURIComponent(dia)}?categoria=${encodeURIComponent(categoria)}`;
     return this.http.post<HorarioResponse>(url, horarios, { headers: this.getAuthHeaders() }).pipe(
       tap(() => this.logger.log(`Todos os horários de ${dia} foram indisponibilizados.`)),
       catchError((error: HttpErrorResponse) => {
@@ -304,8 +303,7 @@ export class HorariosService {
 
   disponibilizarTodosHorariosComEndpoint(dia: string, horarios: string[], categoria: string): Observable<HorarioResponse> {
     const horariosFormatados = horarios.map(h => h.slice(0, 5)); // 👈 garante HH:mm
-    const diaNorm = this.normalizeDia(dia);
-    const url = `${this.apiUrl}/disponibilizar/tudo/${encodeURIComponent(diaNorm)}?categoria=${encodeURIComponent(categoria)}`;
+    const url = `${this.apiUrl}/disponibilizar/tudo/${encodeURIComponent(dia)}?categoria=${encodeURIComponent(categoria)}`;
     return this.http.post<HorarioResponse>(url, horariosFormatados, { headers: this.getAuthHeaders() }).pipe(
       tap(() => this.logger.log(`✅ Todos os horários de ${dia} foram disponibilizados.`)),
       catchError((error: HttpErrorResponse) => {
@@ -313,7 +311,7 @@ export class HorariosService {
         return throwError(() => new Error(error.message || 'Erro desconhecido'));
       })
     );
-  } 
+  }
   
   //--------------📅Gerenciamento de Agendamento-------------
   agendarHorario(agendamento: Agendamento): Observable<any> {
