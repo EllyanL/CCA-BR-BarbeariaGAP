@@ -32,17 +32,24 @@ import { UserService } from 'src/app/services/user.service';
     militarLogado: string = '';
     omMilitar: string = '';
     usuarioLogado: Militar | null = null;
-    diasDaSemana: string[] = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
+
+    /** Mapa de chaves normalizadas para labels com acento */
+    readonly diaLabelMap: Record<string, string> = {
+      segunda: 'segunda',
+      terca: 'terça',
+      quarta: 'quarta',
+      quinta: 'quinta',
+      sexta: 'sexta',
+    };
+
+    diasDaSemana: string[] = Object.keys(this.diaLabelMap);
     diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
     diaSelecionado: string = 'segunda';
-    horariosPorDia: HorariosPorDia = {
-      segunda: [],
-      terca: [],
-      quarta: [],
-      quinta: [],
-      sexta: [],
-    };
+    horariosPorDia: HorariosPorDia = this.diasDaSemana.reduce((acc, dia) => {
+      acc[dia] = [];
+      return acc;
+    }, {} as HorariosPorDia);
     horarioPersonalizado: string = '';
     horarioValido: boolean = false;
     categoriaSelecionada: string = 'GRADUADO';
@@ -85,6 +92,10 @@ import { UserService } from 'src/app/services/user.service';
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .toLowerCase();
+    }
+
+    getDiaLabel(dia: string): string {
+      return this.diaLabelMap[this.normalizeDia(dia)] || dia;
     }
 
     private saveAgendamentos(): void {
@@ -399,7 +410,7 @@ import { UserService } from 'src/app/services/user.service';
             this.ordenarHorarios();
           }
           this.carregarHorariosDaSemana();
-          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
+          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.getDiaLabel(this.diaSelecionado)}`;
           this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em ${msgDias}.`, 'Ciente', { duration: 3000 });
           this.horarioPersonalizado = '';
           this.horarioValido = false;
@@ -433,7 +444,7 @@ import { UserService } from 'src/app/services/user.service';
 
         this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
           next: () => {
-            this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: 3000 });
+            this.snackBar.open(`Horário ${horario} adicionado em ${this.getDiaLabel(dia)}`, 'Ciente', { duration: 3000 });
             this.carregarHorariosDaSemana();
             this.carregarHorariosBase();
             this.horarioPersonalizado = '';
@@ -468,7 +479,7 @@ import { UserService } from 'src/app/services/user.service';
             this.ordenarHorarios();
           }
 
-          this.snackBar.open(`Horário ${horario} adicionado ao dia ${dia}.`, 'Ciente', { duration: 3000 });
+          this.snackBar.open(`Horário ${horario} adicionado ao dia ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: 3000 });
           this.carregarHorariosDaSemana();
         },
         error: (error: any) => {
@@ -509,7 +520,7 @@ import { UserService } from 'src/app/services/user.service';
           this.horariosPorDia = { ...this.horariosPorDia };
           this.cdr.markForCheck();
           this.carregarHorariosDaSemana();
-          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.diaSelecionado}`;
+          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.getDiaLabel(this.diaSelecionado)}`;
           this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: 3000 });
         },
         error: (err: any) => {
@@ -522,13 +533,13 @@ import { UserService } from 'src/app/services/user.service';
         
 
   getStatus(dia: string, hhmm: string): SlotHorario['status'] | undefined {
-    const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+    const diaKey = this.normalizeDia(dia);
     const hora = normalizeHora(hhmm);
     return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === hora)?.status;
   }
 
   getSlot(dia: string, hora: string): SlotHorario | undefined {
-    const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+    const diaKey = this.normalizeDia(dia);
     const hhmm = normalizeHora(hora);
     return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === hhmm);
   }
@@ -551,7 +562,7 @@ import { UserService } from 'src/app/services/user.service';
       return;
     }
 
-    const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+    const diaKey = this.normalizeDia(dia);
     const categoria = this.categoriaSelecionada;
 
     this.horariosService.toggleSlot(diaKey, hhmm, categoria).subscribe({
@@ -599,7 +610,7 @@ import { UserService } from 'src/app/services/user.service';
 
       const dialogRef = this.dialog.open(ConfirmarToggleDiaComponent, {
         width: '400px',
-        data: { dia, acao }
+        data: { dia: this.getDiaLabel(diaKey), acao }
       });
 
       dialogRef.afterClosed().subscribe((confirmado: boolean) => {
@@ -615,13 +626,15 @@ import { UserService } from 'src/app/services/user.service';
               this.horariosPorDia = normalizado;
               this.horariosService.atualizarHorarios(this.horariosPorDia);
               this.cdr.markForCheck();
-              const msg = acao === 'DISPONIBILIZAR' ? `Dia ${dia} disponibilizado.` : `Dia ${dia} indisponibilizado.`;
+              const label = this.getDiaLabel(diaKey);
+              const msg = acao === 'DISPONIBILIZAR' ? `Dia ${label} disponibilizado.` : `Dia ${label} indisponibilizado.`;
               this.snackBar.open(msg, 'Ciente', { duration: 3000 });
             },
             error: () => {
+              const label = this.getDiaLabel(diaKey);
               const msg = acao === 'DISPONIBILIZAR'
-                ? `Falha ao disponibilizar o dia ${dia}.`
-                : `Falha ao indisponibilizar o dia ${dia}.`;
+                ? `Falha ao disponibilizar o dia ${label}.`
+                : `Falha ao indisponibilizar o dia ${label}.`;
               this.snackBar.open(msg, 'Ciente', { duration: 5000 });
             }
           });
@@ -715,7 +728,7 @@ import { UserService } from 'src/app/services/user.service';
       ref.afterClosed().subscribe(r => {
         if (r?.sucesso) {
           const novoAgendamento: Agendamento | undefined = r.payload;
-          const diaKey = this.normalizeDia(dia.split(' - ')[0]);
+          const diaKey = this.normalizeDia(dia);
           const horariosDoDia = this.horariosPorDia[diaKey] || [];
           const index = horariosDoDia.findIndex(h => h.horario === horario);
 
@@ -773,7 +786,7 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
-      const diaSemana = this.normalizeDia(dia.split(' - ')[0].trim());
+      const diaSemana = this.normalizeDia(dia);
       const horaFormatada = normalizeHora(hora);
       return this.agendamentos.find(a =>
         this.normalizeDia(a.diaSemana) === diaSemana &&
