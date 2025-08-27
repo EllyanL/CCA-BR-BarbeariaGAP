@@ -7,7 +7,7 @@ import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
-import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia } from '../../shared/dias.util';
+import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from '../../shared/dias.util';
 
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
@@ -37,8 +37,8 @@ import { UserService } from 'src/app/services/user.service';
     /** Mapa de chaves normalizadas para labels com acento */
   readonly diaLabelMap = DIA_LABEL_MAP;
 
-    diasDaSemana: string[] = Object.keys(DIA_SEMANA);
-    diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
+    diasDaSemana: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
+    diasParaSelecao: (DiaKey | 'todos')[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
     diaSelecionado: string = 'segunda';
     horariosPorDia: HorariosPorDia = this.diasDaSemana.reduce((acc, dia) => {
@@ -134,9 +134,9 @@ import { UserService } from 'src/app/services/user.service';
         return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
       };
       this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(inRange);
-      Object.keys(this.horariosPorDia).forEach(dia => {
-        const arr = this.horariosPorDia[dia] || [];
-        this.horariosPorDia[dia] = arr.filter(h => inRange(h.horario));
+      (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
+        const arr: SlotHorario[] = this.horariosPorDia[dia] || [];
+        this.horariosPorDia[dia] = arr.filter((h: SlotHorario) => inRange(h.horario));
       });
       this.horariosPorDia = { ...this.horariosPorDia };
       this.cdr.markForCheck?.();

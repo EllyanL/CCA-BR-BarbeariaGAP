@@ -1,3 +1,5 @@
+import { DiaKey } from '../shared/dias.util';
+
 export interface SlotHorario {
   id?: number;
   horario: string;
@@ -5,4 +7,4 @@ export interface SlotHorario {
   usuarioId?: number | null;
 }
 
-export type HorariosPorDia = Record<string, SlotHorario[]>;
+export type HorariosPorDia = Record<DiaKey, SlotHorario[]>;

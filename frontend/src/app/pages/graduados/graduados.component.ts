@@ -59,7 +59,13 @@ export class GraduadosComponent implements OnInit {
   categoria = 'GRADUADO';  // cuidado: estava como 'graduado'
   opcoesGraduacoes: string[] = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 
-  horariosPorDia: HorariosPorDia = {}; // <-- ESSA LINHA É CRUCIAL
+  horariosPorDia: HorariosPorDia = {
+    segunda: [],
+    terca: [],
+    quarta: [],
+    quinta: [],
+    sexta: [],
+  }; // <-- ESSA LINHA É CRUCIAL
   saramUsuario: string = '';
   idMilitarLogado: number | null = null;
   isAdmin: boolean = false;

@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
-import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia } from 'src/app/shared/dias.util';
+import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
 
 
 @Component({
@@ -50,7 +50,13 @@ import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia } from 'src/app/shared/dias.uti
 export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   @Input() categoria: string = '';
   @Input() opcoesPostoGrad: string[] = [];
-  @Input() horariosPorDia: HorariosPorDia = {};
+  @Input() horariosPorDia: HorariosPorDia = {
+    segunda: [],
+    terca: [],
+    quarta: [],
+    quinta: [],
+    sexta: [],
+  };
   @Input() saramUsuario!: string;
   @Input() idMilitarLogado: number | null | undefined;
 
@@ -157,9 +163,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
     };
     this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(h => inRange(h));
-    Object.keys(this.horariosPorDia).forEach(dia => {
-      const list = this.horariosPorDia[dia] || [];
-      this.horariosPorDia[dia] = list.filter(slot => inRange(slot.horario));
+    (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
+      const list: SlotHorario[] = this.horariosPorDia[dia] || [];
+      this.horariosPorDia[dia] = list.filter((slot: SlotHorario) => inRange(slot.horario));
     });
     this.cdr.detectChanges();
   }
@@ -303,7 +309,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
   
   abrirDialogoAgendamento(diaSemana: string, hora: string) {
-    const diaSemanaFormatado = normalizeDia(diaSemana.split(' - ')[0]);
+    const diaSemanaFormatado: DiaKey = normalizeDia(diaSemana.split(' - ')[0]);
     const horarioDisponivel = this.horariosPorDia[diaSemanaFormatado]?.some(
       h => h.horario === hora && h.status === 'DISPONIVEL'
     );
@@ -472,14 +478,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.agendamentos[index] = resultado;
           this.agendamentos = [...this.agendamentos];
         }
-        const diaFormatoAntigo = normalizeDia(ag.diaSemana);
+        const diaFormatoAntigo: DiaKey = normalizeDia(ag.diaSemana);
         const horaAntiga = ag.hora.slice(0,5);
         const idx = this.horariosPorDia[diaFormatoAntigo]?.findIndex(h => h.horario === horaAntiga);
         if (idx !== undefined && idx !== -1) {
           this.horariosPorDia[diaFormatoAntigo][idx].status = 'DISPONIVEL';
           this.horariosPorDia[diaFormatoAntigo][idx].usuarioId = undefined;
         }
-        const diaNovo = normalizeDia(resultado.diaSemana);
+        const diaNovo: DiaKey = normalizeDia(resultado.diaSemana);
         const horaNova = resultado.hora.slice(0,5);
         const idxNovo = this.horariosPorDia[diaNovo]?.findIndex(h => h.horario === horaNova);
         if (idxNovo !== undefined && idxNovo !== -1) {
@@ -490,7 +496,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.saveAgendamentos();
       } else if (resultado === true && ag.id) {
         this.agendamentos = this.agendamentos.filter(a => a.id !== ag.id);
-        const diaSemanaFormatado = normalizeDia(ag.diaSemana);
+        const diaSemanaFormatado: DiaKey = normalizeDia(ag.diaSemana);
         if (this.horariosPorDia[diaSemanaFormatado]) {
           const horaFormatada = ag.hora.slice(0, 5);
           const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === horaFormatada);
@@ -562,10 +568,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return agendamento;
   }
 
-  getSlot(dia: string, hora: string): SlotHorario | null {
-    const list = this.horariosPorDia?.[dia] || [];
+  getSlot(dia: DiaKey, hora: string): SlotHorario | null {
+    const list: SlotHorario[] = this.horariosPorDia?.[dia] || [];
     const hh = (hora || '').trim();
-    return list.find?.(h => (h?.horario || '').trim() === hh) || null;
+    return list.find?.((h: SlotHorario) => (h?.horario || '').trim() === hh) || null;
   }
 
   statusClass(status?: string) {
@@ -702,7 +708,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return false;
     }
 
-    const diaKey = normalizeDia(dia.split(' - ')[0]);
+    const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
     const usuarioId = this.horariosPorDia[diaKey]?.find(
       h => h.horario === hora
     )?.usuarioId;

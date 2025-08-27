@@ -157,7 +157,13 @@ describe('HorariosComponent', () => {
 
   it('toggleDia chama serviço mesmo com agendamento ativo', () => {
     component.agendamentos = [{ diaSemana: 'terca', hora: '08:00', categoria: 'GRADUADO' } as Agendamento];
-    component.horariosPorDia = { terca: [] } as HorariosPorDia;
+    component.horariosPorDia = {
+      segunda: [],
+      terca: [],
+      quarta: [],
+      quinta: [],
+      sexta: [],
+    } as HorariosPorDia;
     horariosService.toggleDia.and.returnValue(of({} as HorariosPorDia));
 
     component.toggleDia('terça');

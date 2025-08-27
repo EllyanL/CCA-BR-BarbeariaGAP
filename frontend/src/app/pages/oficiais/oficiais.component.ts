@@ -59,7 +59,13 @@ export class OficiaisComponent implements OnInit {
   // Categoria precisa estar em maiúsculo para corresponder ao backend
   categoria = 'OFICIAL';
   opcoesPostoGrad: string[] = ['ASP', '2TEN', '1TEN', 'CAP', 'MAJ', 'TC', 'CEL'];
-  horariosPorDia: HorariosPorDia = {};
+  horariosPorDia: HorariosPorDia = {
+    segunda: [],
+    terca: [],
+    quarta: [],
+    quinta: [],
+    sexta: [],
+  };
   saramUsuario: string = '';
   idMilitarLogado: number | null = null;
   isAdmin: boolean = false;
