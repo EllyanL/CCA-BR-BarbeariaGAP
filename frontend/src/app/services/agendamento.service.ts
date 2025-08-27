@@ -5,7 +5,7 @@ import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
-import { normalizeDia } from '../shared/dias-semana';
+import { normalizeDia } from '../shared/dias.util';
 
 @Injectable({
   providedIn: 'root'

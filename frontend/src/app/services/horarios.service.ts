@@ -10,7 +10,7 @@ import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
 import { SlotHorario, HorariosPorDia } from '../models/slot-horario';
 import { normalizeHorariosPorDia } from '../utils/horarios-utils';
-import { normalizeDia } from '../shared/dias-semana';
+import { normalizeDia } from '../shared/dias.util';
 
 interface HorarioResponse {
   mensagem: string;
