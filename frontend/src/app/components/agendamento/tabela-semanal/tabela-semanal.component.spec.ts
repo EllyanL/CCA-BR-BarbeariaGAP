@@ -64,11 +64,11 @@ describe('TabelaSemanalComponent', () => {
     const mes = (now.getMonth() + 1).toString().padStart(2, '0');
 
     component.diasDaSemana = ['segunda'];
-    component.diasComData = [`segunda - ${dia}/${mes}`];
+    component.diasComData = [`${dia}/${mes}`];
     component.horariosBaseSemana = [hora];
     component.horariosPorDia = { segunda: [{ horario: hora, status: 'DISPONIVEL' }] } as any;
 
-    component.abrirDialogoAgendamento(component.diasComData[0], hora);
+    component.abrirDialogoAgendamento(component.getLabelDiaComData('segunda'), hora);
 
     expect(snackSpy.open).toHaveBeenCalled();
     expect(dialogSpy.open).not.toHaveBeenCalled();

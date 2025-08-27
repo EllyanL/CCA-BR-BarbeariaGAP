@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
+import { normalizeDia } from 'src/app/utils/dia-utils';
 
 
 @Component({
@@ -64,8 +65,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   agendamentos: Agendamento[] = [];
   inicioDaSemana!: Date;
   fimDaSemana!: Date;
-  diasDaSemana = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
-  diasComData: string[] = []; //Apenas Exibição
+  readonly diaLabelMap: Record<string, string> = {
+    segunda: 'segunda',
+    terca: 'terça',
+    quarta: 'quarta',
+    quinta: 'quinta',
+    sexta: 'sexta',
+  };
+  diasDaSemana: string[] = Object.keys(this.diaLabelMap);
+  diasComData: string[] = []; // datas correspondentes
   horariosBaseSemana: string[] = [];
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
@@ -293,12 +301,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
   
   getLabelDiaComData(dia: string): string {
-    const index = this.diasDaSemana.findIndex(d => d.toLowerCase() === dia.toLowerCase());
-    return this.diasComData[index]; // Exemplo: "sexta - 07/06"
+    const diaKey = normalizeDia(dia);
+    const index = this.diasDaSemana.findIndex(d => d === diaKey);
+    const label = this.diaLabelMap[diaKey] || dia;
+    const data = this.diasComData[index] || '';
+    return `${label} - ${data}`;
   }
   
   abrirDialogoAgendamento(diaSemana: string, hora: string) {
-    const diaSemanaFormatado = diaSemana.split(' - ')[0].trim().toLowerCase();
+    const diaSemanaFormatado = normalizeDia(diaSemana.split(' - ')[0]);
     const horarioDisponivel = this.horariosPorDia[diaSemanaFormatado]?.some(
       h => h.horario === hora && h.status === 'DISPONIVEL'
     );
@@ -370,7 +381,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
           this.agendamentos = agendamentosFiltrados.map(agendamento => ({
             ...agendamento,
-            diaSemana: agendamento.diaSemana.trim().toLowerCase(),
+            diaSemana: normalizeDia(agendamento.diaSemana.trim()),
             hora: agendamento.hora.trim()
           }));
           this.saveAgendamentos();
@@ -467,14 +478,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.agendamentos[index] = resultado;
           this.agendamentos = [...this.agendamentos];
         }
-        const diaFormatoAntigo = ag.diaSemana.toLowerCase();
+        const diaFormatoAntigo = normalizeDia(ag.diaSemana);
         const horaAntiga = ag.hora.slice(0,5);
         const idx = this.horariosPorDia[diaFormatoAntigo]?.findIndex(h => h.horario === horaAntiga);
         if (idx !== undefined && idx !== -1) {
           this.horariosPorDia[diaFormatoAntigo][idx].status = 'DISPONIVEL';
           this.horariosPorDia[diaFormatoAntigo][idx].usuarioId = undefined;
         }
-        const diaNovo = resultado.diaSemana.toLowerCase();
+        const diaNovo = normalizeDia(resultado.diaSemana);
         const horaNova = resultado.hora.slice(0,5);
         const idxNovo = this.horariosPorDia[diaNovo]?.findIndex(h => h.horario === horaNova);
         if (idxNovo !== undefined && idxNovo !== -1) {
@@ -485,7 +496,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.saveAgendamentos();
       } else if (resultado === true && ag.id) {
         this.agendamentos = this.agendamentos.filter(a => a.id !== ag.id);
-        const diaSemanaFormatado = ag.diaSemana.toLowerCase();
+        const diaSemanaFormatado = normalizeDia(ag.diaSemana);
         if (this.horariosPorDia[diaSemanaFormatado]) {
           const horaFormatada = ag.hora.slice(0, 5);
           const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === horaFormatada);
@@ -507,7 +518,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     if (!dia || !hora) return;
     const data = this.getDataFromDiaSemana(this.getLabelDiaComData(dia));
-    const diaKey = dia.split(' - ')[0].trim().toLowerCase();
+    const diaKey = normalizeDia(dia.split(' - ')[0]);
     this.agendamentoService.getAgendamentoPorHorario(data, hora.slice(0,5), diaKey, this.categoria)
       .subscribe({
         next: (ag) => { if (ag) { abrirDialogo(ag); } },
@@ -545,10 +556,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined { //Retorna agendamento para dia/hora específicos.
-    const diaSemana = dia.split(' - ')[0].trim().toLowerCase();
+    const diaSemana = normalizeDia(dia.split(' - ')[0]);
     const horaFormatada = hora.slice(0, 5);
     const agendamento = this.agendamentos.find((agendamento) => {
-      const diaMatch = agendamento.diaSemana.toLowerCase() === diaSemana;
+      const diaMatch = normalizeDia(agendamento.diaSemana) === diaSemana;
       const horaAgendamentoFormatada = agendamento.hora.slice(0, 5);
       const horaMatch = horaAgendamentoFormatada === horaFormatada;
       const naoCancelado = agendamento.status !== 'CANCELADO';
@@ -672,9 +683,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     for (let i = 0; i < 5; i++) {
       const dia = new Date(this.inicioDaSemana);
       dia.setDate(this.inicioDaSemana.getDate() + i);
-      const nomeDia = this.diasDaSemana[i];
       const dataFormatada = `${dia.getDate().toString().padStart(2, '0')}/${(dia.getMonth() + 1).toString().padStart(2, '0')}`;
-      this.diasComData.push(`${nomeDia} - ${dataFormatada}`);
+      this.diasComData.push(dataFormatada);
     }
   }
   
@@ -698,7 +708,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return false;
     }
 
-    const diaKey = dia.split(' - ')[0].trim().toLowerCase();
+    const diaKey = normalizeDia(dia.split(' - ')[0]);
     const usuarioId = this.horariosPorDia[diaKey]?.find(
       h => h.horario === hora
     )?.usuarioId;
