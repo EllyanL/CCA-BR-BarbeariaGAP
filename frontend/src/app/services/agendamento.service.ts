@@ -5,6 +5,7 @@ import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
+import { normalizeDia } from '../shared/dias-semana';
 
 @Injectable({
   providedIn: 'root'
@@ -51,7 +52,7 @@ export class AgendamentoService {
   }
 
   getAgendamentoPorHorario(data: string, hora: string, dia: string, categoria: string): Observable<Agendamento> {
-    const params = { data, hora, dia, categoria };
+    const params = { data, hora, dia: normalizeDia(dia), categoria };
     return this.http.get<Agendamento>(`${this.apiUrl}/check`, { params }).pipe(
       catchError(error => throwError(() => error))
     );
@@ -60,7 +61,8 @@ export class AgendamentoService {
 
   createAgendamento(agendamento: Agendamento): Observable<Agendamento> {
     this.logger.log('Enviando para URL:', this.apiUrl);
-    return this.http.post<Agendamento>(this.apiUrl, agendamento).pipe(
+    const payload = { ...agendamento, diaSemana: normalizeDia(agendamento.diaSemana) };
+    return this.http.post<Agendamento>(this.apiUrl, payload).pipe(
       tap({
         error: error => this.logger.error('❌ Erro no createAgendamento():', error)
       }),
@@ -78,7 +80,11 @@ export class AgendamentoService {
 
   updateAgendamento(id: number, dados: Partial<Agendamento>): Observable<Agendamento> {
     const headers = this.getAuthHeaders();
-    return this.http.put<Agendamento>(`${this.apiUrl}/${id}`, dados, { headers }).pipe(
+    const payload = { ...dados } as Partial<Agendamento>;
+    if (payload.diaSemana) {
+      payload.diaSemana = normalizeDia(payload.diaSemana);
+    }
+    return this.http.put<Agendamento>(`${this.apiUrl}/${id}`, payload, { headers }).pipe(
       catchError(error => throwError(() => error))
     );
   }

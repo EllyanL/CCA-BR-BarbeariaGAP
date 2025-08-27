@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { LoggingService } from 'src/app/services/logging.service';
+import { DIA_SEMANA, normalizeDia } from 'src/app/shared/dias-semana';
 
 @Component({
   selector: 'app-dialogo-editar-agendamento',
@@ -21,7 +22,7 @@ import { LoggingService } from 'src/app/services/logging.service';
       <mat-form-field class="edit-field">
         <mat-label>Dia da Semana</mat-label>
         <mat-select [(ngModel)]="diaSemana">
-          <mat-option *ngFor="let d of dias" [value]="d">{{ d | uppercase }}</mat-option>
+          <mat-option *ngFor="let d of dias" [value]="d">{{ DIA_SEMANA[d] | uppercase }}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -36,7 +37,8 @@ export class DialogoEditarAgendamentoComponent {
   data: string;
   hora: string;
   diaSemana: string;
-  dias = ['segunda', 'terça', 'quarta', 'quinta', 'sexta'];
+  readonly DIA_SEMANA = DIA_SEMANA;
+  dias = Object.keys(DIA_SEMANA);
 
   constructor(
     public dialogRef: MatDialogRef<DialogoEditarAgendamentoComponent>,
@@ -47,7 +49,7 @@ export class DialogoEditarAgendamentoComponent {
   ) {
     this.data = agendamento.data || '';
     this.hora = agendamento.hora.slice(0,5);
-    this.diaSemana = agendamento.diaSemana;
+    this.diaSemana = normalizeDia(agendamento.diaSemana);
   }
 
   fechar(): void {
@@ -58,7 +60,7 @@ export class DialogoEditarAgendamentoComponent {
     this.agendamentoService.updateAgendamento(this.agendamento.id!, {
       data: this.data,
       hora: this.hora,
-      diaSemana: this.diaSemana
+      diaSemana: normalizeDia(this.diaSemana)
     }).subscribe({
       next: (updated) => {
         this.snackBar.open('Agendamento atualizado com sucesso.', 'Ciente', { duration: 3000 });
