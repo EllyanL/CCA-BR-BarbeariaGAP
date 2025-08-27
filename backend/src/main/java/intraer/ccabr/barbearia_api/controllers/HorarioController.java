@@ -177,20 +177,10 @@ public class HorarioController {
     public ResponseEntity<Map<String, List<HorarioDTO>>> toggleDia(@RequestBody Map<String, String> payload) {
         String dia = payload.get("dia");
         String categoria = payload.get("categoria");
-        String acao = payload.get("acao");
-        if (dia == null || categoria == null || acao == null) {
+        if (dia == null || categoria == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        HorarioStatus status;
-        try {
-            status = HorarioStatus.valueOf(acao.toUpperCase());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        if (status == HorarioStatus.AGENDADO) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        Map<String, List<HorarioDTO>> atualizados = horarioService.toggleDia(dia, categoria, status);
+        Map<String, List<HorarioDTO>> atualizados = horarioService.toggleDia(dia, categoria);
         horarioUpdateService.sendUpdate("refresh");
         return ResponseEntity.ok(atualizados);
     }

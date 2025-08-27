@@ -8,7 +8,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 })
 export class ConfirmarToggleDiaComponent {
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { dia: string; acao: string },
+    @Inject(MAT_DIALOG_DATA) public data: { dia: string },
     private dialogRef: MatDialogRef<ConfirmarToggleDiaComponent>
   ) {}
 

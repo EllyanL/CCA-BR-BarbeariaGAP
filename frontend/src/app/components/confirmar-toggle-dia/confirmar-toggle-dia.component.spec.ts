@@ -10,7 +10,7 @@ describe('ConfirmarToggleDiaComponent', () => {
     TestBed.configureTestingModule({
       declarations: [ConfirmarToggleDiaComponent],
       providers: [
-        { provide: MAT_DIALOG_DATA, useValue: { dia: 'segunda', acao: 'DISPONIBILIZAR' } },
+        { provide: MAT_DIALOG_DATA, useValue: { dia: 'segunda' } },
         { provide: MatDialogRef, useValue: {} },
       ],
     });
