@@ -26,6 +26,7 @@ import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoAdminDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoCreateDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
+import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Militar;
@@ -91,12 +92,13 @@ public class AgendamentoController {
         Agendamento agendamento = new Agendamento();
         agendamento.setData(dto.getData());
         agendamento.setHora(dto.getHora());
-        agendamento.setDiaSemana(dto.getDiaSemana());
+        String dia = DiaSemana.from(dto.getDiaSemana()).getValor();
+        agendamento.setDiaSemana(dia);
         agendamento.setCategoria(dto.getCategoria());
 
         // Busca horário para validação
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            agendamento.getDiaSemana(), agendamento.getHora(), agendamento.getCategoria()
+            dia, agendamento.getHora(), agendamento.getCategoria()
         );
 
         if (horarioOpt.isEmpty()) {
@@ -113,7 +115,7 @@ public class AgendamentoController {
         boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
             agendamento.getData(),
             agendamento.getHora(),
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getCategoria(),
             "CANCELADO"
         );
@@ -330,8 +332,9 @@ public class AgendamentoController {
         try {
             LocalDate parsedData = LocalDate.parse(data);
             LocalTime parsedHora = LocalTime.parse(hora);
+            String diaNorm = DiaSemana.from(dia).getValor();
             return agendamentoService
-                    .findAgendamentoByDataHoraDiaCategoria(parsedData, parsedHora, dia, categoria)
+                    .findAgendamentoByDataHoraDiaCategoria(parsedData, parsedHora, diaNorm, categoria)
                     .map(a -> new ResponseEntity<>(new AgendamentoDTO(a), HttpStatus.OK))
                     .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         } catch (DateTimeParseException e) {

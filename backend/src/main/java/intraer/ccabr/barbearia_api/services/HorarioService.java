@@ -2,6 +2,7 @@ package intraer.ccabr.barbearia_api.services;
 
 import intraer.ccabr.barbearia_api.dtos.HorarioDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
+import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
@@ -18,7 +19,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.text.Normalizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,21 +82,20 @@ public class HorarioService {
     public Map<String, Map<String, List<Horario>>> getTodosHorarios() {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
         Map<String, Map<String, List<Horario>>> horarios = new HashMap<>();
-        String[] dias = {"segunda", "terca", "quarta", "quinta", "sexta"};
         String[] categorias = {"GRADUADO", "OFICIAL"};
 
-        for (String dia : dias) {
-            String diaNorm = normalizeDia(dia);
+        for (DiaSemana ds : DiaSemana.values()) {
+            String dia = ds.getValor();
             Map<String, List<Horario>> porCategoria = new HashMap<>();
             for (String categoria : categorias) {
-                List<Horario> horariosDiaCategoria = horarioRepository.findByDiaAndCategoria(diaNorm, categoria)
+                List<Horario> horariosDiaCategoria = horarioRepository.findByDiaAndCategoria(dia, categoria)
                         .stream()
                         .filter(h -> horarioDentroIntervalo(h.getHorario(), config))
                         .collect(Collectors.toList());
-                logger.debug("Horários encontrados para dia: {}, categoria: {}, quantidade: {}", diaNorm, categoria, horariosDiaCategoria.size());
+                logger.debug("Horários encontrados para dia: {}, categoria: {}, quantidade: {}", dia, categoria, horariosDiaCategoria.size());
                 porCategoria.put(categoria, horariosDiaCategoria);
             }
-            horarios.put(diaNorm, porCategoria);
+            horarios.put(dia, porCategoria);
         }
         logger.info("Retornando todos os horários: {}", horarios);
         return horarios;
@@ -104,7 +103,7 @@ public class HorarioService {
 
     public List<Horario> getHorariosPorDiaECategoria(String dia, String categoria) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
-        String diaNorm = normalizeDia(dia);
+        String diaNorm = DiaSemana.from(dia).getValor();
         return horarioRepository.findByDiaAndCategoria(diaNorm, categoria).stream()
                 .filter(h -> horarioDentroIntervalo(h.getHorario(), config))
                 .collect(Collectors.toList());
@@ -147,15 +146,6 @@ public class HorarioService {
         };
     }
 
-    private String normalizeDia(String dia) {
-        if (dia == null) {
-            return null;
-        }
-        return Normalizer.normalize(dia, Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "")
-                .toLowerCase();
-    }
-
     public Map<String, List<HorarioDTO>> listarHorariosAgrupadosPorCategoria(String categoria) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
         List<Horario> horarios = horarioRepository.findByCategoria(categoria).stream()
@@ -189,7 +179,7 @@ public class HorarioService {
 
     @Transactional
     public HorarioDTO toggleHorario(String dia, String horario, String categoria) {
-        String diaNorm = normalizeDia(dia);
+        String diaNorm = DiaSemana.from(dia).getValor();
         LocalTime horaNorm = LocalTime.parse(horario, TIME_FORMATTER);
 
         Optional<Horario> opt = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horaNorm, categoria);
@@ -216,7 +206,7 @@ public class HorarioService {
 
     @Transactional
     public Map<String, List<HorarioDTO>> toggleDia(String dia, String categoria) {
-        String diaNorm = normalizeDia(dia);
+        String diaNorm = DiaSemana.from(dia).getValor();
 
         List<Horario> horarios = horarioRepository.findByDiaAndCategoria(diaNorm, categoria);
         for (Horario h : horarios) {
@@ -265,15 +255,14 @@ public class HorarioService {
         validarHorarioDentroIntervalo(hora);
         validarIncrementoMeiaHora(hora);
 
-        List<String> dias = List.of("segunda", "terca", "quarta", "quinta", "sexta");
+        List<String> dias = Arrays.stream(DiaSemana.values()).map(DiaSemana::getValor).toList();
         List<String> categorias = List.of("GRADUADO", "OFICIAL");
 
         List<Horario> adicionados = new ArrayList<>();
         for (String dia : dias) {
-            String diaNorm = normalizeDia(dia);
             for (String categoria : categorias) {
-                if (!horarioRepository.existsByDiaAndHorarioAndCategoria(diaNorm, hora, categoria)) {
-                    Horario h = new Horario(diaNorm, hora, categoria, HorarioStatus.DISPONIVEL);
+                if (!horarioRepository.existsByDiaAndHorarioAndCategoria(dia, hora, categoria)) {
+                    Horario h = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
                     adicionados.add(horarioRepository.save(h));
                 }
             }
@@ -292,7 +281,7 @@ public class HorarioService {
 
     @Transactional
     public Horario disponibilizarHorario(String dia, LocalTime horario, String categoria) {
-        dia = normalizeDia(dia);
+        dia = DiaSemana.from(dia).getValor();
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
         if (horarioOpt.isEmpty()) {
             return null;
@@ -318,7 +307,7 @@ public class HorarioService {
 
     @Transactional
     public boolean removerHorarioPersonalizado(String dia, LocalTime horario, String categoria) {
-        String diaNorm = normalizeDia(dia);
+        String diaNorm = DiaSemana.from(dia).getValor();
         Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horario, categoria);
         existente.ifPresent(horarioRepository::delete);
         return existente.isPresent();
@@ -326,7 +315,7 @@ public class HorarioService {
 
     @Transactional
     public Horario indisponibilizarHorario(String dia, LocalTime horario, String categoria) {
-        dia = normalizeDia(dia);
+        dia = DiaSemana.from(dia).getValor();
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, horario, categoria);
         if (horarioOpt.isEmpty()) {
             return null;
@@ -351,7 +340,7 @@ public class HorarioService {
 
     @Transactional
     public Map<String, Object> disponibilizarTodosHorarios(String dia, List<LocalTime> horarios, String categoria) {
-        dia = normalizeDia(dia);
+        dia = DiaSemana.from(dia).getValor();
         Map<String, Object> response = new HashMap<>();
         response.put("mensagem", "Horários processados para " + dia + " (" + categoria + ")");
 
@@ -389,7 +378,7 @@ public class HorarioService {
 
     @Transactional
     public Map<String, Object> indisponibilizarTodosHorarios(String dia, List<LocalTime> horarios, String categoria) {
-        dia = normalizeDia(dia);
+        dia = DiaSemana.from(dia).getValor();
         Map<String, Object> response = new HashMap<>();
         response.put("mensagem", "Horários indisponibilizados para " + dia + " (" + categoria + ")");
 
@@ -434,15 +423,14 @@ public class HorarioService {
         LocalTime hora = LocalTime.parse(novoHorario);
         validarHorarioDentroIntervalo(hora);
         validarIncrementoMeiaHora(hora);
-        List<String> diasDaSemana = Arrays.asList("segunda", "terca", "quarta", "quinta", "sexta");
+        List<String> diasDaSemana = Arrays.stream(DiaSemana.values()).map(DiaSemana::getValor).toList();
         List<String> categorias = Arrays.asList("GRADUADO", "OFICIAL");
         for (String dia : diasDaSemana) {
-            String diaNorm = normalizeDia(dia);
             for (String categoria : categorias) {
-                if (!horarioRepository.existsByDiaAndHorarioAndCategoria(diaNorm, hora, categoria)) {
-                    Horario horario = new Horario(diaNorm, hora, categoria,HorarioStatus.DISPONIVEL);
+                if (!horarioRepository.existsByDiaAndHorarioAndCategoria(dia, hora, categoria)) {
+                    Horario horario = new Horario(dia, hora, categoria,HorarioStatus.DISPONIVEL);
                     horarioRepository.save(horario);
-                    logger.info("Sincronizado novo horário: dia={}, horario={}, categoria={}", diaNorm, novoHorario, categoria);
+                    logger.info("Sincronizado novo horário: dia={}, horario={}, categoria={}", dia, novoHorario, categoria);
                 }
             }
         }
