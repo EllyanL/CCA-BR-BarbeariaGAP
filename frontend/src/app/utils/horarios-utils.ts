@@ -1,4 +1,5 @@
 import { HorariosPorDia } from '../models/slot-horario';
+import { DiaKey } from '../shared/dias.util';
 
 /**
  * Normaliza uma string de horário garantindo o formato HH:mm.
@@ -21,13 +22,13 @@ export function normalizeHora(hora: string): string {
  * formato HH:mm (sem segundos).
  */
 export function normalizeHorariosPorDia(horarios: HorariosPorDia): HorariosPorDia {
-  const result: HorariosPorDia = { ...horarios } as any;
-  Object.keys(result || {}).forEach((dia) => {
-    const lista = result[dia as keyof HorariosPorDia] || [];
-    result[dia as keyof HorariosPorDia] = lista.map(h => ({
+  const result: HorariosPorDia = { ...horarios };
+  for (const dia of Object.keys(result) as DiaKey[]) {
+    const lista = result[dia] || [];
+    result[dia] = lista.map(h => ({
       ...h,
       horario: normalizeHora(h.horario)
     }));
-  });
+  }
   return result;
 }
