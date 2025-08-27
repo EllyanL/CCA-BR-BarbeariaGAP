@@ -71,8 +71,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   agendamentos: Agendamento[] = [];
   inicioDaSemana!: Date;
   fimDaSemana!: Date;
-    readonly diaLabelMap = DIA_LABEL_MAP;
-  diasDaSemana: string[] = Object.keys(DIA_SEMANA);
+  readonly diaLabelMap: Record<DiaKey, string> = DIA_LABEL_MAP;
+  diasDaSemana: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
   diasComData: string[] = []; // datas correspondentes
   horariosBaseSemana: string[] = [];
   feedbackMessageTitle: string = '';

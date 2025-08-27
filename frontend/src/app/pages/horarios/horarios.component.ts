@@ -35,12 +35,12 @@ import { UserService } from 'src/app/services/user.service';
     usuarioLogado: Militar | null = null;
 
     /** Mapa de chaves normalizadas para labels com acento */
-  readonly diaLabelMap = DIA_LABEL_MAP;
+  readonly diaLabelMap: Record<DiaKey, string> = DIA_LABEL_MAP;
 
     diasDaSemana: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
     diasParaSelecao: (DiaKey | 'todos')[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
-    diaSelecionado: string = 'segunda';
+    diaSelecionado: DiaKey | 'todos' = 'segunda';
     horariosPorDia: HorariosPorDia = this.diasDaSemana.reduce((acc, dia) => {
       acc[dia] = [];
       return acc;
@@ -385,11 +385,11 @@ import { UserService } from 'src/app/services/user.service';
 
       const horario = this.horarioPersonalizado;
       const categoria = this.categoriaSelecionada;
-      const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
+      const diasAlvo: DiaKey[] = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado as DiaKey];
 
       const requisicao$: Observable<any> = diasAlvo.length > 1
         ? this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria)
-        : this.horariosService.adicionarHorarioBase(horario, this.diaSelecionado, categoria);
+        : this.horariosService.adicionarHorarioBase(horario, this.diaSelecionado as DiaKey, categoria);
 
       requisicao$.subscribe({
         next: () => {
@@ -427,7 +427,7 @@ import { UserService } from 'src/app/services/user.service';
     adicionarHorarioDia(): void {
       if (this.horarioValido && this.horarioPersonalizado) {
         const horario = this.horarioPersonalizado;
-        const dia = this.diaSelecionado;
+        const dia = this.diaSelecionado as DiaKey;
         const categoria = this.categoriaSelecionada;
 
         this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
@@ -458,7 +458,7 @@ import { UserService } from 'src/app/services/user.service';
       this.validarHorario();
     }
 
-    adicionarHorarioIndividual(dia: string, horario: string, categoria: string): void { //Adiciona horário fixo na base
+    adicionarHorarioIndividual(dia: DiaKey, horario: string, categoria: string): void { //Adiciona horário fixo na base
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: () => {
           // Garante que ele exista na base da semana
@@ -490,11 +490,11 @@ import { UserService } from 'src/app/services/user.service';
 
       const horario = this.horarioPersonalizado;
       const categoria = this.categoriaSelecionada;
-      const diasAlvo = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado];
+      const diasAlvo: DiaKey[] = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado as DiaKey];
 
       const requisicao$: Observable<any> = diasAlvo.length > 1
         ? this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria)
-        : this.horariosService.removerHorarioBase(horario, this.diaSelecionado, categoria);
+        : this.horariosService.removerHorarioBase(horario, this.diaSelecionado as DiaKey, categoria);
 
       requisicao$.subscribe({
         next: () => {
