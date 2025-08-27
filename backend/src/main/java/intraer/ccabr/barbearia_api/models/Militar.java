@@ -94,20 +94,19 @@ public class Militar implements UserDetails {
     @Override
     @JsonProperty
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        switch (this.categoria) {
-            case ADMIN:
-                return List.of(
-                        new SimpleGrantedAuthority("ROLE_ADMIN"),
-                        new SimpleGrantedAuthority("ROLE_OFICIAL"),
-                        new SimpleGrantedAuthority("ROLE_GRADUADO"),
-                        new SimpleGrantedAuthority("ROLE_USER")
-                );
-            case GRADUADO:
-                return List.of(new SimpleGrantedAuthority("ROLE_GRADUADO"));
-            case OFICIAL:
-                return List.of(new SimpleGrantedAuthority("ROLE_OFICIAL"));
-            default:
-                return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (this.categoria == UserRole.ADMIN) {
+            return List.of(
+                    new SimpleGrantedAuthority("ROLE_ADMIN"),
+                    new SimpleGrantedAuthority("ROLE_OFICIAL"),
+                    new SimpleGrantedAuthority("ROLE_GRADUADO"),
+                    new SimpleGrantedAuthority("ROLE_USER")
+            );
+        } else if (this.categoria == UserRole.GRADUADO) {
+            return List.of(new SimpleGrantedAuthority("ROLE_GRADUADO"));
+        } else if (this.categoria == UserRole.OFICIAL) {
+            return List.of(new SimpleGrantedAuthority("ROLE_OFICIAL"));
+        } else {
+            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
     }
 
