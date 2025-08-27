@@ -22,7 +22,7 @@ import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/
       <mat-form-field class="edit-field">
         <mat-label>Dia da Semana</mat-label>
           <mat-select [(ngModel)]="diaSemana">
-            <mat-option *ngFor="let d of diasDaSemana" [value]="d">{{ diaLabelMap[d as DiaKey] | uppercase }}</mat-option>
+            <mat-option *ngFor="let d of diasDaSemana" [value]="d">{{ diaLabelMap[d] | uppercase }}</mat-option>
           </mat-select>
       </mat-form-field>
     </div>
