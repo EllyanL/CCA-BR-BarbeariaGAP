@@ -15,8 +15,8 @@
       <thead class="tabela-header">
         <tr>
           <th>HORÁRIO</th>
-          <th *ngFor="let labelDia of diasComData; let i = index; trackBy: trackByIndex" class="tabela-header-dia">
-            {{ labelDia | uppercase }}
+          <th *ngFor="let dia of diasDaSemana; let i = index; trackBy: trackByDia" class="tabela-header-dia">
+            {{ (diaLabelMap[dia] + ' - ' + diasComData[i]) | uppercase }}
           </th>
         </tr>
       </thead>
@@ -25,14 +25,14 @@
           <td class="tabela-coluna-horario">
             {{ hora }}
           </td>
-          <td *ngFor="let dia of diasDaSemana; let i = index; trackBy: trackByDia" class="tabela-coluna-dia">
+          <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
             <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
               <button
                 mat-raised-button
                 [disabled]="slot.status !== 'DISPONIVEL'"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
                 [ngClass]="statusClass(slot.status)"
-                (click)="abrirDialogoAgendamento(diasComData[i], hora)"
+                (click)="abrirDialogoAgendamento(getLabelDiaComData(dia), hora)"
               >
                 {{ formatarStatus(slot.status) }}
               </button>
