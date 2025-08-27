@@ -258,7 +258,8 @@ public class AgendamentoController {
                     .body("Você só pode editar agendamentos da sua própria categoria.");
         }
 
-        Optional<Agendamento> atualizado = agendamentoService.atualizarAgendamento(id, dto.getData(), dto.getHora(), dto.getDiaSemana());
+        String diaNorm = DiaSemana.from(dto.getDiaSemana()).getValor();
+        Optional<Agendamento> atualizado = agendamentoService.atualizarAgendamento(id, dto.getData(), dto.getHora(), diaNorm);
         if (atualizado.isPresent()) {
             horarioUpdateService.sendUpdate("refresh");
             return ResponseEntity.ok(new AgendamentoDTO(atualizado.get()));

@@ -57,11 +57,13 @@ export class DialogoEditarAgendamentoComponent {
   }
 
   salvar(): void {
-    this.agendamentoService.updateAgendamento(this.agendamento.id!, {
+    const atualizado = {
       data: this.data,
       hora: this.hora,
       diaSemana: normalizeDia(this.diaSemana)
-    }).subscribe({
+    };
+
+    this.agendamentoService.updateAgendamento(this.agendamento.id!, atualizado).subscribe({
       next: (updated) => {
         this.snackBar.open('Agendamento atualizado com sucesso.', 'Ciente', { duration: 3000 });
         this.dialogRef.close(updated);
