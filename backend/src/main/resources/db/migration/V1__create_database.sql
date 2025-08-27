@@ -90,13 +90,13 @@ CREATE TABLE horarios (
     dia        VARCHAR(10) NOT NULL,                    -- 'segunda'...'domingo'
     horario    TIME WITHOUT TIME ZONE NOT NULL,         -- HH:MM
     categoria  VARCHAR(15) NOT NULL,                    -- 'GRADUADO' | 'OFICIAL'
-    status     VARCHAR(20) NOT NULL DEFAULT 'DISPONIVEL', -- 'DISPONIVEL' | 'INDISPONIVEL'
+    status     VARCHAR(20) NOT NULL DEFAULT 'DISPONIVEL', -- 'DISPONIVEL' | 'INDISPONIVEL' | 'AGENDADO'
 
     CONSTRAINT ck_horarios_dia
         CHECK (dia IN ('segunda','terca','quarta','quinta','sexta','sabado','domingo')),
 
     CONSTRAINT ck_horarios_status
-        CHECK (status IN ('DISPONIVEL','INDISPONIVEL')),
+        CHECK (status IN ('DISPONIVEL','INDISPONIVEL','AGENDADO')),
 
     CONSTRAINT uc_horarios_dia_hora_categoria
         UNIQUE (dia, horario, categoria)
@@ -186,7 +186,7 @@ COMMENT ON COLUMN agendamentos.status IS 'AGENDADO | REALIZADO | CANCELADO | ADM
 COMMENT ON COLUMN agendamentos.cancelado_por IS 'Quem cancelou: USUARIO | ADMIN';
 
 COMMENT ON TABLE horarios IS 'Grade base por dia da semana/categoria. Representa disponibilidade visual.';
-COMMENT ON COLUMN horarios.status IS 'DISPONIVEL | INDISPONIVEL';
+COMMENT ON COLUMN horarios.status IS 'DISPONIVEL | INDISPONIVEL | AGENDADO';
 
 COMMENT ON TABLE configuracao_horario IS 'Janela de funcionamento (início/fim) configurada pelo admin.';
 

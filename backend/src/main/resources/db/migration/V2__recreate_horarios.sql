@@ -10,7 +10,7 @@ CREATE TABLE horarios (
     CONSTRAINT ck_horarios_dia
         CHECK (dia IN ('segunda','terca','quarta','quinta','sexta','sabado','domingo')),
     CONSTRAINT ck_horarios_status
-        CHECK (status IN ('DISPONIVEL','INDISPONIVEL')),
+        CHECK (status IN ('DISPONIVEL','INDISPONIVEL','AGENDADO')),
     CONSTRAINT uc_horarios_dia_hora_categoria
         UNIQUE (dia, horario, categoria)
 );
