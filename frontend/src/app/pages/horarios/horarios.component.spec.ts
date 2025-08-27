@@ -164,12 +164,11 @@ describe('HorariosComponent', () => {
 
     expect(horariosService.toggleDia).toHaveBeenCalledWith({
       dia: 'terca',
-      categoria: component.categoriaSelecionada,
-      acao: 'DISPONIBILIZAR'
+      categoria: component.categoriaSelecionada
     });
   });
 
-  it('toggleDia chama serviço com ação INDISPONIBILIZAR quando existe horário disponível', () => {
+  it('toggleDia chama serviço quando existe horário disponível', () => {
     component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'DISPONIVEL' }] } as HorariosPorDia;
     component.agendamentos = [];
     horariosService.toggleDia.and.returnValue(of({} as HorariosPorDia));
@@ -178,12 +177,11 @@ describe('HorariosComponent', () => {
 
     expect(horariosService.toggleDia).toHaveBeenCalledWith({
       dia: 'segunda',
-      categoria: component.categoriaSelecionada,
-      acao: 'INDISPONIBILIZAR'
+      categoria: component.categoriaSelecionada
     });
   });
 
-  it('toggleDia chama serviço com ação DISPONIBILIZAR quando não existe horário disponível', () => {
+  it('toggleDia chama serviço quando não existe horário disponível', () => {
     component.horariosPorDia = { segunda: [{ horario: '08:00', status: 'INDISPONIVEL' }] } as HorariosPorDia;
     component.agendamentos = [];
     horariosService.toggleDia.and.returnValue(of({} as HorariosPorDia));
@@ -192,8 +190,7 @@ describe('HorariosComponent', () => {
 
     expect(horariosService.toggleDia).toHaveBeenCalledWith({
       dia: 'segunda',
-      categoria: component.categoriaSelecionada,
-      acao: 'DISPONIBILIZAR'
+      categoria: component.categoriaSelecionada
     });
   });
 

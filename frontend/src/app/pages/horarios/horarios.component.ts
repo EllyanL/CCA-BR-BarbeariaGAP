@@ -603,14 +603,10 @@ import { UserService } from 'src/app/services/user.service';
 //-----------------☀️Gerenciamento de Dias-----------------
     toggleDia(dia: string): void {
       const diaKey = this.normalizeDia(dia);
-      const horarios = this.horariosPorDia[diaKey] || [];
-      const acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' = horarios.some(h => h.status === 'DISPONIVEL')
-        ? 'INDISPONIBILIZAR'
-        : 'DISPONIBILIZAR';
 
       const dialogRef = this.dialog.open(ConfirmarToggleDiaComponent, {
         width: '400px',
-        data: { dia: this.getDiaLabel(diaKey), acao }
+        data: { dia: this.getDiaLabel(diaKey) }
       });
 
       dialogRef.afterClosed().subscribe((confirmado: boolean) => {
@@ -619,7 +615,7 @@ import { UserService } from 'src/app/services/user.service';
         }
 
         this.horariosService
-          .toggleDia({ dia: diaKey, categoria: this.categoriaSelecionada, acao })
+          .toggleDia({ dia: diaKey, categoria: this.categoriaSelecionada })
           .subscribe({
             next: horarios => {
               const normalizado = normalizeHorariosPorDia(horarios);
@@ -627,15 +623,11 @@ import { UserService } from 'src/app/services/user.service';
               this.horariosService.atualizarHorarios(this.horariosPorDia);
               this.cdr.markForCheck();
               const label = this.getDiaLabel(diaKey);
-              const msg = acao === 'DISPONIBILIZAR' ? `Dia ${label} disponibilizado.` : `Dia ${label} indisponibilizado.`;
-              this.snackBar.open(msg, 'Ciente', { duration: 3000 });
+              this.snackBar.open(`Horários do dia ${label} atualizados.`, 'Ciente', { duration: 3000 });
             },
             error: () => {
               const label = this.getDiaLabel(diaKey);
-              const msg = acao === 'DISPONIBILIZAR'
-                ? `Falha ao disponibilizar o dia ${label}.`
-                : `Falha ao indisponibilizar o dia ${label}.`;
-              this.snackBar.open(msg, 'Ciente', { duration: 5000 });
+              this.snackBar.open(`Falha ao atualizar o dia ${label}.`, 'Ciente', { duration: 5000 });
             }
           });
       });

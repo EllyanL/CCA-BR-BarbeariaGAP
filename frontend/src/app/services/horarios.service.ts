@@ -285,11 +285,11 @@ export class HorariosService {
   }
 
   toggleDia(
-    payload: { dia: string; categoria: string; acao: 'DISPONIBILIZAR' | 'INDISPONIBILIZAR' }
+    payload: { dia: string; categoria: string }
   ): Observable<HorariosPorDia> {
     const body = {
-      ...payload,
-      dia: this.normalizeDia(payload.dia)
+      dia: this.normalizeDia(payload.dia),
+      categoria: payload.categoria
     };
     return this.http
       .put<HorariosPorDia>(`${this.apiUrl}/toggle-dia`, body, { headers: this.getAuthHeaders() })

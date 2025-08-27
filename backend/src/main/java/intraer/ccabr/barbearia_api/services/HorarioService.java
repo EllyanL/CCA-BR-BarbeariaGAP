@@ -215,13 +215,15 @@ public class HorarioService {
     }
 
     @Transactional
-    public Map<String, List<HorarioDTO>> toggleDia(String dia, String categoria, HorarioStatus acao) {
+    public Map<String, List<HorarioDTO>> toggleDia(String dia, String categoria) {
         String diaNorm = normalizeDia(dia);
 
         List<Horario> horarios = horarioRepository.findByDiaAndCategoria(diaNorm, categoria);
         for (Horario h : horarios) {
             if (h.getStatus() != HorarioStatus.AGENDADO) {
-                h.setStatus(acao);
+                h.setStatus(h.getStatus() == HorarioStatus.DISPONIVEL
+                        ? HorarioStatus.INDISPONIVEL
+                        : HorarioStatus.DISPONIVEL);
             }
         }
         horarioRepository.saveAll(horarios);
