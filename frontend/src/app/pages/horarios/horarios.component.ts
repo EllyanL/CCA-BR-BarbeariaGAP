@@ -7,7 +7,7 @@ import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
-import { DIA_SEMANA, normalizeDia } from '../../shared/dias-semana';
+import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia } from '../../shared/dias.util';
 
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
@@ -35,7 +35,7 @@ import { UserService } from 'src/app/services/user.service';
     usuarioLogado: Militar | null = null;
 
     /** Mapa de chaves normalizadas para labels com acento */
-    readonly diaLabelMap = DIA_SEMANA;
+  readonly diaLabelMap = DIA_LABEL_MAP;
 
     diasDaSemana: string[] = Object.keys(DIA_SEMANA);
     diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];

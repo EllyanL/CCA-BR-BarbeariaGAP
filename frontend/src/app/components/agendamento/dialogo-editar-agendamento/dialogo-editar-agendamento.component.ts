@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { LoggingService } from 'src/app/services/logging.service';
-import { DIA_SEMANA, normalizeDia } from 'src/app/shared/dias-semana';
+import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia } from 'src/app/shared/dias.util';
 
 @Component({
   selector: 'app-dialogo-editar-agendamento',
@@ -21,9 +21,9 @@ import { DIA_SEMANA, normalizeDia } from 'src/app/shared/dias-semana';
       </mat-form-field>
       <mat-form-field class="edit-field">
         <mat-label>Dia da Semana</mat-label>
-        <mat-select [(ngModel)]="diaSemana">
-          <mat-option *ngFor="let d of dias" [value]="d">{{ DIA_SEMANA[d] | uppercase }}</mat-option>
-        </mat-select>
+          <mat-select [(ngModel)]="diaSemana">
+            <mat-option *ngFor="let d of dias" [value]="d">{{ DIA_LABEL_MAP[d] | uppercase }}</mat-option>
+          </mat-select>
       </mat-form-field>
     </div>
     <div mat-dialog-actions>
@@ -37,7 +37,7 @@ export class DialogoEditarAgendamentoComponent {
   data: string;
   hora: string;
   diaSemana: string;
-  readonly DIA_SEMANA = DIA_SEMANA;
+  readonly DIA_LABEL_MAP = DIA_LABEL_MAP;
   dias = Object.keys(DIA_SEMANA);
 
   constructor(
