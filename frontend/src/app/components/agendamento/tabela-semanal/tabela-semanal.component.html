@@ -16,7 +16,7 @@
         <tr>
           <th>HORÁRIO</th>
           <th *ngFor="let dia of diasDaSemana; let i = index; trackBy: trackByDia" class="tabela-header-dia">
-            {{ (diaLabelMap[dia as DiaKey] + ' - ' + diasComData[i]) | uppercase }}
+            {{ (diaLabelMap[dia] + ' - ' + diasComData[i]) | uppercase }}
           </th>
         </tr>
       </thead>

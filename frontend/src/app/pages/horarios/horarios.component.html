@@ -23,7 +23,7 @@
                 <mat-label>Dia da Semana</mat-label>
                 <mat-select [(ngModel)]="diaSelecionado" name="diaSelecionado" (selectionChange)="onDiaChange()">
                   <mat-option *ngFor="let dia of diasParaSelecao; trackBy: trackByDia" [value]="dia">
-                    {{ dia === 'todos' ? 'Todos os dias' : (diaLabelMap[dia as DiaKey] | titlecase) }}
+                    {{ dia === 'todos' ? 'Todos os dias' : (diaLabelMap[dia] | titlecase) }}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
@@ -78,7 +78,7 @@
         <thead class="horarios-header">
           <tr>
             <th *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="horarios-header-dia" (click)="toggleDia(dia)" [class.clickable]="isAdmin">
-              <span>{{ diaLabelMap[dia as DiaKey] | uppercase }}</span>
+              <span>{{ diaLabelMap[dia] | uppercase }}</span>
             </th>
           </tr>
         </thead>
