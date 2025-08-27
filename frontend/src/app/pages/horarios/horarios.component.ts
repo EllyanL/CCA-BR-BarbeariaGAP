@@ -7,6 +7,7 @@ import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
+import { DIA_SEMANA, normalizeDia } from '../../shared/dias-semana';
 
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
@@ -34,15 +35,9 @@ import { UserService } from 'src/app/services/user.service';
     usuarioLogado: Militar | null = null;
 
     /** Mapa de chaves normalizadas para labels com acento */
-    readonly diaLabelMap: Record<string, string> = {
-      segunda: 'segunda',
-      terca: 'terça',
-      quarta: 'quarta',
-      quinta: 'quinta',
-      sexta: 'sexta',
-    };
+    readonly diaLabelMap = DIA_SEMANA;
 
-    diasDaSemana: string[] = Object.keys(this.diaLabelMap);
+    diasDaSemana: string[] = Object.keys(DIA_SEMANA);
     diasParaSelecao: string[] = ['todos', ...this.diasDaSemana];
     horariosBaseSemana: string[] = [];
     diaSelecionado: string = 'segunda';
@@ -87,15 +82,8 @@ import { UserService } from 'src/app/services/user.service';
       this.saramUsuario = usuario?.saram || '';
     }
 
-    private normalizeDia(d: string): string {
-      return d
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase();
-    }
-
     getDiaLabel(dia: string): string {
-      return this.diaLabelMap[this.normalizeDia(dia)] || dia;
+      return this.diaLabelMap[normalizeDia(dia)] || dia;
     }
 
     private saveAgendamentos(): void {
@@ -512,7 +500,7 @@ import { UserService } from 'src/app/services/user.service';
         next: () => {
           this.horariosBaseSemana = this.horariosBaseSemana.filter(h => h !== horario);
           diasAlvo.forEach(dia => {
-            const diaKey = this.normalizeDia(dia);
+            const diaKey = normalizeDia(dia);
             if (this.horariosPorDia[diaKey]) {
               this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
             }
@@ -533,13 +521,13 @@ import { UserService } from 'src/app/services/user.service';
         
 
   getStatus(dia: string, hhmm: string): SlotHorario['status'] | undefined {
-    const diaKey = this.normalizeDia(dia);
+    const diaKey = normalizeDia(dia);
     const hora = normalizeHora(hhmm);
     return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === hora)?.status;
   }
 
   getSlot(dia: string, hora: string): SlotHorario | undefined {
-    const diaKey = this.normalizeDia(dia);
+    const diaKey = normalizeDia(dia);
     const hhmm = normalizeHora(hora);
     return this.horariosPorDia[diaKey]?.find(h => normalizeHora(h.horario) === hhmm);
   }
@@ -562,7 +550,7 @@ import { UserService } from 'src/app/services/user.service';
       return;
     }
 
-    const diaKey = this.normalizeDia(dia);
+    const diaKey = normalizeDia(dia);
     const categoria = this.categoriaSelecionada;
 
     this.horariosService.toggleSlot(diaKey, hhmm, categoria).subscribe({
@@ -602,7 +590,7 @@ import { UserService } from 'src/app/services/user.service';
     
 //-----------------☀️Gerenciamento de Dias-----------------
     toggleDia(dia: string): void {
-      const diaKey = this.normalizeDia(dia);
+      const diaKey = normalizeDia(dia);
 
       const dialogRef = this.dialog.open(ConfirmarToggleDiaComponent, {
         width: '400px',
@@ -634,11 +622,11 @@ import { UserService } from 'src/app/services/user.service';
     }
 //--------------📅Gerenciamento de Agendamento-------------
     temAgendado(dia: string): boolean {
-      const diaNorm = this.normalizeDia(dia);
+      const diaNorm = normalizeDia(dia);
       return (
         Array.isArray(this.agendamentos) &&
         this.agendamentos.some(
-          (a) => this.normalizeDia(a.diaSemana ?? '') === diaNorm
+          (a) => normalizeDia(a.diaSemana ?? '') === diaNorm
         )
       );
     }
@@ -650,7 +638,7 @@ import { UserService } from 'src/app/services/user.service';
             this.agendamentos = agendamentos
               .map(a => ({
                 ...a,
-                diaSemana: this.normalizeDia(a.diaSemana.trim()),
+                diaSemana: normalizeDia(a.diaSemana.trim()),
                 hora: a.hora.trim()
               }))
               .filter(a => {
@@ -684,7 +672,7 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     todosIndisponiveis(dia: string): boolean {
-      const diaKey = this.normalizeDia(dia);
+      const diaKey = normalizeDia(dia);
       const horarios = this.horariosPorDia[diaKey] || [];
       return (
         horarios.length > 0 && horarios.every((h) => h.status === 'INDISPONIVEL')
@@ -720,7 +708,7 @@ import { UserService } from 'src/app/services/user.service';
       ref.afterClosed().subscribe(r => {
         if (r?.sucesso) {
           const novoAgendamento: Agendamento | undefined = r.payload;
-          const diaKey = this.normalizeDia(dia);
+          const diaKey = normalizeDia(dia);
           const horariosDoDia = this.horariosPorDia[diaKey] || [];
           const index = horariosDoDia.findIndex(h => h.horario === horario);
 
@@ -778,10 +766,10 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
-      const diaSemana = this.normalizeDia(dia);
+      const diaSemana = normalizeDia(dia);
       const horaFormatada = normalizeHora(hora);
       return this.agendamentos.find(a =>
-        this.normalizeDia(a.diaSemana) === diaSemana &&
+        normalizeDia(a.diaSemana) === diaSemana &&
         normalizeHora(a.hora) === horaFormatada &&
         a.status !== 'CANCELADO'
       );
@@ -794,7 +782,7 @@ import { UserService } from 'src/app/services/user.service';
         next: () => {
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
 
-          const dia = this.normalizeDia(agendamento.diaSemana);
+          const dia = normalizeDia(agendamento.diaSemana);
           const hora = normalizeHora(agendamento.hora);
 
           const slotsDia = this.horariosPorDia[dia] || [];

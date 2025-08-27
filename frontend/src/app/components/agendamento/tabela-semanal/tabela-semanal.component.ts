@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
-import { normalizeDia } from 'src/app/utils/dia-utils';
+import { DIA_SEMANA, normalizeDia } from 'src/app/shared/dias-semana';
 
 
 @Component({
@@ -65,14 +65,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   agendamentos: Agendamento[] = [];
   inicioDaSemana!: Date;
   fimDaSemana!: Date;
-  readonly diaLabelMap: Record<string, string> = {
-    segunda: 'segunda',
-    terca: 'terça',
-    quarta: 'quarta',
-    quinta: 'quinta',
-    sexta: 'sexta',
-  };
-  diasDaSemana: string[] = Object.keys(this.diaLabelMap);
+  readonly diaLabelMap = DIA_SEMANA;
+  diasDaSemana: string[] = Object.keys(DIA_SEMANA);
   diasComData: string[] = []; // datas correspondentes
   horariosBaseSemana: string[] = [];
   feedbackMessageTitle: string = '';
