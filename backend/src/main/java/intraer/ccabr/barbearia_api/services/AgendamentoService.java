@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
+import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Militar;
@@ -65,8 +66,10 @@ public class AgendamentoService {
 
     @Transactional
     public Agendamento criarAgendamentoTransactional(Agendamento agendamento) {
+        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
+        agendamento.setDiaSemana(dia);
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getHora(),
             agendamento.getCategoria()
         );
@@ -78,7 +81,7 @@ public class AgendamentoService {
         boolean ocupado = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
             agendamento.getData(),
             agendamento.getHora(),
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getCategoria(),
             "CANCELADO"
         );
@@ -141,13 +144,15 @@ public class AgendamentoService {
 
     public boolean isAgendamentoDisponivel(LocalDate data, LocalTime hora, String diaSemana, String categoria) {
         // Considera apenas agendamentos cujo status seja diferente de 'CANCELADO'
+        String dia = DiaSemana.from(diaSemana).getValor();
         return !agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-                data, hora, diaSemana, categoria, "CANCELADO");
+                data, hora, dia, categoria, "CANCELADO");
     }
 
     public Optional<Agendamento> findAgendamentoByDataHoraDiaCategoria(
         LocalDate data, LocalTime hora, String diaSemana, String categoria) {
-        return agendamentoRepository.findByDataAndHoraAndDiaSemanaAndCategoria(data, hora, diaSemana, categoria);
+        String dia = DiaSemana.from(diaSemana).getValor();
+        return agendamentoRepository.findByDataAndHoraAndDiaSemanaAndCategoria(data, hora, dia, categoria);
     }
 
     public boolean podeAgendar15Dias(String saram, LocalDate dataNova) {
@@ -213,7 +218,8 @@ public class AgendamentoService {
         Map<String, Map<String, Agendamento>> resultado = new HashMap<>();
 
         for (Map<String, Object> diaMap : horariosPorDia) {
-            String dia = (String) diaMap.get("dia");
+            String diaRaw = (String) diaMap.get("dia");
+            String dia = DiaSemana.from(diaRaw).getValor();
             @SuppressWarnings("unchecked")
             List<String> horariosStr = (List<String>) diaMap.get("horarios");
             List<LocalTime> horarios = horariosStr.stream().map(LocalTime::parse).toList();
@@ -234,8 +240,9 @@ public class AgendamentoService {
     }
 
     public void marcarHorarioComoIndisponivel(Agendamento agendamento) {
+        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getHora(),
             agendamento.getCategoria()
         );
@@ -251,14 +258,15 @@ public class AgendamentoService {
     }
     
     public void marcarHorarioComoAgendado(Agendamento agendamento) {
+        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getHora(),
             agendamento.getCategoria()
         );
 
         Horario horario = horarioOpt.orElseGet(() -> new Horario(
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getHora(),
             agendamento.getCategoria(),
             HorarioStatus.AGENDADO
@@ -269,14 +277,15 @@ public class AgendamentoService {
     }
 
     public void marcarHorarioComoDisponivel(Agendamento agendamento) {
+        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getHora(),
             agendamento.getCategoria()
         );
 
         Horario horario = horarioOpt.orElseGet(() -> new Horario(
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getHora(),
             agendamento.getCategoria(),
             HorarioStatus.DISPONIVEL
@@ -293,22 +302,24 @@ public class AgendamentoService {
         }
 
         Agendamento agendamento = agOpt.get();
+        String novoDiaNorm = DiaSemana.from(novoDia).getValor();
+        String diaAtualNorm = DiaSemana.from(agendamento.getDiaSemana()).getValor();
 
         // Se nada mudou, apenas retorna
         if (agendamento.getData().equals(novaData)
                 && agendamento.getHora().equals(novaHora)
-                && agendamento.getDiaSemana().equalsIgnoreCase(novoDia)) {
+                && diaAtualNorm.equals(novoDiaNorm)) {
             return Optional.of(agendamento);
         }
 
         // Verifica se novo horário já possui agendamento
-        boolean ocupado = agendamentoRepository.existsForUpdate(id, novaData, novaHora, novoDia, agendamento.getCategoria());
+        boolean ocupado = agendamentoRepository.existsForUpdate(id, novaData, novaHora, novoDiaNorm, agendamento.getCategoria());
         if (ocupado) {
             throw new IllegalArgumentException("Horário já agendado para a categoria.");
         }
 
         Optional<Horario> novoHorarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            novoDia,
+            novoDiaNorm,
             novaHora,
             agendamento.getCategoria()
         );
@@ -323,7 +334,7 @@ public class AgendamentoService {
         // Atualiza dados
         agendamento.setData(novaData);
         agendamento.setHora(novaHora);
-        agendamento.setDiaSemana(novoDia);
+        agendamento.setDiaSemana(novoDiaNorm);
 
         Agendamento atualizado = agendamentoRepository.save(agendamento);
 
@@ -393,10 +404,12 @@ public class AgendamentoService {
         }
         
     
+        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
+        agendamento.setDiaSemana(dia);
         boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
             agendamento.getData(),
             agendamento.getHora(),
-            agendamento.getDiaSemana(),
+            dia,
             agendamento.getCategoria(),
             "CANCELADO");
     
