@@ -43,24 +43,27 @@ fab-barbearia-gap/
 ## Variáveis de Ambiente
 Defina no sistema as seguintes variáveis antes de rodar o backend:
 
-| Variável              | Descrição                               |
-| --------------------- | --------------------------------------- |
-| `DB_URL`              | URL JDBC do banco PostgreSQL            |
-| `DB_DRIVER_CLASS`     | Classe do driver JDBC (opcional)        |
-| `DB_USERNAME`         | Usuário do banco                        |
-| `DB_PASSWORD`         | Senha do banco                          |
-| `JWT_SECRET`          | Chave para assinar tokens JWT           |
-| `LDAP_BASE`           | Base de pesquisa do servidor LDAP       |
-| `LDAP_URL`            | URL do servidor LDAP                    |
-| `WEBSERVICE_API_URL`  | URL base do WebService CCABR            |
-| `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |
-| `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   |
+| Variável              | Descrição                               | Obrigatória? |
+| --------------------- | --------------------------------------- | ------------ |
+| `DB_URL`              | URL JDBC do banco PostgreSQL            |              |
+| `DB_DRIVER_CLASS`     | Classe do driver JDBC (opcional)        |              |
+| `DB_USERNAME`         | Usuário do banco                        |              |
+| `DB_PASSWORD`         | Senha do banco                          | Sim          |
+| `JWT_SECRET`          | Chave para assinar tokens JWT           | Sim          |
+| `LDAP_BASE`           | Base de pesquisa do servidor LDAP       |              |
+| `LDAP_URL`            | URL do servidor LDAP                    |              |
+| `WEBSERVICE_API_URL`  | URL base do WebService CCABR            |              |
+| `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |              |
+| `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   | Sim          |
 
-As variáveis `DB_PASSWORD` e `WEBSERVICE_PASSWORD` devem ser definidas
-no ambiente para que o backend consiga acessar o banco de dados e o
-WebService externo com segurança.
+As variáveis `DB_PASSWORD`, `JWT_SECRET` e `WEBSERVICE_PASSWORD` devem
+ser definidas no ambiente; valores padrão não são fornecidos por
+questões de segurança. A configuração utiliza `application.yml` com
+perfis (`dev`, `prod`) para definir valores seguros para os demais
+parâmetros.
 
-Valores de exemplo podem ser vistos em `backend/src/main/resources/application-dev.properties`
+Valores de exemplo podem ser vistos em
+`backend/src/main/resources/application-dev.yml`
 
 ## Executando Testes
 
