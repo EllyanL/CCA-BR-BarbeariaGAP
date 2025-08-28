@@ -646,7 +646,6 @@ import { UserService } from 'src/app/services/user.service';
                 hora: a.hora.trim()
               }))
               .filter(a => {
-                if (a.status === 'CANCELADO') return false;
                 if (a.timestamp == null) return true;
                 return a.timestamp >= agora;
               });
@@ -781,8 +780,7 @@ import { UserService } from 'src/app/services/user.service';
       const horaFormatada = normalizeHora(hora);
       return this.agendamentos.find(a =>
         normalizeDia(a.diaSemana) === diaSemana &&
-        normalizeHora(a.hora) === horaFormatada &&
-        a.status !== 'CANCELADO'
+        normalizeHora(a.hora) === horaFormatada
       );
     }
 

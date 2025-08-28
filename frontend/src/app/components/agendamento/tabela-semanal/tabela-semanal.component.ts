@@ -563,8 +563,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       const diaMatch = normalizeDia(agendamento.diaSemana) === diaSemana;
       const horaAgendamentoFormatada = agendamento.hora.slice(0, 5);
       const horaMatch = horaAgendamentoFormatada === horaFormatada;
-      const naoCancelado = agendamento.status !== 'CANCELADO';
-      return diaMatch && horaMatch && naoCancelado;
+      return diaMatch && horaMatch;
     });
     return agendamento;
   }
