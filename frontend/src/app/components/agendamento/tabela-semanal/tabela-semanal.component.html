@@ -5,8 +5,8 @@
       {{ feedbackMessageTitle }}
     </div>
     <ng-template #indisponivel>
-      <button mat-raised-button disabled [ngClass]="statusClass('INDISPONIVEL')">
-        {{ formatarStatus('INDISPONIVEL') }}
+      <button mat-raised-button disabled [ngClass]="'INDISPONIVEL' | statusFormat : 'tabelaClass'">
+        {{ 'INDISPONIVEL' | statusFormat }}
       </button>
     </ng-template>
 
@@ -31,10 +31,10 @@
                 mat-raised-button
                 [disabled]="slot.status !== 'DISPONIVEL'"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
-                [ngClass]="statusClass(slot.status)"
+                [ngClass]="slot.status | statusFormat : 'tabelaClass'"
                 (click)="abrirDialogoAgendamento(getLabelDiaComData(dia), hora)"
               >
-                {{ formatarStatus(slot.status) }}
+                {{ slot.status | statusFormat }}
               </button>
             </ng-container>
           </td>

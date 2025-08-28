@@ -574,28 +574,6 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return list.find?.((h: SlotHorario) => (h?.horario || '').trim() === hh) || null;
   }
 
-  statusClass(status?: string) {
-    switch ((status ?? '').toUpperCase()) {
-      case 'DISPONIVEL':
-        return 'tabela-botao-disponivel';
-      case 'AGENDADO':
-        return 'botao-agendado';
-      case 'INDISPONIVEL':
-        return 'tabela-botao-indisponivel';
-      default:
-        return 'tabela-botao-indisponivel';
-    }
-  }
-
-  formatarStatus(texto: string): string {
-    if (!texto) return '';
-    const lower = texto.toLowerCase();
-    if (lower === 'disponivel') return 'Disponível';
-    if (lower === 'indisponivel') return 'Indisponível';
-    if (lower === 'agendado') return 'Agendado';
-    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-  }
-
 
   private loadMilitares(categoria: string) {
     this.militarService.getMilitaresByCategoria(categoria).subscribe(data => {
