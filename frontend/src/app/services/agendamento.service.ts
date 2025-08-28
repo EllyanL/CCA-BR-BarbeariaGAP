@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, Subject, catchError, throwError, map, tap } from 'rxjs';
 
 import { Agendamento } from '../models/agendamento';
+import { AgendamentoQuery } from '../models/agendamento-query';
 import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
@@ -26,7 +27,7 @@ export class AgendamentoService {
       map(response =>
         (response ?? []).map(ag => ({
           ...ag,
-          diaSemana: normalizeDia(ag.diaSemana) as DiaKey
+          diaSemana: normalizeDia(ag.diaSemana)
         }))
       ),
       catchError(error => {
@@ -41,7 +42,7 @@ export class AgendamentoService {
     dataInicio?: string,
     dataFim?: string
   ): Observable<Agendamento[]> {
-    const params: any = {};
+    const params: AgendamentoQuery = {};
     if (categoria) params.categoria = categoria;
     if (dataInicio) params.dataInicio = dataInicio;
     if (dataFim) params.dataFim = dataFim;
@@ -51,7 +52,7 @@ export class AgendamentoService {
         map(res =>
           (res ?? []).map(ag => ({
             ...ag,
-            diaSemana: normalizeDia(ag.diaSemana) as DiaKey
+            diaSemana: normalizeDia(ag.diaSemana)
           }))
         ),
         catchError(error => {
@@ -64,7 +65,7 @@ export class AgendamentoService {
   getAgendamentoPorHorario(data: string, hora: string, dia: DiaKey, categoria: string): Observable<Agendamento> {
     const params = { data, hora, dia: normalizeDia(dia), categoria };
     return this.http.get<Agendamento>(`${this.apiUrl}/check`, { params }).pipe(
-      map(ag => ({ ...ag, diaSemana: normalizeDia(ag.diaSemana) as DiaKey })),
+      map(ag => ({ ...ag, diaSemana: normalizeDia(ag.diaSemana) })),
       catchError(error => throwError(() => error))
     );
   }
@@ -91,12 +92,12 @@ export class AgendamentoService {
 
   updateAgendamento(id: number, dados: Partial<Agendamento>): Observable<Agendamento> {
     const headers = this.getAuthHeaders();
-    const payload = { ...dados } as Partial<Agendamento>;
+    const payload: Partial<Agendamento> = { ...dados };
     if (payload.diaSemana) {
       payload.diaSemana = normalizeDia(payload.diaSemana);
     }
     return this.http.put<Agendamento>(`${this.apiUrl}/${id}`, payload, { headers }).pipe(
-      map(ag => ({ ...ag, diaSemana: normalizeDia(ag.diaSemana) as DiaKey })),
+      map(ag => ({ ...ag, diaSemana: normalizeDia(ag.diaSemana) })),
       catchError(error => throwError(() => error))
     );
   }
@@ -115,7 +116,7 @@ export class AgendamentoService {
       map(res =>
         (res ?? []).map(ag => ({
           ...ag,
-          diaSemana: normalizeDia(ag.diaSemana) as DiaKey
+          diaSemana: normalizeDia(ag.diaSemana)
         }))
       ),
       catchError(error => {
