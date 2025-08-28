@@ -3,21 +3,21 @@ import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class LoggingService {
-  log(message?: any, ...optionalParams: any[]): void {
+  log(message?: unknown, ...optionalParams: unknown[]): void {
     if (!environment.production) {
-      console.log(message, ...optionalParams);
+      console.log(message as unknown, ...(optionalParams as unknown[]));
     }
   }
 
-  warn(message?: any, ...optionalParams: any[]): void {
+  warn(message?: unknown, ...optionalParams: unknown[]): void {
     if (!environment.production) {
-      console.warn(message, ...optionalParams);
+      console.warn(message as unknown, ...(optionalParams as unknown[]));
     }
   }
 
-  error(message?: any, ...optionalParams: any[]): void {
+  error(message?: unknown, ...optionalParams: unknown[]): void {
     if (!environment.production) {
-      console.error(message, ...optionalParams);
+      console.error(message as unknown, ...(optionalParams as unknown[]));
     }
   }
 }
