@@ -8,6 +8,7 @@ import { ServerTimeService } from 'src/app/services/server-time.service';
 import { TabelaSemanalComponent } from './tabela-semanal.component';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { of } from 'rxjs';
+import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
 
 describe('TabelaSemanalComponent', () => {
   let component: TabelaSemanalComponent;
@@ -21,7 +22,7 @@ describe('TabelaSemanalComponent', () => {
     snackSpy = jasmine.createSpyObj('MatSnackBar', ['open']);
 
     TestBed.configureTestingModule({
-      declarations: [TabelaSemanalComponent],
+      declarations: [TabelaSemanalComponent, StatusFormatPipe],
       providers: [
         {
           provide: ServerTimeService,

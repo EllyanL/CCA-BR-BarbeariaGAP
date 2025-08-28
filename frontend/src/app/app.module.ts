@@ -11,6 +11,7 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { CapitalizePipe } from './pipes/capitalize.pipe';
+import { StatusFormatPipe } from './pipes/status-format.pipe';
 import { CpfMaskDirective } from './directives/cpf-mask.directive';
 import { DialogoAgendamentoComponent } from './components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoCancelamentoComponent } from './components/agendamento/dialogo-cancelamento/dialogo-cancelamento.component';
@@ -84,6 +85,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     DialogoLogoutComponent,
     NotFoundComponent,
     CapitalizePipe,
+    StatusFormatPipe,
     NotAuthorizedComponent,
     AdminComponent,
     HorariosComponent,
@@ -138,7 +140,8 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
-    ConfiguracoesAgendamentoService
+    ConfiguracoesAgendamentoService,
+    StatusFormatPipe
   ],
   exports: [AdminNavbarComponent],
   bootstrap: [AppComponent]

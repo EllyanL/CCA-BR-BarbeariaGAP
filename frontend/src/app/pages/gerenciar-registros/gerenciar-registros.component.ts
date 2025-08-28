@@ -9,6 +9,7 @@ import autoTable from 'jspdf-autotable';
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { LoggingService } from '../../services/logging.service';
+import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
 
 function compararDesc(a: Agendamento, b: Agendamento): number {
   const dataA = new Date(`${a.data}T${a.hora}`).getTime();
@@ -50,7 +51,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     private agendamentoService: AgendamentoService,
     private logger: LoggingService,
     private datePipe: DatePipe,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private statusFormat: StatusFormatPipe
   ) {}
 
   ngOnInit(): void {
@@ -182,7 +184,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         this.formatarHoraBR(r.hora),
         r.militar?.postoGrad ?? '',
         this.formatName(r.militar?.nomeDeGuerra),
-        this.formatarStatus(r.status ?? ''),
+        this.statusFormat.transform(r.status),
         this.formatarCanceladoPor(r.canceladoPor)
       ]);
 
@@ -256,28 +258,6 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       USUARIO: 'Usuário'
     };
     return mapa[valor.toUpperCase()] || valor;
-  }
-
-  formatarStatus(texto?: string | null): string {
-    if (!texto) return '';
-    const mapa: Record<string, string> = {
-      DISPONIVEL: 'Disponível',
-      INDISPONIVEL: 'Indisponível',
-      AGENDADO: 'Agendado'
-    };
-    const key = texto.toUpperCase();
-    return mapa[key] || texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-  }
-
-  statusClass(status?: string): string {
-    const s = (status || '').toUpperCase();
-    return (
-      {
-        AGENDADO: 'status-agendado',
-        DISPONIVEL: 'status-disponivel',
-        INDISPONIVEL: 'status-indisponivel'
-      } as any
-    )[s] || '';
   }
 
   private loadImage(url: string): Promise<HTMLImageElement> {
