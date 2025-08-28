@@ -5,6 +5,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   import { UserData } from 'src/app/models/userData';
   import { UserService } from 'src/app/services/user.service';
   import { AgendamentoService } from 'src/app/services/agendamento.service'; // Adicione o serviço
+  import { HorariosService } from 'src/app/services/horarios.service';
   import { Agendamento } from 'src/app/models/agendamento'; // Adicione a interface/modelo
 import { LoggingService } from 'src/app/services/logging.service';
 import { ErrorMessagesService } from 'src/app/services/error-messages.service';
@@ -197,6 +198,7 @@ import { Subscription } from 'rxjs';
         @Inject(MAT_DIALOG_DATA) public data: any,
         private userService: UserService,
         private agendamentoService: AgendamentoService,
+        private horariosService: HorariosService,
         private logger: LoggingService,
         private snackBar: MatSnackBar,
         private errorMessages: ErrorMessagesService
@@ -243,33 +245,63 @@ import { Subscription } from 'rxjs';
           diaSemana: this.data.diaSemana,
           categoria: this.data.categoria
         };
-        
 
-        this.agendamentoService.createAgendamento(agendamentoData).subscribe(
-          (response: Agendamento) => {
-            this.logger.log('Agendamento criado:', response);
-            this.errorMessage = "";
-            this.militar = response.militar || this.militar;
-            this.snackBar.open('Agendamento realizado', 'Ciente', { duration: 3000 });
-            this.dialogRef.close({ sucesso: true, payload: response });
-          },
-          error => {
-            this.logger.error('Erro ao criar agendamento:', error);
+        const agendamentoDateTime = new Date(`${this.data.data}T${this.data.hora}`);
+        const now = Date.now();
+        const diffMs = agendamentoDateTime.getTime() - now;
 
-            let message = error?.error?.message || error?.error || '';
+        if (diffMs < 30 * 60 * 1000) {
+          const message = 'Não é possível agendar horários passados';
+          this.errorMessage = message;
+          this.snackBar.open(message, 'OK', { duration: 5000 });
+          return;
+        }
 
-            if (error.status === 400 || error.status === 422) {
-              message = message || (error.status === 400
-                ? 'Você só pode agendar novamente após 15 dias'
-                : 'Não é possível agendar horários passados');
-            } else {
-              message = message || this.errorMessages.AGENDAMENTO_CREATE_ERROR;
+        this.horariosService.getUltimoAgendamento().subscribe({
+          next: ultimo => {
+            if (ultimo) {
+              const ultimoMs = new Date(`${ultimo.data}T${ultimo.hora}`).getTime();
+              if (now - ultimoMs < 15 * 24 * 60 * 60 * 1000) {
+                const message = 'Você só pode agendar novamente após 15 dias';
+                this.errorMessage = message;
+                this.snackBar.open(message, 'OK', { duration: 5000 });
+                return;
+              }
             }
 
+            this.agendamentoService.createAgendamento(agendamentoData).subscribe(
+              (response: Agendamento) => {
+                this.logger.log('Agendamento criado:', response);
+                this.errorMessage = "";
+                this.militar = response.militar || this.militar;
+                this.snackBar.open('Agendamento realizado', 'Ciente', { duration: 3000 });
+                this.dialogRef.close({ sucesso: true, payload: response });
+              },
+              error => {
+                this.logger.error('Erro ao criar agendamento:', error);
+
+                let message = error?.error?.message || error?.error || '';
+
+                if (error.status === 400 || error.status === 422) {
+                  message = message || (error.status === 400
+                    ? 'Você só pode agendar novamente após 15 dias'
+                    : 'Não é possível agendar horários passados');
+                } else {
+                  message = message || this.errorMessages.AGENDAMENTO_CREATE_ERROR;
+                }
+
+                this.errorMessage = message;
+                this.snackBar.open(message, 'OK', { duration: 5000 });
+              }
+            );
+          },
+          error: err => {
+            this.logger.error('Erro ao obter último agendamento:', err);
+            const message = 'Erro ao verificar último agendamento';
             this.errorMessage = message;
             this.snackBar.open(message, 'OK', { duration: 5000 });
           }
-        );
+        });
       }
 
       validateNumericInput(event: any): void {
