@@ -17,9 +17,9 @@ interface HorarioResponse {
   horariosAfetados: Horario[];
 }
 
-export type HorariosPorDiaECategoria = Record<DiaKey, {
-  [categoria: string]: SlotHorario[];
-}>;
+export type HorariosPorDiaECategoria = Record<DiaKey, Record<string, SlotHorario[]>>;
+
+type BackendHorariosResponse = Record<string, Record<string, SlotHorario[]>>;
 
 
 interface HorarioBase {
@@ -153,11 +153,11 @@ export class HorariosService {
   }
 
   getHorariosDisponiveis(): Observable<HorariosPorDiaECategoria> {
-    return this.http.get<HorariosPorDiaECategoria>(this.apiUrl).pipe(
-      map(response => {
-        const normalized: HorariosPorDiaECategoria = {} as any;
+    return this.http.get<BackendHorariosResponse>(this.apiUrl).pipe(
+      map((response): HorariosPorDiaECategoria => {
+        const normalized: HorariosPorDiaECategoria = {} as Record<DiaKey, Record<string, SlotHorario[]>>;
         Object.entries(response || {}).forEach(([dia, categorias]) => {
-          normalized[normalizeDia(dia) as DiaKey] = categorias;
+          normalized[normalizeDia(dia)] = categorias;
         });
         return normalized;
       }),
