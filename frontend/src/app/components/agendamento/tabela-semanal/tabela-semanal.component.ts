@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { HorariosService } from 'src/app/services/horarios.service';
 import { HorariosPorDia, SlotHorario } from 'src/app/models/slot-horario';
 import { Observable, Subscription, of } from 'rxjs';
@@ -26,6 +26,7 @@ import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/
   selector: 'app-tabela-semanal',
   templateUrl: './tabela-semanal.component.html',
   styleUrls: ['./tabela-semanal.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('agendarAnimacao', [
       transition(':enter', [
@@ -167,7 +168,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       const list: SlotHorario[] = this.horariosPorDia[dia] || [];
       this.horariosPorDia[dia] = list.filter((slot: SlotHorario) => inRange(slot.horario));
     });
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   isHoraAgendavel(hora: string): boolean {
@@ -180,7 +181,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.idMilitarLogado = usuario?.id ?? null;
     if (usuario?.cpf) {
       this.storageKey = `agendamentos-${usuario.cpf}`;
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
     }
     this.carregarConfiguracao();
     this.recarregarGradeSub = this.configuracoesService.recarregarGrade$.subscribe(cat => {
@@ -215,7 +216,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(_changes: SimpleChanges): void {
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
   // Define a chave de armazenamento baseada no CPF do usuário
@@ -239,7 +240,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
           this.usuarioCarregado = true;
           this.loadAllData();
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
 
           return of([]);
         })
@@ -261,12 +262,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           // 👀 After assigning the user properties we trigger change detection
           // so that UI elements that depend on these values (e.g. button states)
           // are updated immediately.
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
 
           this.storageKey = newKey;
           this.loadAgendamentosFromStorage();
           this.logger.log('🔐 userData carregado. Chamando loadAllData()');
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
           this.loadAllData();
         } else {
           this.logger.warn('Dados de usuário indisponíveis. Usando dados de fallback.');

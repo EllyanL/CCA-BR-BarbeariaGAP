@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from '@angular/router';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
@@ -26,6 +26,7 @@ import { UserService } from 'src/app/services/user.service';
     selector: 'app-horarios',
     templateUrl: './horarios.component.html',
     styleUrls: ['./horarios.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
   })
   export class HorariosComponent implements OnInit, OnDestroy {
     public isAdmin: boolean = false;
@@ -140,7 +141,6 @@ import { UserService } from 'src/app/services/user.service';
       });
       this.horariosPorDia = { ...this.horariosPorDia };
       this.cdr.markForCheck?.();
-      this.cdr.detectChanges();
     }
     
     
@@ -152,7 +152,6 @@ import { UserService } from 'src/app/services/user.service';
 
 //---------------🔰Inicialização e Logout--------------------    
     ngOnInit(): void {
-      this.cdr.detectChanges();
       const usuario = this.usuarioLogado;
       this.isAdmin = usuario?.categoria?.toUpperCase() === 'ADMIN';
       this.carregarConfiguracao();
@@ -198,7 +197,7 @@ import { UserService } from 'src/app/services/user.service';
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
             this.storageKey = `agendamentos-${this.cpfUsuario}`;
-            this.cdr.detectChanges();
+            this.cdr.markForCheck();
             this.militarLogado = userData[0].nomeDeGuerra;
             this.omMilitar = userData[0].om;
           } else {
@@ -295,9 +294,9 @@ import { UserService } from 'src/app/services/user.service';
     /** Garante que todos os dias existam como arrays (nunca null) */
     private normalizarEstrutura(h: HorariosPorDia | null | undefined): HorariosPorDia {
       // Ajuste os nomes conforme seu contrato real
-      const dias = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'];
+      const dias: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
       const out: any = {};
-    
+
       for (const d of dias) {
         const lista = (h as any)?.[d];
         out[d] = Array.isArray(lista) ? lista : [];
@@ -341,7 +340,7 @@ import { UserService } from 'src/app/services/user.service';
           this.horariosBaseSemana = slots;
           this.aplicarJanelaHorarios();
           this.ordenarHorarios();
-          this.cdr.detectChanges();
+          this.cdr.markForCheck();
         },
         error: err => {
           this.logger.error('Erro ao carregar configurações de agendamento:', err);
@@ -437,7 +436,7 @@ import { UserService } from 'src/app/services/user.service';
             this.carregarHorariosBase();
             this.horarioPersonalizado = '';
             this.horarioValido = false;
-            this.cdr.detectChanges();
+            this.cdr.markForCheck();
           },
           error: (err: any) => {
             this.logger.error('Erro ao adicionar horário no dia:', err);
