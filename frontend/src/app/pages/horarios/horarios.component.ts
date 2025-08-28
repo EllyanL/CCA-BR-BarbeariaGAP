@@ -13,7 +13,7 @@ import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { DialogoAgendamentoComponent } from 'src/app/components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
-import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
+import { DialogoCancelamentoComponent } from 'src/app/components/agendamento/dialogo-cancelamento/dialogo-cancelamento.component';
 import { ConfirmarToggleDiaComponent } from 'src/app/components/confirmar-toggle-dia/confirmar-toggle-dia.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -738,18 +738,19 @@ import { UserService } from 'src/app/services/user.service';
     
     handleClick(agendamento: Agendamento): void {
       if (this.isAgendamentoDoMilitarLogado(agendamento)) {
-        const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
+        const selectedDate = agendamento.data || '';
+        const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
           width: '400px',
           data: {
-            id: agendamento.id,
-            militar: agendamento.militar,
-            dia: agendamento.diaSemana,
+            diaSemana: agendamento.diaSemana,
             hora: agendamento.hora,
+            usuarioId: agendamento.militar?.id,
+            data: selectedDate,
           },
         });
 
-        dialogRef.afterClosed().subscribe((confirmado: boolean) => {
-          if (confirmado) {
+        dialogRef.afterClosed().subscribe((payload) => {
+          if (payload) {
             this.desmarcarAgendamento(agendamento);
           }
         });
@@ -762,7 +763,13 @@ import { UserService } from 'src/app/services/user.service';
     }
     
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
-      return !!agendamento;
+      if (!agendamento?.data || !agendamento?.hora) {
+        return true;
+      }
+      const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
+      const agendamentoDate = new Date(`${agendamento.data}T${horaFormatada}`);
+      const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
+      return diffMs >= 30 * 60 * 1000;
     }
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
@@ -821,18 +828,19 @@ import { UserService } from 'src/app/services/user.service';
 
 
   abrirModalAgendamento(agendamento: Agendamento) {
-    const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
+    const selectedDate = agendamento.data || '';
+    const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
       width: '400px',
       data: {
-        id: agendamento.id,
-        militar: agendamento.militar,
-        dia: agendamento.diaSemana,
+        diaSemana: agendamento.diaSemana,
         hora: agendamento.hora,
+        usuarioId: agendamento.militar?.id,
+        data: selectedDate,
       },
     });
 
-    dialogRef.afterClosed().subscribe((confirmado: boolean) => {
-      if (confirmado) {
+    dialogRef.afterClosed().subscribe((payload) => {
+      if (payload) {
         this.desmarcarAgendamento(agendamento);
       }
     });
