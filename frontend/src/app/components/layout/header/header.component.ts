@@ -64,19 +64,19 @@ export const rotateToggle = trigger('rotateToggle', [
         </button>
       </div>
       <mat-menu #userMenu="matMenu">
-        <button mat-menu-item (click)="openRegras()">
+        <button mat-menu-item class="icon-text" (click)="openRegras()">
           <mat-icon>assignment</mat-icon>
           <span>Regras</span>
         </button>
-        <button mat-menu-item [routerLink]="'/graduado'">
+        <button mat-menu-item class="icon-text" [routerLink]="'/graduado'">
           <mat-icon>schedule</mat-icon>
           <span>Agendar</span>
         </button>
-        <button mat-menu-item [routerLink]="'/meus-agendamentos'">
+        <button mat-menu-item class="icon-text" [routerLink]="'/meus-agendamentos'">
           <mat-icon>calendar_today</mat-icon>
           <span>Meus Agendamentos</span>
         </button>
-        <button mat-menu-item (click)="logout()">
+        <button mat-menu-item class="icon-text" (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Sair</span>
         </button>
