@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { Militar } from '../models/militar';
 import { Router } from '@angular/router';
-import { UserData } from '../models/userData';
+import { UserData } from '../models/user-data';
 import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
 import { jwtDecode } from 'jwt-decode';

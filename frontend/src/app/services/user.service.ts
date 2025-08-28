@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ReplaySubject } from 'rxjs';
 import { LoggingService } from './logging.service';
-import { UserData } from '../models/userData';
+import { UserData } from '../models/user-data';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 
