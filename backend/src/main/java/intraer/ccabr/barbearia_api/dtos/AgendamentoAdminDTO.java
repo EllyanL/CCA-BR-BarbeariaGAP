@@ -5,6 +5,7 @@ import intraer.ccabr.barbearia_api.models.Militar;
 import lombok.Data;
 
 import java.time.format.DateTimeFormatter;
+import intraer.ccabr.barbearia_api.util.HoraUtil;
 
 @Data
 public class AgendamentoAdminDTO {
@@ -19,12 +20,11 @@ public class AgendamentoAdminDTO {
     private String usuarioSaram;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     public AgendamentoAdminDTO(Agendamento agendamento) {
         this.id = agendamento.getId();
         this.data = agendamento.getData().format(DATE_FMT);
-        this.hora = agendamento.getHora().format(TIME_FMT);
+        this.hora = HoraUtil.format(agendamento.getHora());
         this.diaSemana = agendamento.getDiaSemana();
         this.categoria = agendamento.getCategoria();
         this.status = agendamento.getStatus();

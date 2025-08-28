@@ -8,12 +8,12 @@ import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import intraer.ccabr.barbearia_api.util.HoraUtil;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.CacheEvict;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.LocalDate;
 import java.util.*;
@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 public class HorarioService {
 
     private static final Logger logger = LoggerFactory.getLogger(HorarioService.class);
-
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     private final HorarioRepository horarioRepository;
 
@@ -115,14 +113,14 @@ public class HorarioService {
         // Horários gerados a partir da configuração (intervalos de 30 minutos)
         List<String> gerados = new ArrayList<>();
         for (LocalTime t = config.getHorarioInicio(); !t.isAfter(config.getHorarioFim()); t = t.plusMinutes(30)) {
-            gerados.add(t.format(TIME_FORMATTER));
+            gerados.add(HoraUtil.format(t));
         }
 
         // Horários existentes no banco dentro do intervalo configurado
         List<String> existentes = horarioRepository.findAll().stream()
                 .map(Horario::getHorario)
                 .filter(h -> horarioDentroIntervalo(h, config))
-                .map(h -> h.format(TIME_FORMATTER))
+                .map(HoraUtil::format)
                 .toList();
 
         // Combina, remove duplicados e ordena
@@ -180,7 +178,7 @@ public class HorarioService {
     @Transactional
     public HorarioDTO toggleHorario(String dia, String horario, String categoria) {
         String diaNorm = DiaSemana.from(dia).getValor();
-        LocalTime horaNorm = LocalTime.parse(horario, TIME_FORMATTER);
+        LocalTime horaNorm = LocalTime.parse(horario);
 
         Optional<Horario> opt = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horaNorm, categoria);
         if (opt.isEmpty()) {
@@ -198,7 +196,7 @@ public class HorarioService {
         HorarioDTO dto = new HorarioDTO();
         dto.setId(h.getId());
         dto.setDia(diaNorm);
-        dto.setHorario(h.getHorario().format(TIME_FORMATTER));
+        dto.setHorario(HoraUtil.format(h.getHorario()));
         dto.setCategoria(h.getCategoria() != null ? h.getCategoria().toUpperCase() : null);
         dto.setStatus(normalizeStatus(h.getStatus().name()));
         return dto;
