@@ -8,11 +8,13 @@ import { AuthService } from 'src/app/services/auth.service';
 import { Chart } from 'chart.js/auto';
 import { HorariosService } from 'src/app/services/horarios.service';
 import { LoggingService } from 'src/app/services/logging.service';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -40,7 +42,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     private agendamentoService: AgendamentoService,
     private snackBar: MatSnackBar,
     private horariosService: HorariosService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -148,30 +151,35 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   
 
   cancelarAgendamento(a: Agendamento): void {
-    if (!a.id) { return; }
-    const confirmado = confirm('Deseja realmente excluir este agendamento?');
-    if (!confirmado) { return; }
-    this.agendamentoService.cancelarAgendamento(a.id).subscribe({
-      next: () => {
-        this.snackBar.open('Agendamento removido com sucesso.', 'Ciente', { duration: 3000 });
-        const idx = this.recent.findIndex(r => r.id === a.id);
-        if (idx !== -1) {
-          this.recent.splice(idx, 1);
-          this.dataSource.data = this.recent;
-          this.applyFilters();
-        }
-        this.horariosService.disponibilizarHorario(a.diaSemana, a.hora.slice(0,5), a.categoria)
-          .subscribe({
-            next: () => {
-              this.horariosService.carregarHorariosDaSemana(a.categoria).subscribe({
-                next: horarios => this.horariosService.atualizarHorarios(horarios),
-                error: err => this.logger.error('Erro ao atualizar horários', err)
-              });
-            },
-            error: err => this.logger.error('Erro ao disponibilizar horário', err)
-          });
-      },
-      error: err => this.logger.error('Erro ao excluir agendamento', err)
+    const { id } = a;
+    if (!id) { return; }
+    const dialogRef = this.dialog.open(DialogoDesmarcarComponent, {
+      data: { id, dia: a.diaSemana, hora: a.hora, militar: a.militar }
+    });
+    dialogRef.afterClosed().subscribe(confirmado => {
+      if (!confirmado) { return; }
+      this.agendamentoService.cancelarAgendamento(id).subscribe({
+        next: () => {
+          this.snackBar.open('Agendamento removido com sucesso.', 'Ciente', { duration: 3000 });
+          const idx = this.recent.findIndex(r => r.id === a.id);
+          if (idx !== -1) {
+            this.recent.splice(idx, 1);
+            this.dataSource.data = this.recent;
+            this.applyFilters();
+          }
+          this.horariosService.disponibilizarHorario(a.diaSemana, a.hora.slice(0,5), a.categoria)
+            .subscribe({
+              next: () => {
+                this.horariosService.carregarHorariosDaSemana(a.categoria).subscribe({
+                  next: horarios => this.horariosService.atualizarHorarios(horarios),
+                  error: err => this.logger.error('Erro ao atualizar horários', err)
+                });
+              },
+              error: err => this.logger.error('Erro ao disponibilizar horário', err)
+            });
+        },
+        error: err => this.logger.error('Erro ao excluir agendamento', err)
+      });
     });
   }
 
