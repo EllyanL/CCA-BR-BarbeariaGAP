@@ -5,7 +5,7 @@ export interface Horario {
   dia: DiaKey;
   horario: string;
   categoria: string;
-  status: 'DISPONIVEL' | 'AGENDADO' | 'CANCELADO' | 'REALIZADO' | 'INDISPONIVEL';
+  status: 'DISPONIVEL' | 'AGENDADO' | 'INDISPONIVEL';
   // Status possibilities for a given horário
   usuarioId?: number;
 }

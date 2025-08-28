@@ -42,10 +42,10 @@
   color: green;
 }
 
-.status-cancelado {
-  color: red;
+.status-disponivel {
+  color: #1976d2;
 }
 
 .status-indisponivel {
-  color: orange;
+  color: #9e9e9e;
 }

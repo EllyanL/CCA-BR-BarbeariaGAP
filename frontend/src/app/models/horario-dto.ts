@@ -5,6 +5,6 @@ export interface HorarioDTO {
   dia: DiaKey;
   horario: string;
   categoria: string;
-  status: 'DISPONIVEL' | 'AGENDADO' | 'CANCELADO' | 'REALIZADO' | 'INDISPONIVEL';
+  status: 'DISPONIVEL' | 'AGENDADO' | 'INDISPONIVEL';
   usuarioId?: number | null;
 }

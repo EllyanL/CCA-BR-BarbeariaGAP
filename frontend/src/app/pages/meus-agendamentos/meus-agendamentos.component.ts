@@ -113,7 +113,7 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
     return (
       {
         AGENDADO: 'status-agendado',
-        CANCELADO: 'status-cancelado',
+        DISPONIVEL: 'status-disponivel',
         INDISPONIVEL: 'status-indisponivel'
       } as any
     )[s] || '';

@@ -263,9 +263,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     const mapa: Record<string, string> = {
       DISPONIVEL: 'Disponível',
       INDISPONIVEL: 'Indisponível',
-      AGENDADO: 'Agendado',
-      CANCELADO: 'Cancelado',
-      REALIZADO: 'Realizado'
+      AGENDADO: 'Agendado'
     };
     const key = texto.toUpperCase();
     return mapa[key] || texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
@@ -276,8 +274,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     return (
       {
         AGENDADO: 'status-agendado',
-        CANCELADO: 'status-cancelado',
-        REALIZADO: 'status-realizado',
+        DISPONIVEL: 'status-disponivel',
         INDISPONIVEL: 'status-indisponivel'
       } as any
     )[s] || '';
