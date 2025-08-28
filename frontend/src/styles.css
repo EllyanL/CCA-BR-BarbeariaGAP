@@ -69,3 +69,10 @@ html, body {
   width: 100%;
   padding-bottom: calc(var(--footer-height) + 1rem);
 }
+
+/* === ICON AND TEXT ALIGNMENT === */
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

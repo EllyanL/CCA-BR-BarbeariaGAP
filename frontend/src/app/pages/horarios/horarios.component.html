@@ -7,7 +7,7 @@
         </div>
 
         <!-- Aviso de agendamento -->
-        <div class="info-panel" aria-label="Aviso de agendamento">
+        <div class="info-panel icon-text" aria-label="Aviso de agendamento">
           <mat-icon>info</mat-icon>
           <span>Só é possível marcar uma vez a cada 15 dias.</span>
         </div>
@@ -90,6 +90,7 @@
                 <ng-container *ngIf="isAdmin; else visualizacaoUsuario">
                   <ng-container *ngIf="getSlot(dia, horario); else adicionar">
                     <button mat-raised-button
+                            class="icon-text"
                             (click)="toggleHorario(dia, horario)"
                             [ngClass]="{
                               'botao-hora-disponivel': getStatus(dia, horario) === 'DISPONIVEL',
@@ -119,7 +120,7 @@
             <ng-template #visualizacaoUsuario>
               <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
                 <button mat-raised-button
-                        class="botao-hora-agendado"
+                        class="botao-hora-agendado icon-text"
                         [disabled]="!(isAgendamentoDoMilitarLogado(agendamento) && isAgendamentoDesmarcavel(agendamento))"
                         (click)="handleClick(agendamento)">
                   <mat-icon>lock</mat-icon>
