@@ -321,32 +321,12 @@ export class HorariosService {
   }
 
   //--------------📅Gerenciamento de Agendamento-------------
-  getUltimoAgendamento(): Observable<Agendamento | null> {
-    const headers = this.getAuthHeaders();
-    return this.http
-      .get<Agendamento[] | null>(`${environment.apiUrl}/agendamentos/meus`, { headers })
-      .pipe(
-        map(res => (res && res.length > 0 ? res[0] : null)),
-        catchError((error: HttpErrorResponse) => {
-          this.logger.error('Erro ao obter último agendamento:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
   agendarHorario(agendamento: Agendamento): Observable<any> {
     const payload = { ...agendamento, diaSemana: normalizeDia(agendamento.diaSemana) };
     return this.http.post(`${this.apiUrl}/agendar`, payload, { responseType: 'text' as 'json' }).pipe(
       catchError((error: HttpErrorResponse) => {
         this.logger.error('Erro ao agendar horário:', error);
-
-        let message = error.error?.message || error.error || 'Erro ao agendar';
-        if (error.status === 400 || error.status === 422) {
-          message = message || (error.status === 400
-            ? 'Você só pode agendar novamente após 15 dias'
-            : 'Não é possível agendar horários passados');
-        }
-
+        const message = error.error?.message || error.error || 'Erro ao agendar';
         return throwError(() => new Error(message));
       })
     );
