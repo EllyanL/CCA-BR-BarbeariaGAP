@@ -4,9 +4,9 @@ import { DiaKey } from '../shared/dias.util';
 /**
  * Normaliza uma string de horário garantindo o formato HH:mm.
  */
-export function normalizeHora(hora: string): string {
+export function normalizeHora(hora?: string | null): string {
   if (!hora) {
-    return hora as any;
+    return '';
   }
   const clean = hora
     .replace(/\u00A0/g, '')
