@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { HorariosService } from 'src/app/services/horarios.service';
 import { HorariosPorDia } from 'src/app/models/slot-horario';
@@ -8,51 +8,9 @@ import { AuthService } from 'src/app/services/auth.service';
 
 @Component({
   selector: 'app-graduados',
-  template: `
-    <ng-container *ngIf="isAdmin; else noSidebar">
-      <mat-sidenav-container class="page-container">
-        <mat-sidenav mode="side" opened>
-          <app-sidebar></app-sidebar>
-        </mat-sidenav>
-        <mat-sidenav-content>
-          <div class="graduados-page-content">
-            <app-header
-              class="graduados-page-content__header"
-              [titleHeader]="titleHeader"
-            ></app-header>
-
-            <app-tabela-semanal
-              class="graduados-page-content__tabela-semanal"
-              [opcoesPostoGrad]="opcoesGraduacoes"
-              [categoria]="categoria"
-              [horariosPorDia]="horariosPorDia"
-              [saramUsuario]="saramUsuario"
-              [idMilitarLogado]="idMilitarLogado"
-            ></app-tabela-semanal>
-          </div>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
-    </ng-container>
-    <ng-template #noSidebar>
-      <div class="page-container">
-        <div class="graduados-page-content">
-          <app-header
-            class="graduados-page-content__header"
-            [titleHeader]="titleHeader"
-          ></app-header>
-          <app-tabela-semanal
-            class="graduados-page-content__tabela-semanal"
-            [opcoesPostoGrad]="opcoesGraduacoes"
-            [categoria]="categoria"
-            [horariosPorDia]="horariosPorDia"
-            [saramUsuario]="saramUsuario"
-            [idMilitarLogado]="idMilitarLogado"
-          ></app-tabela-semanal>
-        </div>
-      </div>
-    </ng-template>
-  `,
+  templateUrl: './graduados.component.html',
   styleUrls: ['./graduados.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GraduadosComponent implements OnInit {
   titleHeader = 'GRADUADOS';
