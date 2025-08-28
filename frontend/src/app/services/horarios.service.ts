@@ -319,8 +319,21 @@ export class HorariosService {
       })
     );
   }
-  
+
   //--------------📅Gerenciamento de Agendamento-------------
+  getUltimoAgendamento(): Observable<Agendamento | null> {
+    const headers = this.getAuthHeaders();
+    return this.http
+      .get<Agendamento[] | null>(`${environment.apiUrl}/agendamentos/meus`, { headers })
+      .pipe(
+        map(res => (res && res.length > 0 ? res[0] : null)),
+        catchError((error: HttpErrorResponse) => {
+          this.logger.error('Erro ao obter último agendamento:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
   agendarHorario(agendamento: Agendamento): Observable<any> {
     const payload = { ...agendamento, diaSemana: normalizeDia(agendamento.diaSemana) };
     return this.http.post(`${this.apiUrl}/agendar`, payload, { responseType: 'text' as 'json' }).pipe(
