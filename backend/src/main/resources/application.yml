@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: barbearia-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/barbearia}
+    driver-class-name: ${DB_DRIVER_CLASS:org.postgresql.Driver}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Sao_Paulo
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+  jackson:
+    time-zone: America/Sao_Paulo
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  flyway:
+    enabled: true
+  ldap:
+    base: ${LDAP_BASE:ou=contas,dc=fab,dc=intraer}
+    urls: ${LDAP_URL:ldap://10.228.64.168:389}
+api:
+  secret:
+    token:
+      secret: ${JWT_SECRET}
+webservice:
+  api-url: ${WEBSERVICE_API_URL:http://webservice.ccabr.intraer/api/}
+  username: ${WEBSERVICE_USERNAME:barbearia}
+  password: ${WEBSERVICE_PASSWORD}
+# server:
+#   port: ${SERVER_PORT:8081}
