@@ -30,6 +30,7 @@ import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
 
 @Service
@@ -44,12 +45,16 @@ public class AgendamentoService {
 
     private final ConfiguracaoAgendamentoService configuracaoAgendamentoService;
 
+    private final MilitarRepository militarRepository;
+
     public AgendamentoService(AgendamentoRepository agendamentoRepository,
                               HorarioRepository horarioRepository,
-                              ConfiguracaoAgendamentoService configuracaoAgendamentoService) {
+                              ConfiguracaoAgendamentoService configuracaoAgendamentoService,
+                              MilitarRepository militarRepository) {
         this.agendamentoRepository = agendamentoRepository;
         this.horarioRepository = horarioRepository;
         this.configuracaoAgendamentoService = configuracaoAgendamentoService;
+        this.militarRepository = militarRepository;
     }
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
@@ -155,6 +160,41 @@ public class AgendamentoService {
         LocalDate data, LocalTime hora, String diaSemana, String categoria) {
         String dia = DiaSemana.from(diaSemana).getValor();
         return agendamentoRepository.findByDataAndHoraAndDiaSemanaAndCategoria(data, hora, dia, categoria);
+    }
+
+    public Militar buscarMilitarPorCpf(String cpf) {
+        return militarRepository.findByCpf(cpf)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Militar não encontrado."));
+    }
+
+    public void verificarHorarioDisponivel(String dia, LocalTime hora, String categoria) {
+        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria);
+        if (horarioOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado não está disponível para a categoria informada.");
+        }
+
+        Horario horario = horarioOpt.get();
+        if (horario.getStatus() != HorarioStatus.DISPONIVEL) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado já está ocupado ou indisponível.");
+        }
+    }
+
+    public void checarDuplicidade(LocalDate data, LocalTime hora, String dia, String categoria) {
+        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+            data,
+            hora,
+            dia,
+            categoria,
+            "CANCELADO"
+        );
+
+        if (jaExiste) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Já existe um agendamento para esse horário.");
+        }
+    }
+
+    public List<Agendamento> findByMilitarCpfAndCategoriaAndDataAfter(String cpf, String categoria, LocalDate data) {
+        return agendamentoRepository.findByMilitarCpfAndCategoriaAndDataAfter(cpf, categoria, data);
     }
 
     public boolean podeAgendar15Dias(String saram, LocalDate dataNova) {
@@ -408,16 +448,6 @@ public class AgendamentoService {
     
         String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
         agendamento.setDiaSemana(dia);
-        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-            agendamento.getData(),
-            agendamento.getHora(),
-            dia,
-            agendamento.getCategoria(),
-            "CANCELADO");
-    
-        if (jaExiste) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este horário já está agendado.");
-        }
     }
     
 

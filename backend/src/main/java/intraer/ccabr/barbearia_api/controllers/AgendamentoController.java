@@ -25,14 +25,9 @@ import intraer.ccabr.barbearia_api.dtos.AgendamentoDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoAdminDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoCreateDTO;
-import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
-import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Militar;
-import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
-import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
-import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import org.springframework.security.core.Authentication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,26 +45,11 @@ public class AgendamentoController {
 
     private final AgendamentoService agendamentoService;
 
-    private final AgendamentoRepository agendamentoRepository;
-
-    private final MilitarRepository militarRepository;
-
-    private final HorarioRepository horarioRepository;
-
     private final HorarioUpdateService horarioUpdateService;
 
-
-    public AgendamentoController(
-        AgendamentoService agendamentoService,
-        AgendamentoRepository agendamentoRepository,
-        MilitarRepository militarRepository,
-        HorarioRepository horarioRepository,
-        HorarioUpdateService horarioUpdateService
-    ) {
+    public AgendamentoController(AgendamentoService agendamentoService,
+                                 HorarioUpdateService horarioUpdateService) {
         this.agendamentoService = agendamentoService;
-        this.agendamentoRepository = agendamentoRepository;
-        this.militarRepository = militarRepository;
-        this.horarioRepository = horarioRepository;
         this.horarioUpdateService = horarioUpdateService;
     }
 
@@ -79,15 +59,8 @@ public class AgendamentoController {
         String userCpf = authentication.getName();
 
         logger.debug("🔐 CPF do token recebido: {}", userCpf);
-        Optional<Militar> userOpt = militarRepository.findByCpf(userCpf);
-        if (userOpt.isEmpty()) {
-            logger.warn("⚠️ Militar não encontrado para o CPF {}", userCpf);
-            return buildResponse("Usuário autenticado não encontrado no banco.", HttpStatus.FORBIDDEN);
-        }
-
-        logger.debug("✅ Militar encontrado com ID {}", userOpt.get().getId());
-
-        Militar militar = userOpt.get();
+        Militar militar = agendamentoService.buscarMilitarPorCpf(userCpf);
+        logger.debug("✅ Militar encontrado com ID {}", militar.getId());
 
         Agendamento agendamento = new Agendamento();
         agendamento.setData(dto.getData());
@@ -96,32 +69,8 @@ public class AgendamentoController {
         agendamento.setDiaSemana(dia);
         agendamento.setCategoria(dto.getCategoria());
 
-        // Busca horário para validação
-        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            dia, agendamento.getHora(), agendamento.getCategoria()
-        );
-
-        if (horarioOpt.isEmpty()) {
-            return buildResponse("O horário selecionado não está disponível para a categoria informada.", HttpStatus.CONFLICT);
-        }
-
-        Horario horario = horarioOpt.get();
-        if (horario.getStatus() != HorarioStatus.DISPONIVEL) {
-        return buildResponse("O horário selecionado já está ocupado ou indisponível.", HttpStatus.CONFLICT);
-        }
-
-
-        // Evita duplo envio (chave única: data/hora/categoria)
-        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-            agendamento.getData(),
-            agendamento.getHora(),
-            dia,
-            agendamento.getCategoria(),
-            "CANCELADO"
-        );
-        if (jaExiste) {
-            return buildResponse("Já existe um agendamento para esse horário.", HttpStatus.CONFLICT);
-        }
+        agendamentoService.verificarHorarioDisponivel(dia, agendamento.getHora(), agendamento.getCategoria());
+        agendamentoService.checarDuplicidade(agendamento.getData(), agendamento.getHora(), dia, agendamento.getCategoria());
 
         agendamento.setMilitar(militar);
         agendamentoService.validarRegrasDeNegocio(agendamento);
@@ -152,7 +101,7 @@ public class AgendamentoController {
             if (categoriaUsuario == null) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
-            agendamentos = agendamentoRepository.findByMilitarCpfAndCategoriaAndDataAfter(
+            agendamentos = agendamentoService.findByMilitarCpfAndCategoriaAndDataAfter(
                     userCpf,
                     categoriaUsuario,
                     LocalDate.now());
@@ -173,12 +122,9 @@ public class AgendamentoController {
     @PreAuthorize("hasAnyRole('GRADUADO','OFICIAL','ADMIN')")
     public ResponseEntity<List<AgendamentoDTO>> findByMilitar(Authentication authentication) {
         String userCpf = authentication.getName();
-        Optional<Militar> militarOpt = militarRepository.findByCpf(userCpf);
-        if (militarOpt.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        Militar militar = agendamentoService.buscarMilitarPorCpf(userCpf);
 
-        List<Agendamento> agendamentos = agendamentoService.findByMilitarId(militarOpt.get().getId());
+        List<Agendamento> agendamentos = agendamentoService.findByMilitarId(militar.getId());
         if (agendamentos.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
@@ -278,10 +224,9 @@ public class AgendamentoController {
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
 
-            Militar usuarioLogado = militarRepository.findByCpf(userCpf).orElse(null);
+            Militar usuarioLogado = agendamentoService.buscarMilitarPorCpf(userCpf);
 
-            if (!isAdmin && (usuarioLogado == null ||
-                    !agendamento.getMilitar().getId().equals(usuarioLogado.getId()))) {
+            if (!isAdmin && !agendamento.getMilitar().getId().equals(usuarioLogado.getId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("Você só pode desmarcar seus próprios agendamentos.");
             }
