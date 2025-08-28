@@ -7,7 +7,7 @@ import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
 import { OrientacoesComponent } from '../../agendamento/orientacoes/orientacoes.component';
 import { Subscription } from 'rxjs';
-import { UserData } from 'src/app/models/userData';
+import { UserData } from 'src/app/models/user-data';
 import { UserService } from '../../../services/user.service';
 
 // Certifique-se de importar o modelo

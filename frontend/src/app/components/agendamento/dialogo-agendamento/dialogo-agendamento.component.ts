@@ -2,7 +2,7 @@ import { Component, Inject, OnInit, Input, OnDestroy } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
   import { Militar } from 'src/app/models/militar';
-  import { UserData } from 'src/app/models/userData';
+  import { UserData } from 'src/app/models/user-data';
   import { UserService } from 'src/app/services/user.service';
   import { AgendamentoService } from 'src/app/services/agendamento.service'; // Adicione o serviço
   import { HorariosService } from 'src/app/services/horarios.service';
