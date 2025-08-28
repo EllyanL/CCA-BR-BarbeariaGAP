@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DialogoCancelamentoComponent } from './dialogo-cancelamento.component';
 import { MatDialogModule, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('DialogoCancelamentoComponent', () => {
   let component: DialogoCancelamentoComponent;
@@ -10,7 +9,7 @@ describe('DialogoCancelamentoComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [MatDialogModule, MatSnackBarModule],
+      imports: [MatDialogModule],
       declarations: [DialogoCancelamentoComponent],
       providers: [
         { provide: MatDialogRef, useValue: {} },

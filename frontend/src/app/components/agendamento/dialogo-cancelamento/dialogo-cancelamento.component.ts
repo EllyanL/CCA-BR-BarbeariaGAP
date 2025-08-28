@@ -1,8 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { LoggingService } from 'src/app/services/logging.service';
-import { ServerTimeService } from 'src/app/services/server-time.service';
 
 export interface DialogData {
   diaSemana: string;
@@ -35,85 +32,24 @@ export interface DialogData {
     color="warn"
     (click)="onYesClick()"
     class="confirm-dialog__button"
-    [disabled]="!canCancel()"
   >
     DESMARCAR
   </button>
 </div>
   `,
 })
-export class DialogoCancelamentoComponent implements OnInit {
+export class DialogoCancelamentoComponent {
 
   constructor(
     public dialogRef: MatDialogRef<DialogoCancelamentoComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    private snackBar: MatSnackBar,
-    private logger: LoggingService,
-    private serverTimeService: ServerTimeService,
-  ) {
-  }
-
-  timeOffsetMs: number = 0;
-
-  ngOnInit(): void {
-    this.serverTimeService.getServerTime().subscribe({
-      next: res => {
-        this.timeOffsetMs = res.timestamp - Date.now();
-      },
-      error: err => {
-        this.logger.error('Erro ao obter hora do servidor:', err);
-      }
-    });
-  }
+  ) {}
 
   onNoClick(): void {
     this.dialogRef.close(false);
   }
 
   onYesClick(): void {
-    if (!this.canCancel()) {
-      this.snackBar.open('Cancelamentos devem ser feitos com antecedência mínima de 30 minutos.', 'Ciente', {
-        duration: 3000,
-      });
-      this.dialogRef.close(false);
-      return;
-    }
-
-    const autorizado = this.verifySaram();
-    if (autorizado) {
-      this.dialogRef.close({ dia: this.data.diaSemana, hora: this.data.hora, usuarioId: this.data.usuarioId });
-    } else {
-      this.snackBar.open('Somente o militar associado ao agendamento pode desmarcar.', 'Ciente', {
-        duration: 3000,
-      });
-      this.dialogRef.close(false);
-    }
-  }
-
-  public canCancel(): boolean {
-    if (!this.data?.data || !this.data?.hora) {
-      return true;
-    }
-    const horaFormatada = this.data.hora.substring(0, 5);
-    const agendamentoDate = new Date(`${this.data.data}T${horaFormatada}`);
-    const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
-    return diffMs >= 30 * 60 * 1000;
-  }
-
-  verifySaram(): boolean {
-    const ldapDataString = sessionStorage.getItem('user-data') || localStorage.getItem('user-data');
-    if (ldapDataString) {
-      const ldapData = JSON.parse(ldapDataString);
-      const id = ldapData[0].id;
-      // Compara o ID armazenado com o ID do agendamento clicado.
-      if (id === this.data.usuarioId) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      this.logger.error('Nenhum dado encontrado no armazenamento.');
-      return false;
-    }
+    this.dialogRef.close(true);
   }
 }
