@@ -292,17 +292,22 @@ import { UserService } from 'src/app/services/user.service';
     
     
     /** Garante que todos os dias existam como arrays (nunca null) */
-    private normalizarEstrutura(h: HorariosPorDia | null | undefined): HorariosPorDia {
+    private normalizarEstrutura(
+      h: Partial<Record<DiaKey, SlotHorario[]>> | null | undefined
+    ): HorariosPorDia {
       // Ajuste os nomes conforme seu contrato real
       const dias: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
-      const out: any = {};
+      const out: Record<DiaKey, SlotHorario[]> = {} as Record<
+        DiaKey,
+        SlotHorario[]
+      >;
 
       for (const d of dias) {
-        const lista = (h as any)?.[d];
+        const lista = h?.[d as DiaKey];
         out[d] = Array.isArray(lista) ? lista : [];
       }
-    
-      return out as HorariosPorDia;
+
+      return out;
     }
     
 
