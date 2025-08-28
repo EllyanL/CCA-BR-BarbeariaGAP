@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -32,6 +31,7 @@ import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
+import intraer.ccabr.barbearia_api.util.HoraUtil;
 
 @Service
 @Transactional
@@ -57,7 +57,6 @@ public class AgendamentoService {
         this.militarRepository = militarRepository;
     }
 
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
     private static final ZoneId ZONE_ID_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
     @Transactional
@@ -270,7 +269,7 @@ public class AgendamentoService {
 
             Map<String, Agendamento> agendamentosPorHorario = new HashMap<>();
             for (Agendamento agendamento : agendamentos) {
-                agendamentosPorHorario.put(agendamento.getHora().format(TIME_FORMATTER), agendamento);
+                agendamentosPorHorario.put(HoraUtil.format(agendamento.getHora()), agendamento);
             }
             for (String horario : horariosStr) {
                 agendamentosPorHorario.putIfAbsent(horario, null);
@@ -398,7 +397,7 @@ public class AgendamentoService {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Agendamentos só são permitidos a partir de segunda às " +
-                config.getHorarioInicio().format(TIME_FORMATTER) + "."
+                HoraUtil.format(config.getHorarioInicio()) + "."
             );
         }
 
@@ -412,7 +411,7 @@ public class AgendamentoService {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Agendamentos são permitidos apenas de segunda a sexta das " +
-                inicio.format(TIME_FORMATTER) + " às " + fim.format(TIME_FORMATTER) + "."
+                HoraUtil.format(inicio) + " às " + HoraUtil.format(fim) + "."
             );
         }
 
