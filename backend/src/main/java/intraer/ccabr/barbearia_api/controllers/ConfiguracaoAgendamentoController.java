@@ -1,11 +1,12 @@
 package intraer.ccabr.barbearia_api.controllers;
 
+import intraer.ccabr.barbearia_api.dtos.ConfiguracaoAgendamentoRequest;
+import intraer.ccabr.barbearia_api.dtos.ConfiguracaoAgendamentoResponse;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalTime;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/configuracoes")
@@ -18,14 +19,16 @@ public class ConfiguracaoAgendamentoController {
     }
 
     @GetMapping({"", "/agendamento"})
-    public ConfiguracaoAgendamento buscarConfiguracao() {
-        return service.buscarConfiguracao();
+    public ResponseEntity<ConfiguracaoAgendamentoResponse> buscarConfiguracao() {
+        ConfiguracaoAgendamento configuracao = service.buscarConfiguracao();
+        return ResponseEntity.ok(new ConfiguracaoAgendamentoResponse(configuracao));
     }
 
     @PutMapping({"", "/agendamento"})
-    public ConfiguracaoAgendamento atualizar(@RequestBody Map<String, String> body) {
-        LocalTime inicio = LocalTime.parse(body.get("horarioInicio"));
-        LocalTime fim = LocalTime.parse(body.get("horarioFim"));
-        return service.atualizar(inicio, fim);
+    public ResponseEntity<ConfiguracaoAgendamentoResponse> atualizar(
+            @Valid @RequestBody ConfiguracaoAgendamentoRequest request) {
+        ConfiguracaoAgendamento configuracao =
+                service.atualizar(request.getHorarioInicio(), request.getHorarioFim());
+        return ResponseEntity.ok(new ConfiguracaoAgendamentoResponse(configuracao));
     }
 }
