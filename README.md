@@ -65,6 +65,17 @@ parâmetros.
 Valores de exemplo podem ser vistos em
 `backend/src/main/resources/application-dev.yml`
 
+## Formatação de Código
+Para manter um estilo consistente no backend utilizamos o plugin
+[Spotless](https://github.com/diffplug/spotless). Para aplicar a
+formatação automaticamente, execute na raiz do projeto:
+
+```bash
+./format-code.sh
+```
+
+O script executa `mvn spotless:apply` no módulo do backend.
+
 ## Executando Testes
 
 ### Pré-requisitos para Testes do Backend
