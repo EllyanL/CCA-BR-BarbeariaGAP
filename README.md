@@ -10,6 +10,9 @@ agendamentos de cortes de cabelo no prédio do Ministério da Aeronáutica.
 - **Integrações**: autenticação via LDAP e consulta ao WebService CCABR.
 - Scripts de inicialização local e build de produção.
 
+## Arquitetura
+Frontend (Angular) → API (Spring Boot) → Banco PostgreSQL
+
 ## Estrutura do Projeto
 fab-barbearia-gap/
 ├── backend/ # API Spring Boot
@@ -19,8 +22,8 @@ fab-barbearia-gap/
 └── build-prod.sh # Gera build Angular e inicia o backend
 
 
-## Como Executar
-### Ambiente de Desenvolvimento
+## Setup do Ambiente
+### Desenvolvimento com script
 1. Configure as variáveis de ambiente (veja abaixo).
 2. Verifique se os scripts possuem permissão de execução (especialmente em
    sistemas onde as permissões possam ser perdidas após o clone). Caso
@@ -31,14 +34,26 @@ fab-barbearia-gap/
 3. Na raiz do projeto, execute:
    ```bash
    ./start-dev.sh
+   ```
    O script inicia o backend em http://localhost:8080 e o frontend em http://localhost:4200
-   (o perfil `dev` é definido automaticamente)
+   (o perfil `dev` é definido automaticamente).
+
+### Backend
+1. `cd backend`
+2. `./mvnw spring-boot:run`
+
+### Frontend
+1. `cd frontend`
+2. `npm install`
+3. `npm start`
 
 ### Ambiente de Produção
 1. Gere o build Angular e copie os arquivos para o backend:
-    ./build-prod.sh
-    Os arquivos são copiados para backend/src/main/resources/static/ e o backend é iniciado em seguida
-    (o perfil `prod` é definido automaticamente)
+   ```bash
+   ./build-prod.sh
+   ```
+   Os arquivos são copiados para `backend/src/main/resources/static/` e o backend é iniciado em seguida
+   (o perfil `prod` é definido automaticamente).
 
 ## Variáveis de Ambiente
 Defina no sistema as seguintes variáveis antes de rodar o backend:
@@ -65,16 +80,33 @@ parâmetros.
 Valores de exemplo podem ser vistos em
 `backend/src/main/resources/application-dev.yml`
 
-## Formatação de Código
-Para manter um estilo consistente no backend utilizamos o plugin
-[Spotless](https://github.com/diffplug/spotless). Para aplicar a
-formatação automaticamente, execute na raiz do projeto:
+## Regras de Negócio
+- Horários são gerados de 30 em 30 minutos dentro da janela configurada.
+- Agendamentos são aceitos somente de segunda a sexta entre os limites da janela.
+- Agendar ou cancelar exige antecedência mínima de 30 minutos.
+- Cada militar só pode agendar novamente após 15 dias do último corte.
+- Administradores não podem liberar todo um dia se houver horários já agendados nem bloquear diretamente um horário agendado.
 
-```bash
-./format-code.sh
-```
+## Convenções de Código
+### Backend
+- Formatação automática com [Spotless](https://github.com/diffplug/spotless):
+  ```bash
+  ./format-code.sh
+  ```
 
-O script executa `mvn spotless:apply` no módulo do backend.
+### Frontend
+- Lint: `npm run lint`
+- Formatação: `npm run format`
+
+## Endpoints Principais
+| Método | Endpoint | Descrição |
+| ------ | -------- | --------- |
+| `POST` | `/api/auth/login` | Autentica e retorna token JWT |
+| `GET` | `/api/horarios` | Lista horários disponíveis |
+| `POST` | `/api/agendamentos` | Cria novo agendamento |
+| `GET` | `/api/agendamentos/meus` | Lista agendamentos do usuário |
+| `PUT` | `/api/agendamentos/{id}/cancelar` | Cancela agendamento |
+| `GET` | `/api/agendamentos/admin?inicio=YYYY-MM-DD&fim=YYYY-MM-DD` | Consulta agendamentos por período (admin) |
 
 ## Executando Testes
 
@@ -106,21 +138,12 @@ definições de banco de dados) antes de rodar os testes.
 4. Execute os testes:
     npm test
 
-### Dicas de Solução de Problemas
-Se o comando `./mvnw test` falhar, verifique os seguintes pontos:
-- **Permissão de execução**: certifique-se de que `backend/mvnw` está
-  marcado como executável (`chmod +x backend/mvnw`).
-- **Variáveis de ambiente**: faltas ou valores incorretos podem impedir a
-  inicialização do contexto de testes.
-- **Download de dependências**: a primeira execução do wrapper requer acesso à
-  internet para baixar o Maven e bibliotecas. Caso esteja atrás de um proxy,
-  configure as variáveis de proxy do Maven conforme a sua rede.
+## Troubleshooting
+- **Permissão de execução**: certifique-se de que `backend/mvnw` e `start-dev.sh` estão marcados como executáveis.
+- **Variáveis de ambiente**: valores ausentes podem impedir a inicialização.
+- **Download de dependências**: a primeira execução de Maven ou NPM requer acesso à internet.
+- **Portas em uso**: libere as portas `8080` (API) e `4200` (frontend).
+- **Erros de build do frontend**: remova `node_modules` e execute `npm install` novamente.
 
 ## Documentação
-Informaçães detalhadas sobre regras de agendamento e desenvolvimento estão em docs/ANOTATIONS.md
-
-### Listagem de agendamentos (admin)
-O endpoint `GET /api/agendamentos/admin` requer os parâmetros de consulta `inicio` e `fim` no formato `YYYY-MM-DD` para definir o intervalo da busca. Caso qualquer um deles esteja ausente, a API retorna **400 Bad Request**.
-
-### Exportação de registros no frontend
-Na tela **Gerenciar Registros**, escolha as datas inicial e final antes de acionar a opção de exportar PDF. A exportação é bloqueada e uma mensagem é exibida se o intervalo não for informado.
+Informações detalhadas sobre regras de agendamento e desenvolvimento estão em `docs/ANOTATIONS.md`.
