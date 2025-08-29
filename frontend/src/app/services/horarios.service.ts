@@ -4,7 +4,6 @@ import { HorarioDTO } from '../models/horario-dto';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { catchError, map, tap, mergeMap, toArray } from 'rxjs/operators';
 
-import { Agendamento } from '../models/agendamento';
 import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
@@ -316,18 +315,6 @@ export class HorariosService {
       catchError((error: HttpErrorResponse) => {
         this.logger.error('❌ Erro ao disponibilizar todos os horários:', error.error, error.message);
         return throwError(() => new Error(error.message || 'Erro desconhecido'));
-      })
-    );
-  }
-
-  //--------------📅Gerenciamento de Agendamento-------------
-  agendarHorario(agendamento: Agendamento): Observable<any> {
-    const payload = { ...agendamento, diaSemana: normalizeDia(agendamento.diaSemana) };
-    return this.http.post(`${this.apiUrl}/agendar`, payload, { responseType: 'text' as 'json' }).pipe(
-      catchError((error: HttpErrorResponse) => {
-        this.logger.error('Erro ao agendar horário:', error);
-        const message = error.error?.message || error.error || 'Erro ao agendar';
-        return throwError(() => new Error(message));
       })
     );
   }
