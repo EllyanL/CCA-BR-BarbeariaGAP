@@ -87,6 +87,29 @@ Valores de exemplo podem ser vistos em
 - Cada militar só pode agendar novamente após 15 dias do último corte.
 - Administradores não podem liberar todo um dia se houver horários já agendados nem bloquear diretamente um horário agendado.
 
+## Área Admin
+- `/admin/dashboard`: painel com indicadores gerais.
+- `/admin/horarios`: gerenciamento de horários disponíveis.
+- `/admin/usuarios`: cadastro e permissões de usuários.
+- `/admin/gerenciar-registros`: revisão ou exclusão de registros.
+
+## Área Usuário
+- `/auth/login`: autenticação no sistema.
+- `/oficiais` e `/graduados`: páginas de agendamento conforme perfil.
+- `/meus-agendamentos`: consulta e cancelamento dos próprios horários.
+- Restrições: horários de 30 minutos dentro da janela configurada; antecedência mínima de 30 minutos para agendar ou cancelar; novo agendamento apenas após 15 dias do último corte.
+
+## Fluxo de Agendamento e Cancelamento
+1. Autentique-se em `/auth/login`.
+2. Acesse `/oficiais` ou `/graduados` e escolha um horário disponível.
+3. Confirme o agendamento.
+4. Para cancelar, vá a `/meus-agendamentos` e selecione o horário desejado.
+
+## Execução do Backend e Frontend
+- Tudo de uma vez: `./start-dev.sh` (inicia backend em `http://localhost:8080` e frontend em `http://localhost:4200`).
+- Somente backend: `cd backend && ./mvnw spring-boot:run`.
+- Somente frontend: `cd frontend && npm install && npm start`.
+
 ## Convenções de Código
 ### Backend
 - Formatação automática com [Spotless](https://github.com/diffplug/spotless):
