@@ -29,10 +29,10 @@
             <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
               <button
                 mat-raised-button
-                [disabled]="slot.status !== 'DISPONIVEL'"
+                [disabled]="slot.status === 'INDISPONIVEL'"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
                 [ngClass]="slot.status | statusFormat : 'tabelaClass'"
-                (click)="abrirDialogoAgendamento(getLabelDiaComData(dia), hora)"
+                (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), getLabelDiaComData(dia), hora)"
               >
                 {{ slot.status | statusFormat }}
               </button>
