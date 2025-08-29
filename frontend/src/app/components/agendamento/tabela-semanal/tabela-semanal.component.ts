@@ -20,6 +20,7 @@ import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
 
 @Component({
@@ -316,7 +317,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     );
 
     if (!horarioDisponivel) {
-      this.snackBar.open('Horário não disponivel para sua categoria.', 'Ciente', { duration: 3000 });
+      this.snackBar.open('Horário não disponivel para sua categoria.', 'Ciente', { duration: SNACKBAR_DURATION });
       return;
     }
 
@@ -324,7 +325,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const agendamentoDate = new Date(`${dataISO}T${hora.slice(0, 5)}`);
     const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
     if (diffMs < 30 * 60 * 1000) {
-      this.snackBar.open('O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.', 'Ciente', { duration: 3000 });
+      this.snackBar.open('O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.', 'Ciente', { duration: SNACKBAR_DURATION });
       return;
     }
   
@@ -366,7 +367,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe();
       } else if (result && result.sucesso === false) {
         const message = (result as any).mensagem || (result as any).message || 'Falha ao realizar agendamento.';
-        this.snackBar.open(message, 'Ciente', { duration: 3000 });
+        this.snackBar.open(message, 'Ciente', { duration: SNACKBAR_DURATION });
       }
     });
   }

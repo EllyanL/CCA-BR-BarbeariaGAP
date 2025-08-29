@@ -15,6 +15,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { DialogoDesmarcarComponent } from 'src/app/components/admin/dialogo-desmarcar/dialogo-desmarcar.component';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -160,7 +161,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       if (!confirmado) { return; }
       this.agendamentoService.cancelarAgendamento(id).subscribe({
         next: () => {
-          this.snackBar.open('Agendamento removido com sucesso.', 'Ciente', { duration: 3000 });
+          this.snackBar.open('Agendamento removido com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
           const idx = this.recent.findIndex(r => r.id === a.id);
           if (idx !== -1) {
             this.recent.splice(idx, 1);

@@ -5,6 +5,7 @@ import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { LoggingService } from 'src/app/services/logging.service';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
 @Component({
   selector: 'app-dialogo-editar-agendamento',
@@ -65,12 +66,12 @@ export class DialogoEditarAgendamentoComponent {
 
     this.agendamentoService.updateAgendamento(this.agendamento.id!, atualizado).subscribe({
       next: (updated) => {
-        this.snackBar.open('Agendamento atualizado com sucesso.', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Agendamento atualizado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
         this.dialogRef.close(updated);
       },
       error: (err) => {
         this.logger.error('Erro ao atualizar:', err);
-        this.snackBar.open(err.error || 'Erro ao atualizar', 'Ciente', { duration: 3000 });
+        this.snackBar.open(err.error || 'Erro ao atualizar', 'Ciente', { duration: SNACKBAR_DURATION });
         this.dialogRef.close(false);
       }
     });

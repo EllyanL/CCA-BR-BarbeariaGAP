@@ -10,6 +10,7 @@ import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
 import { LoggingService } from '../../services/logging.service';
 import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
 function compararDesc(a: Agendamento, b: Agendamento): number {
   const dataA = new Date(`${a.data}T${a.hora}`).getTime();
@@ -88,7 +89,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       error: err => {
         this.logger.error('Erro ao carregar agendamentos:', err);
         this.snackBar.open('Erro ao carregar agendamentos', 'Fechar', {
-          duration: 3000
+          duration: SNACKBAR_DURATION
         });
       }
     });

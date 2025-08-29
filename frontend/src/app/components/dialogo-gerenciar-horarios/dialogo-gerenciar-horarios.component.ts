@@ -3,6 +3,7 @@ import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dial
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
 export interface GerenciarHorariosResult {
   horarioInicio: string; // HH:mm
@@ -48,7 +49,7 @@ export class DialogoGerenciarHorariosComponent {
     if (!this.isValid()) return;
     this.configService.updateConfig({ horarioInicio: this.horaInicio, horarioFim: this.horaFim }).subscribe({
       next: () => {
-        this.snackBar.open('Janela de horários atualizada.', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Janela de horários atualizada.', 'Ciente', { duration: SNACKBAR_DURATION });
         this.configService.emitirRecarregarGrade(this.categoria);
         this.dialogRef.close(true);
       },
@@ -60,7 +61,7 @@ export class DialogoGerenciarHorariosComponent {
             this.snackBar.open(
               'Não é possível realizar alteração com agendamentos ativos.',
               'Ciente',
-              { duration: 3000 }
+              { duration: SNACKBAR_DURATION }
             );
           }
         }
