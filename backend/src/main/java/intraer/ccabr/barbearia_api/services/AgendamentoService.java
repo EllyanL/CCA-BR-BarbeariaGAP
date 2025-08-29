@@ -402,12 +402,12 @@ public class AgendamentoService {
         }
 
         // 2. Horários válidos somente de segunda a sexta entre horárioInicio e horárioFim configurados
-        DayOfWeek dia = agendamento.getData().getDayOfWeek();
+        DayOfWeek diaSemana = agendamento.getData().getDayOfWeek();
         LocalTime hora = agendamento.getHora();
         LocalTime inicio = config.getHorarioInicio();
         LocalTime fim = config.getHorarioFim();
 
-        if (dia == DayOfWeek.SATURDAY || dia == DayOfWeek.SUNDAY) {
+        if (diaSemana == DayOfWeek.SATURDAY || diaSemana == DayOfWeek.SUNDAY) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "Agendamentos são permitidos apenas de segunda a sexta das " +
@@ -445,8 +445,8 @@ public class AgendamentoService {
         }
         
     
-        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
-        agendamento.setDiaSemana(dia);
+        String diaString = DiaSemana.from(diaSemana).getValor();
+        agendamento.setDiaSemana(diaString);
     }
     
 
