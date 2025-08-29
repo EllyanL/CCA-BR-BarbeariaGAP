@@ -286,6 +286,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
     this.carregarConfiguracao();
     this.horariosService.startPollingHorarios(this.categoria);
+    this.horariosService
+      .carregarHorariosDaSemana(this.categoria)
+      .subscribe(h => {
+        this.horariosPorDia = h;
+        this.aplicarJanelaHorarios();
+        this.horariosService.atualizarHorarios(h);
+      });
     this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
       next: horarios => {
         this.horariosPorDia = horarios;
