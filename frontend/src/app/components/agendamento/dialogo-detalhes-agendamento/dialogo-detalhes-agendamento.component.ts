@@ -4,6 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { LoggingService } from 'src/app/services/logging.service';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
 @Component({
   selector: 'app-dialogo-detalhes-agendamento',
@@ -64,12 +65,12 @@ export class DialogoDetalhesAgendamentoComponent {
     }
     this.agendamentoService.cancelarAgendamento(this.agendamento.id).subscribe({
       next: () => {
-        this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
         this.dialogRef.close(true);
       },
       error: (err) => {
         this.logger.error('Erro ao desmarcar agendamento:', err);
-        this.snackBar.open('Erro ao desmarcar o agendamento', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Erro ao desmarcar o agendamento', 'Ciente', { duration: SNACKBAR_DURATION });
       this.dialogRef.close(false);
     },
     });

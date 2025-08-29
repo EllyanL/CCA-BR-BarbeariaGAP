@@ -9,6 +9,7 @@ import { Agendamento } from 'src/app/models/agendamento';
 import { LoggingService } from 'src/app/services/logging.service';
 import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 import { Subscription } from 'rxjs';
+import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 
     @Component({
       selector: 'app-dialogo-agendamento',
@@ -249,7 +250,7 @@ import { Subscription } from 'rxjs';
             this.logger.log('Agendamento criado:', response);
             this.errorMessage = "";
             this.militar = response.militar || this.militar;
-            this.snackBar.open('Agendamento realizado', 'Ciente', { duration: 3000 });
+            this.snackBar.open('Agendamento realizado', 'Ciente', { duration: SNACKBAR_DURATION });
             this.dialogRef.close({ sucesso: true, payload: response });
           },
           error => {

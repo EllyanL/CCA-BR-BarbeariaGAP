@@ -70,7 +70,7 @@ Os horários agendados têm um tratamento especial para visualização e intera�
       ```typescript
       desmarcarAgendamento(id: number) {
         this.agendamentoService.cancelarAgendamento(id).subscribe(() => {
-          this.snackBar.open('Horário desmarcado com sucesso!', 'OK', { duration: 3000 });
+          this.snackBar.open('Horário desmarcado com sucesso!', 'OK', { duration: SNACKBAR_DURATION });
           this.atualizarHorarios();
         });
       }

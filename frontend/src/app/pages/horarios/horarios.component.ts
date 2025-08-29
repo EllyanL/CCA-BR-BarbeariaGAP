@@ -5,6 +5,7 @@ import { HorariosService } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
 import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
+import { SNACKBAR_DURATION } from '../../utils/ui-constants';
 import { Observable, Subscription, from, of } from 'rxjs';
 import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from '../../shared/dias.util';
@@ -254,13 +255,13 @@ import { UserService } from 'src/app/services/user.service';
         this.snackBar.open(
           'Horário indisponivel; provavelmente já reservado ou bloqueado. Escolha outro.',
           'Ciente',
-          { duration: 3000 }
+          { duration: SNACKBAR_DURATION }
         );
       } else if (status === 'AGENDADO') {
         this.snackBar.open(
           'Você já possui agendamento neste horário. Desmarque o atual para escolher outro.',
           'Ciente',
-          { duration: 3000 }
+          { duration: SNACKBAR_DURATION }
         );
       }
     }
@@ -352,7 +353,7 @@ import { UserService } from 'src/app/services/user.service';
           this.snackBar.open(
             'Não foi possível carregar as configurações de horários. Recarregue a página.',
             'Ciente',
-            { duration: 3000 }
+            { duration: SNACKBAR_DURATION }
           );
         }
       });
@@ -382,7 +383,7 @@ import { UserService } from 'src/app/services/user.service';
         this.snackBar.open(
           'Digite um horário válido (HH:mm) antes de confirmar.',
           'Ciente',
-          { duration: 3000 }
+          { duration: SNACKBAR_DURATION }
         );
         return;
       }
@@ -403,7 +404,7 @@ import { UserService } from 'src/app/services/user.service';
           }
           this.carregarHorariosDaSemana();
           const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.getDiaLabel(this.diaSelecionado)}`;
-          this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em ${msgDias}.`, 'Ciente', { duration: 3000 });
+          this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em ${msgDias}.`, 'Ciente', { duration: SNACKBAR_DURATION });
           this.horarioPersonalizado = '';
           this.horarioValido = false;
         },
@@ -419,7 +420,7 @@ import { UserService } from 'src/app/services/user.service';
     //   this.horariosService.adicionarHorarioDia(horario, dia, this.categoriaSelecionada).subscribe({
     //     next: (res: any) => {
     //       this.carregarHorariosDaSemana(); // recarrega os dados atualizados
-    //       this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: 3000 });
+    //       this.snackBar.open(`Horário ${horario} adicionado em ${dia}`, 'Ciente', { duration: SNACKBAR_DURATION });
     //     },
     //     error: (err) => {
     //       this.logger.error('Erro ao adicionar horário no dia:', err);
@@ -436,7 +437,7 @@ import { UserService } from 'src/app/services/user.service';
 
         this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
           next: () => {
-            this.snackBar.open(`Horário ${horario} adicionado em ${this.getDiaLabel(dia)}`, 'Ciente', { duration: 3000 });
+            this.snackBar.open(`Horário ${horario} adicionado em ${this.getDiaLabel(dia)}`, 'Ciente', { duration: SNACKBAR_DURATION });
             this.carregarHorariosDaSemana();
             this.carregarHorariosBase();
             this.horarioPersonalizado = '';
@@ -471,7 +472,7 @@ import { UserService } from 'src/app/services/user.service';
             this.ordenarHorarios();
           }
 
-          this.snackBar.open(`Horário ${horario} adicionado ao dia ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: 3000 });
+          this.snackBar.open(`Horário ${horario} adicionado ao dia ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: SNACKBAR_DURATION });
           this.carregarHorariosDaSemana();
         },
         error: (error: any) => {
@@ -488,7 +489,7 @@ import { UserService } from 'src/app/services/user.service';
     // Remove horário definitivamente usando o endpoint `/remover`
     removerHorarioBase(): void {
       if (!this.diaSelecionado || !this.horarioPersonalizado) {
-        this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: 3000 });
+        this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: SNACKBAR_DURATION });
         return;
       }
 
@@ -513,12 +514,12 @@ import { UserService } from 'src/app/services/user.service';
           this.cdr.markForCheck();
           this.carregarHorariosDaSemana();
           const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.getDiaLabel(this.diaSelecionado)}`;
-          this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: 3000 });
+          this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: SNACKBAR_DURATION });
         },
         error: (err: any) => {
           this.logger.error('Erro ao remover horário:', err);
           const msgDias = diasAlvo.length > 1 ? 'os dias selecionados' : 'o dia escolhido';
-          this.snackBar.open(`Falha ao remover o horário dos ${msgDias}.`, 'Ciente', { duration: 3000 });
+          this.snackBar.open(`Falha ao remover o horário dos ${msgDias}.`, 'Ciente', { duration: SNACKBAR_DURATION });
         }
       });
     }
@@ -582,7 +583,7 @@ import { UserService } from 'src/app/services/user.service';
         const msg = atualizado.status === 'DISPONIVEL'
           ? 'Horário disponibilizado com sucesso.'
           : 'Horário indisponibilizado com sucesso.';
-        this.snackBar.open(msg, 'Ciente', { duration: 3000 });
+        this.snackBar.open(msg, 'Ciente', { duration: SNACKBAR_DURATION });
       },
       error: (error: any) => {
         const mensagem = error?.error?.mensagem || error?.error?.message ||
@@ -615,7 +616,7 @@ import { UserService } from 'src/app/services/user.service';
               this.horariosService.atualizarHorarios(this.horariosPorDia);
               this.cdr.markForCheck();
               const label = this.getDiaLabel(diaKey);
-              this.snackBar.open(`Horários do dia ${label} atualizados.`, 'Ciente', { duration: 3000 });
+              this.snackBar.open(`Horários do dia ${label} atualizados.`, 'Ciente', { duration: SNACKBAR_DURATION });
             },
             error: () => {
               const label = this.getDiaLabel(diaKey);
@@ -666,7 +667,7 @@ import { UserService } from 'src/app/services/user.service';
             'Não foi possível carregar seus agendamentos. Atualize a página.',
             'Ciente',
             {
-              duration: 3000,
+              duration: SNACKBAR_DURATION,
             }
           );
           this.loadAgendamentosFromStorage();
@@ -789,7 +790,7 @@ import { UserService } from 'src/app/services/user.service';
 
       this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe({
         next: () => {
-          this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: 3000 });
+          this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
 
           const dia = normalizeDia(agendamento.diaSemana);
           const hora = normalizeHora(agendamento.hora);
