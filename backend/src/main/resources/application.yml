@@ -26,7 +26,7 @@ spring:
 api:
   secret:
     token:
-      secret: ${JWT_SECRET}
+      secret: ${JWT_SECRET:dev-secret}
 webservice:
   api-url: ${WEBSERVICE_API_URL:http://webservice.ccabr.intraer/api/}
   username: ${WEBSERVICE_USERNAME:barbearia}
