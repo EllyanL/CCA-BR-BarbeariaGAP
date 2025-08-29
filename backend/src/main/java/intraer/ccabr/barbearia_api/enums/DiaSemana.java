@@ -1,6 +1,7 @@
 package intraer.ccabr.barbearia_api.enums;
 
 import java.text.Normalizer;
+import java.time.DayOfWeek;
 import java.util.Arrays;
 
 public enum DiaSemana {
@@ -16,5 +17,16 @@ public enum DiaSemana {
                      .filter(d -> d.valor.equals(norm))
                      .findFirst()
                      .orElseThrow();
+    }
+
+    public static DiaSemana from(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> SEGUNDA;
+            case TUESDAY -> TERCA;
+            case WEDNESDAY -> QUARTA;
+            case THURSDAY -> QUINTA;
+            case FRIDAY -> SEXTA;
+            default -> throw new IllegalArgumentException("Apenas dias úteis são aceitos");
+        };
     }
 }
