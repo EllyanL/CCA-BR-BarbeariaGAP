@@ -469,70 +469,59 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   isCurrentRoute(route: string): boolean {
     return this.router.url.includes(route);
   }
-  handleClick(agendamento: Agendamento | undefined, dia?: string, hora?: string) {
-    const abrirDialogo = (ag: Agendamento) => {
+  handleClick(agendamento: Agendamento | undefined, dia: string, hora: string): void {
+    if (agendamento) {
       const podeDesmarcar =
-        this.isAgendamentoDoMilitarLogado(ag) &&
-        this.isAgendamentoDesmarcavel(ag, ag.diaSemana, ag.hora);
+        this.isAgendamentoDoMilitarLogado(agendamento) &&
+        this.isAgendamentoDesmarcavel(agendamento, agendamento.diaSemana, agendamento.hora);
       const dialogRef = this.dialog.open(DialogoDetalhesAgendamentoComponent, {
         width: '400px',
-        data: { agendamento: ag, podeDesmarcar }
+        data: { agendamento, podeDesmarcar }
       });
 
       dialogRef.afterClosed().subscribe((resultado: any) => {
         if (resultado && resultado !== true && resultado.id) {
           // atualização
-        const index = this.agendamentos.findIndex(a => a.id === resultado.id);
-        if (index !== -1) {
-          this.agendamentos[index] = resultado;
-          this.agendamentos = [...this.agendamentos];
-        }
-        const diaFormatoAntigo: DiaKey = normalizeDia(ag.diaSemana);
-        const horaAntiga = ag.hora.slice(0,5);
-        const idx = this.horariosPorDia[diaFormatoAntigo]?.findIndex(h => h.horario === horaAntiga);
-        if (idx !== undefined && idx !== -1) {
-          this.horariosPorDia[diaFormatoAntigo][idx].status = 'DISPONIVEL';
-          this.horariosPorDia[diaFormatoAntigo][idx].usuarioId = undefined;
-        }
-        const diaNovo: DiaKey = normalizeDia(resultado.diaSemana);
-        const horaNova = resultado.hora.slice(0,5);
-        const idxNovo = this.horariosPorDia[diaNovo]?.findIndex(h => h.horario === horaNova);
-        if (idxNovo !== undefined && idxNovo !== -1) {
-          this.horariosPorDia[diaNovo][idxNovo].status = 'AGENDADO';
-          this.horariosPorDia[diaNovo][idxNovo].usuarioId = resultado.militar?.id;
-        }
-        this.horariosPorDia = { ...this.horariosPorDia };
-        this.saveAgendamentos();
-      } else if (resultado === true && ag.id) {
-        this.agendamentos = this.agendamentos.filter(a => a.id !== ag.id);
-        const diaSemanaFormatado: DiaKey = normalizeDia(ag.diaSemana);
-        if (this.horariosPorDia[diaSemanaFormatado]) {
-          const horaFormatada = ag.hora.slice(0, 5);
-          const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === horaFormatada);
-          if (horarioIndex !== -1) {
-            this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'DISPONIVEL';
-            this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = undefined;
-            this.horariosPorDia = { ...this.horariosPorDia };
+          const index = this.agendamentos.findIndex(a => a.id === resultado.id);
+          if (index !== -1) {
+            this.agendamentos[index] = resultado;
+            this.agendamentos = [...this.agendamentos];
           }
+          const diaFormatoAntigo: DiaKey = normalizeDia(agendamento.diaSemana);
+          const horaAntiga = agendamento.hora.slice(0,5);
+          const idx = this.horariosPorDia[diaFormatoAntigo]?.findIndex(h => h.horario === horaAntiga);
+          if (idx !== undefined && idx !== -1) {
+            this.horariosPorDia[diaFormatoAntigo][idx].status = 'DISPONIVEL';
+            this.horariosPorDia[diaFormatoAntigo][idx].usuarioId = undefined;
+          }
+          const diaNovo: DiaKey = normalizeDia(resultado.diaSemana);
+          const horaNova = resultado.hora.slice(0,5);
+          const idxNovo = this.horariosPorDia[diaNovo]?.findIndex(h => h.horario === horaNova);
+          if (idxNovo !== undefined && idxNovo !== -1) {
+            this.horariosPorDia[diaNovo][idxNovo].status = 'AGENDADO';
+            this.horariosPorDia[diaNovo][idxNovo].usuarioId = resultado.militar?.id;
+          }
+          this.horariosPorDia = { ...this.horariosPorDia };
+          this.saveAgendamentos();
+        } else if (resultado === true && agendamento.id) {
+          this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
+          const diaSemanaFormatado: DiaKey = normalizeDia(agendamento.diaSemana);
+          if (this.horariosPorDia[diaSemanaFormatado]) {
+            const horaFormatada = agendamento.hora.slice(0, 5);
+            const horarioIndex = this.horariosPorDia[diaSemanaFormatado].findIndex(h => h.horario === horaFormatada);
+            if (horarioIndex !== -1) {
+              this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'DISPONIVEL';
+              this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = undefined;
+              this.horariosPorDia = { ...this.horariosPorDia };
+            }
+          }
+          this.saveAgendamentos();
         }
-        this.saveAgendamentos();
-      }
       });
-    };
-
-    if (agendamento) {
-      abrirDialogo(agendamento);
       return;
     }
 
-    if (!dia || !hora) return;
-    const data = this.getDataFromDiaSemana(this.getLabelDiaComData(dia));
-    const diaKey = normalizeDia(dia.split(' - ')[0]);
-    this.agendamentoService.getAgendamentoPorHorario(data, hora.slice(0,5), diaKey, this.categoria)
-      .subscribe({
-        next: (ag) => { if (ag) { abrirDialogo(ag); } },
-        error: err => this.logger.error('Erro ao buscar detalhes do agendamento:', err)
-      });
+    this.abrirDialogoAgendamento(dia, hora);
   }
 
   isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
