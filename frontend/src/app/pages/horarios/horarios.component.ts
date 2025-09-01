@@ -7,7 +7,7 @@ import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { SNACKBAR_DURATION } from '../../utils/ui-constants';
 import { Observable, Subscription, from, of } from 'rxjs';
-import { catchError, concatMap, take, tap, timeout } from 'rxjs/operators';
+import { catchError, concatMap, take, tap, timeout, retry } from 'rxjs/operators';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from '../../shared/dias.util';
 
 import { Agendamento } from '../../models/agendamento';
@@ -99,15 +99,22 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     private loadAgendamentosFromStorage(): void {
-      if (this.storageKey) {
-        const data = sessionStorage.getItem(this.storageKey);
-        if (data) {
-          try {
-            this.agendamentos = JSON.parse(data);
-          } catch (e) {
-            this.logger.error('Erro ao carregar agendamentos do storage:', e);
-            this.agendamentos = [];
-          }
+      if (!this.storageKey) {
+        const fallback = this.authService.getUsuarioAutenticado();
+        if (fallback?.cpf) {
+          this.storageKey = `agendamentos-${fallback.cpf}`;
+        } else {
+          return;
+        }
+      }
+
+      const data = sessionStorage.getItem(this.storageKey);
+      if (data) {
+        try {
+          this.agendamentos = JSON.parse(data);
+        } catch (e) {
+          this.logger.error('Erro ao carregar agendamentos do storage:', e);
+          this.agendamentos = [];
         }
       }
     }
@@ -183,59 +190,64 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     private initAfterTime(): void {
+      const fallback = this.authService.getUsuarioAutenticado();
+      this.saramUsuario = fallback?.saram || '';
+      if (fallback?.cpf) {
+        this.cpfUsuario = fallback.cpf;
+        this.storageKey = `agendamentos-${fallback.cpf}`;
+      }
+
+      this.loadAgendamentosFromStorage();
+      this.carregarAgendamentos();
 
       this.userDataSubscription = this.userService.userData$
         .pipe(
-          take(1),
           timeout(5000),
+          retry({ count: 3, delay: 1000 }),
+          take(1),
           catchError((err: any) => {
             this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
-            return of([]);
+            return of(null);
           })
         )
         .subscribe(userData => {
           if (userData && userData.length > 0) {
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
-            this.storageKey = `agendamentos-${this.cpfUsuario}`;
-            this.cdr.markForCheck();
+            const newKey = `agendamentos-${this.cpfUsuario}`;
+            if (newKey !== this.storageKey) {
+              this.storageKey = newKey;
+              this.loadAgendamentosFromStorage();
+              this.carregarAgendamentos();
+            }
             this.militarLogado = userData[0].nomeDeGuerra;
             this.omMilitar = userData[0].om;
-          } else {
-            const fallback = this.authService.getUsuarioAutenticado();
-            this.saramUsuario = fallback?.saram || '';
-            if (fallback?.cpf) {
-              this.cpfUsuario = fallback.cpf;
-              this.storageKey = `agendamentos-${fallback.cpf}`;
-            }
+            this.cdr.markForCheck();
           }
-
-          this.loadAgendamentosFromStorage();
-          this.carregarAgendamentos();
-
-          this.route.queryParams.subscribe((params) => {
-            const categoria = params['categoria'];
-            if (categoria && ['GRADUADO', 'OFICIAL'].includes(categoria)) {
-              this.categoriaSelecionada = categoria;
-            }
-            this.carregarHorariosBase();
-            this.loadHorarios();
-            this.horariosService.startPollingHorarios(this.categoriaSelecionada);
-            this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
-              next: h => {
-                this.horariosPorDia = { ...h };
-                this.aplicarJanelaHorarios();
-                this.cdr.markForCheck();
-              },
-              error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
-            });
-          });
-
-          this.agendamentoAtualizadoSub = this.agendamentoService.agendamentoAtualizado$.subscribe(() => {
-            this.carregarAgendamentos();
-            this.carregarHorariosDaSemana();
-          });
         });
+
+      this.route.queryParams.subscribe((params) => {
+        const categoria = params['categoria'];
+        if (categoria && ['GRADUADO', 'OFICIAL'].includes(categoria)) {
+          this.categoriaSelecionada = categoria;
+        }
+        this.carregarHorariosBase();
+        this.loadHorarios();
+        this.horariosService.startPollingHorarios(this.categoriaSelecionada);
+        this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
+          next: h => {
+            this.horariosPorDia = { ...h };
+            this.aplicarJanelaHorarios();
+            this.cdr.markForCheck();
+          },
+          error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
+        });
+      });
+
+      this.agendamentoAtualizadoSub = this.agendamentoService.agendamentoAtualizado$.subscribe(() => {
+        this.carregarAgendamentos();
+        this.carregarHorariosDaSemana();
+      });
     }
 
     logout(): void {
