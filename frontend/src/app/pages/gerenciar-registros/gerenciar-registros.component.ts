@@ -155,6 +155,19 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   async exportarPdf(): Promise<void> {
+    if (
+      !this.filtros.texto &&
+      !this.filtros.hora &&
+      !this.filtros.dataInicio &&
+      !this.filtros.dataFim &&
+      this.filtros.status.length === 0
+    ) {
+      this.snackBar.open('Selecione pelo menos um filtro', 'Fechar', {
+        duration: SNACKBAR_DURATION
+      });
+      return;
+    }
+
     this.aplicarFiltros();
     const rows = this.dataSource.data;
 
