@@ -17,4 +17,7 @@ export const DIA_LABEL_MAP: Record<DiaKey, string> = {
 } as const;
 
 export const normalizeDia = (d: string): DiaKey =>
-  d.normalize('NFD').replace(/\p{M}/g, '').toLowerCase() as DiaKey;
+  d
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase() as DiaKey;
