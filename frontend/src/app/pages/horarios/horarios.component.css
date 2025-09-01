@@ -179,6 +179,7 @@ mat-icon {
   max-width: 150px;
   margin: 0 auto;
   display: block;
+  text-align: center;
 }
 
 .botao-hora-disponivel {

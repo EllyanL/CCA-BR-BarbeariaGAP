@@ -90,7 +90,6 @@
                 <ng-container *ngIf="isAdmin; else visualizacaoUsuario">
                   <ng-container *ngIf="getSlot(dia, horario); else adicionar">
                     <button mat-raised-button
-                            class="icon-text"
                             (click)="toggleHorario(dia, horario)"
                             [ngClass]="{
                               'botao-hora-disponivel': getStatus(dia, horario) === 'DISPONIVEL',
@@ -99,7 +98,6 @@
                             }">
                       <ng-container [ngSwitch]="getStatus(dia, horario)">
                         <ng-container *ngSwitchCase="'AGENDADO'">
-                          <mat-icon>lock</mat-icon>
                           {{ formatarStatus('AGENDADO') }}
                         </ng-container>
                         <ng-container *ngSwitchDefault>
@@ -120,10 +118,9 @@
             <ng-template #visualizacaoUsuario>
               <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento">
                 <button mat-raised-button
-                        class="botao-hora-agendado icon-text"
+                        class="botao-hora-agendado"
                         [disabled]="!(isAgendamentoDoMilitarLogado(agendamento) && isAgendamentoDesmarcavel(agendamento))"
                         (click)="handleClick(agendamento)">
-                  <mat-icon>lock</mat-icon>
                   {{ formatarStatus('AGENDADO') }}
                 </button>
               </ng-container>
