@@ -205,4 +205,16 @@ public class HorarioController {
                 .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
                 .body(atualizado);
     }
+
+    @PutMapping("/{id}/liberar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<HorarioDTO> liberarHorario(@PathVariable Long id) {
+        try {
+            HorarioDTO dto = horarioService.liberarHorario(id);
+            horarioUpdateService.sendUpdate(dto);
+            return ResponseEntity.ok(dto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
 }
