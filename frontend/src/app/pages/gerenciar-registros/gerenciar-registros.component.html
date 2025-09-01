@@ -40,7 +40,7 @@
 
     <mat-form-field appearance="fill" class="f-periodo">
       <mat-label>Período</mat-label>
-      <mat-date-range-input [rangePicker]="picker" (dateChange)="aplicarFiltros()">
+      <mat-date-range-input [rangePicker]="picker" (dateChange)="onDateRangeChange()">
         <input matStartDate [(ngModel)]="filtros.dataInicio" placeholder="Data inicial" />
         <input matEndDate [(ngModel)]="filtros.dataFim" placeholder="Data final" />
       </mat-date-range-input>

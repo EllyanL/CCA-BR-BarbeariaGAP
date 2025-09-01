@@ -41,36 +41,38 @@ describe('GerenciarRegistrosComponent', () => {
 
     component.carregarAgendamentos();
 
-    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith();
+    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(undefined, undefined, undefined);
     expect(component.todosRegistros).toEqual(registros);
     expect(aplicarFiltrosSpy).toHaveBeenCalled();
     expect(snackBar.open).not.toHaveBeenCalled();
   });
 
-  it('filtra registros por diferentes intervalos de datas', () => {
-    component.todosRegistros = [
-      { data: '2024-01-10', hora: '08:00' } as any,
-      { data: '2024-01-11', hora: '15:00' } as any,
-      { data: '2024-01-12', hora: '09:30' } as any
-    ];
+  it('envia datas formatadas ao buscar registros por intervalo', () => {
+    const registrosJan10 = [{ data: '2024-01-10', hora: '08:00' } as any];
+    agendamentoService.listarAgendamentosAdmin.and.returnValue(of(registrosJan10));
 
-    // Intervalo de 10 a 11 de janeiro
     component.filtros.dataInicio = new Date('2024-01-10');
-    component.filtros.dataFim = new Date('2024-01-11');
-    component.aplicarFiltros();
-    expect(component.dataSource.data.map(r => r.data)).toEqual([
-      '2024-01-11',
+    component.filtros.dataFim = new Date('2024-01-10');
+    component.carregarAgendamentos();
+    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(
+      undefined,
+      '2024-01-10',
       '2024-01-10'
-    ]);
+    );
+    expect(component.todosRegistros).toEqual(registrosJan10);
 
-    // Intervalo de 11 a 12 de janeiro
+    const registrosJan11 = [{ data: '2024-01-11', hora: '09:00' } as any];
+    agendamentoService.listarAgendamentosAdmin.and.returnValue(of(registrosJan11));
+
     component.filtros.dataInicio = new Date('2024-01-11');
     component.filtros.dataFim = new Date('2024-01-12');
-    component.aplicarFiltros();
-    expect(component.dataSource.data.map(r => r.data)).toEqual([
-      '2024-01-12',
-      '2024-01-11'
-    ]);
+    component.carregarAgendamentos();
+    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(
+      undefined,
+      '2024-01-11',
+      '2024-01-12'
+    );
+    expect(component.todosRegistros).toEqual(registrosJan11);
   });
 });
 

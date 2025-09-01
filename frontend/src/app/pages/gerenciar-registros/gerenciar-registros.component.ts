@@ -81,18 +81,31 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   carregarAgendamentos(): void {
-    this.agendamentoService.listarAgendamentosAdmin().subscribe({
-      next: agendamentos => {
-        this.todosRegistros = agendamentos.sort((a, b) => compararDesc(a, b));
-        this.aplicarFiltros();
-      },
-      error: err => {
-        this.logger.error('Erro ao carregar agendamentos:', err);
-        this.snackBar.open('Erro ao carregar agendamentos', 'Fechar', {
-          duration: SNACKBAR_DURATION
-        });
-      }
-    });
+    const dataInicio = this.filtros.dataInicio
+      ? this.datePipe.transform(this.filtros.dataInicio, 'yyyy-MM-dd') || undefined
+      : undefined;
+    const dataFim = this.filtros.dataFim
+      ? this.datePipe.transform(this.filtros.dataFim, 'yyyy-MM-dd') || undefined
+      : undefined;
+
+    this.agendamentoService
+      .listarAgendamentosAdmin(undefined, dataInicio, dataFim)
+      .subscribe({
+        next: agendamentos => {
+          this.todosRegistros = agendamentos.sort((a, b) => compararDesc(a, b));
+          this.aplicarFiltros();
+        },
+        error: err => {
+          this.logger.error('Erro ao carregar agendamentos:', err);
+          this.snackBar.open('Erro ao carregar agendamentos', 'Fechar', {
+            duration: SNACKBAR_DURATION
+          });
+        }
+      });
+  }
+
+  onDateRangeChange(): void {
+    this.carregarAgendamentos();
   }
 
   aplicarFiltros(): void {
@@ -140,6 +153,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       this.filtros.status = [];
     } else if (campo === 'dataInicio' || campo === 'dataFim') {
       (this.filtros as any)[campo] = undefined;
+      this.carregarAgendamentos();
+      return;
     } else {
       (this.filtros as any)[campo] = '';
     }
@@ -152,7 +167,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     this.filtros.dataInicio = undefined;
     this.filtros.dataFim = undefined;
     this.filtros.status = [];
-    this.aplicarFiltros();
+    this.carregarAgendamentos();
   }
 
   async exportarPdf(): Promise<void> {
