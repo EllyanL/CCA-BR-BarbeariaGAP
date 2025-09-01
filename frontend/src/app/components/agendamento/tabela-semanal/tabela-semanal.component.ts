@@ -298,6 +298,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.horariosPorDia = horarios;
         this.aplicarJanelaHorarios();
         this.logger.log('Horários atualizados:', this.horariosPorDia);
+        this.cdr.markForCheck();
       },
       error: err => this.logger.error('Erro ao atualizar horários:', err)
     });
