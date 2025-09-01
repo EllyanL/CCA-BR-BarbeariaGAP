@@ -75,6 +75,7 @@ export class AgendamentoService {
     this.logger.log('Enviando para URL:', this.apiUrl);
     const payload = { ...agendamento, diaSemana: normalizeDia(agendamento.diaSemana) };
     return this.http.post<Agendamento>(this.apiUrl, payload).pipe(
+      tap(() => this.agendamentoAtualizadoSource.next()),
       tap({
         error: error => this.logger.error('❌ Erro no createAgendamento():', error)
       }),

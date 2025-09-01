@@ -83,12 +83,13 @@ export class OficiaisComponent implements OnInit {
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
-    this.horariosService.carregarHorariosDaSemana('OFICIAL').subscribe({
+    this.horariosService.startPollingHorarios(this.categoria);
+    this.horariosService.horariosPorDia$.subscribe({
       next: (horarios) => {
         this.horariosPorDia = horarios;
       },
       error: (error) => {
-        this.logger.error('Erro ao carregar horários em OficiaisComponent:', error);
+        this.logger.error('Erro ao atualizar horários em OficiaisComponent:', error);
       }
     });
 
