@@ -162,7 +162,8 @@ public class HorarioService {
                             LocalDate.now());
             if (agendamento.isPresent()) {
                 dto.setUsuarioId(agendamento.get().getMilitar().getId());
-                if (!"CANCELADO".equalsIgnoreCase(agendamento.get().getStatus())) {
+                if (!List.of("CANCELADO", "ADMIN_CANCELADO")
+                        .contains(agendamento.get().getStatus().toUpperCase())) {
                     status = "AGENDADO";
                 }
             }
