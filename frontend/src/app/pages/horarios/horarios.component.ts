@@ -788,34 +788,53 @@ import { UserService } from 'src/app/services/user.service';
     desmarcarAgendamento(agendamento: Agendamento): void {
       if (!agendamento?.id) return;
 
-      this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe({
-        next: () => {
-          this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
+      (this.agendamentoService.cancelarAgendamento(agendamento.id) as any)
+        .pipe(
+          concatMap(() => {
+            const dia = normalizeDia(agendamento.diaSemana);
+            const hora = normalizeHora(agendamento.hora);
+            const slot = (this.horariosPorDia[dia] || []).find(s => s.horario === hora);
+            const slotId = slot?.id;
+            if (!slotId) {
+              return of(null);
+            }
+            return this.horariosService.alterarStatusHorario(slotId, 'DISPONIVEL');
+          })
+        )
+        .subscribe({
+          next: (horarioAtualizado: any) => {
+            this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
 
-          const dia = normalizeDia(agendamento.diaSemana);
-          const hora = normalizeHora(agendamento.hora);
+            if (horarioAtualizado) {
+              const diaAtualizado = normalizeDia(horarioAtualizado.dia ?? agendamento.diaSemana);
+              const horaAtualizada = normalizeHora(horarioAtualizado.horario ?? agendamento.hora);
+              const slotsDia = this.horariosPorDia[diaAtualizado] || [];
+              const slotIndex = slotsDia.findIndex(s => s.horario === horaAtualizada);
+              if (slotIndex !== -1) {
+                slotsDia[slotIndex] = {
+                  ...slotsDia[slotIndex],
+                  status: 'DISPONIVEL',
+                  usuarioId: horarioAtualizado.usuarioId,
+                  id: horarioAtualizado.id,
+                };
+                this.horariosPorDia[diaAtualizado] = [...slotsDia];
+                this.horariosPorDia = { ...this.horariosPorDia };
+              }
+            }
 
-          const slotsDia = this.horariosPorDia[dia] || [];
-          const slotIndex = slotsDia.findIndex(s => s.horario === hora);
-          if (slotIndex !== -1) {
-            slotsDia[slotIndex] = { ...slotsDia[slotIndex], status: 'DISPONIVEL' };
-            this.horariosPorDia[dia] = [...slotsDia];
-            this.horariosPorDia = { ...this.horariosPorDia };
+            this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
+
+            this.saveAgendamentos();
+            this.carregarAgendamentos();
+            this.carregarHorariosDaSemana();
+            this.cdr.markForCheck();
+          },
+          error: (error: any) => {
+            this.logger.error('Erro ao desmarcar agendamento:', error);
+            const message = error?.error?.message || 'Não foi possível desmarcar o agendamento. Tente novamente.';
+            this.snackBar.open(message, 'Ciente', { duration: 5000 });
           }
-
-          this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
-
-          this.saveAgendamentos();
-          this.carregarAgendamentos();
-          this.carregarHorariosDaSemana();
-          this.cdr.markForCheck();
-        },
-        error: (error: any) => {
-          this.logger.error('Erro ao desmarcar agendamento:', error);
-          const message = error?.error?.message || 'Não foi possível desmarcar o agendamento. Tente novamente.';
-          this.snackBar.open(message, 'Ciente', { duration: 5000 });
-        }
-      });
+        });
     }
     
   converterParaDataISO(diaSemanaComData: string): string {
