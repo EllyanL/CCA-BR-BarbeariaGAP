@@ -58,3 +58,11 @@
 .status-indisponivel {
   color: #9e9e9e;
 }
+
+.status-realizado {
+  color: #4caf50;
+}
+
+.status-cancelado {
+  color: #f44336;
+}
