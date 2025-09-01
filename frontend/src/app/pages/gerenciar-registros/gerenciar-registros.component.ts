@@ -114,8 +114,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const inicio = this.filtros.dataInicio ? this.normalizarData00(this.filtros.dataInicio) : undefined;
       const fim = this.filtros.dataFim ? this.normalizarData2359(this.filtros.dataFim) : undefined;
       filtrados = filtrados.filter(a => {
-        const data = new Date(a.data!);
-        data.setHours(0, 0, 0, 0);
+        const [y, m, d] = a.data!.split('-').map(Number);
+        const data = new Date(y, m - 1, d);
         return (!inicio || data >= inicio) && (!fim || data <= fim);
       });
     }
