@@ -33,13 +33,16 @@ public class HorarioService {
     private final AgendamentoRepository agendamentoRepository;
 
     private final ConfiguracaoAgendamentoService configuracaoAgendamentoService;
+    private final AgendamentoService agendamentoService;
 
     public HorarioService(HorarioRepository horarioRepository,
                           AgendamentoRepository agendamentoRepository,
-                          ConfiguracaoAgendamentoService configuracaoAgendamentoService) {
+                          ConfiguracaoAgendamentoService configuracaoAgendamentoService,
+                          AgendamentoService agendamentoService) {
         this.horarioRepository = horarioRepository;
         this.agendamentoRepository = agendamentoRepository;
         this.configuracaoAgendamentoService = configuracaoAgendamentoService;
+        this.agendamentoService = agendamentoService;
     }
 
     private void validarHorarioDentroIntervalo(LocalTime hora) {
@@ -276,6 +279,27 @@ public class HorarioService {
         validarHorarioDentroIntervalo(hora);
         validarIncrementoMeiaHora(hora);
         return horarioRepository.save(horario);
+    }
+
+    @Transactional
+    public HorarioDTO liberarHorario(Long horarioId) {
+        Horario horario = horarioRepository.findById(horarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Horário não encontrado para o ID: " + horarioId));
+
+        agendamentoRepository.findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
+                        horario.getHorario(),
+                        horario.getDia(),
+                        horario.getCategoria(),
+                        LocalDate.now())
+                .ifPresent(agendamento -> {
+                    String status = agendamento.getStatus();
+                    if (!"CANCELADO".equalsIgnoreCase(status) && !"ADMIN_CANCELADO".equalsIgnoreCase(status)) {
+                        agendamentoService.cancelarAgendamento(agendamento.getId(), "ADMIN");
+                    }
+                });
+
+        horario.setStatus(HorarioStatus.DISPONIVEL);
+        return new HorarioDTO(horarioRepository.save(horario));
     }
 
     @Transactional
