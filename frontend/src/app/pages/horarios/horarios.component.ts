@@ -732,7 +732,6 @@ import { UserService } from 'src/app/services/user.service';
           }
 
           this.horariosService.atualizarHorarios(this.horariosPorDia);
-          this.carregarHorariosDaSemana();
           this.cdr.markForCheck();
         }
       });
