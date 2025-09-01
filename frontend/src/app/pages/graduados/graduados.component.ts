@@ -41,13 +41,14 @@ export class GraduadosComponent implements OnInit {
 
   ngOnInit(): void {
     this.isAdmin = this.authService.isAdmin();
-    this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
+    this.horariosService.startPollingHorarios(this.categoria);
+    this.horariosService.horariosPorDia$.subscribe({
       next: (horarios) => {
         this.horariosPorDia = horarios;
         this.logger.log('Horários recebidos:', this.horariosPorDia);
       },
       error: (err) => {
-        this.logger.error('Erro ao carregar horários:', err);
+        this.logger.error('Erro ao atualizar horários:', err);
       }
     });
 
