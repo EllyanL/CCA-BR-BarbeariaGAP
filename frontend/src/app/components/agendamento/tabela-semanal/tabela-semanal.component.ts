@@ -718,13 +718,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   getDataFromDiaSemana(diaSemanaComData: string): string {
     const partes = diaSemanaComData.split(' - ');
     if (partes.length < 2) return ''; // segurança
-  
+
     const [_, dataStr] = partes; // exemplo: "03/06"
     const [dia, mes] = dataStr.split('/').map(Number);
     const anoAtual = new Date().getFullYear();
-    const data = new Date(anoAtual, mes - 1, dia);
-  
-    return data.toISOString().split('T')[0]; // "yyyy-MM-dd"
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    return `${anoAtual}-${pad(mes)}-${pad(dia)}`;
   }
 
   trackByIndex(index: number, _item: any): number {

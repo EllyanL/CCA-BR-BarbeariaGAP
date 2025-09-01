@@ -847,8 +847,8 @@ import { UserService } from 'src/app/services/user.service';
     const [_, dataStr] = partes;
     const [dia, mes] = dataStr.split('/').map(Number);
     const anoAtual = new Date().getFullYear();
-    const data = new Date(anoAtual, mes - 1, dia);
-    return data.toISOString().split('T')[0];
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${anoAtual}-${pad(mes)}-${pad(dia)}`;
   }
 
 
