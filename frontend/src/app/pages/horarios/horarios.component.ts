@@ -396,6 +396,11 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     adicionarHorarioBase(): void {
+      if (this.diaSelecionado !== 'todos') {
+        this.adicionarHorarioDia();
+        return;
+      }
+
       if (!this.horarioValido || !this.horarioPersonalizado) {
         this.snackBar.open(
           'Digite um horário válido (HH:mm) antes de confirmar.',
@@ -407,13 +412,9 @@ import { UserService } from 'src/app/services/user.service';
 
       const horario = this.horarioPersonalizado;
       const categoria = this.categoriaSelecionada;
-      const diasAlvo: DiaKey[] = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado as DiaKey];
+      const diasAlvo: DiaKey[] = this.diasDaSemana;
 
-      const requisicao$: Observable<any> = diasAlvo.length > 1
-        ? this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria)
-        : this.horariosService.adicionarHorarioBase(horario, this.diaSelecionado as DiaKey, categoria);
-
-      requisicao$.subscribe({
+      this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
         next: () => {
           const base = this.horariosBasePorCategoria[categoria] || [];
           if (!base.includes(horario)) {
@@ -423,15 +424,13 @@ import { UserService } from 'src/app/services/user.service';
             this.ordenarHorarios();
           }
           this.carregarHorariosDaSemana();
-          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.getDiaLabel(this.diaSelecionado)}`;
-          this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em ${msgDias}.`, 'Ciente', { duration: SNACKBAR_DURATION });
+          this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em todos os dias.`, 'Ciente', { duration: SNACKBAR_DURATION });
           this.horarioPersonalizado = '';
           this.horarioValido = false;
         },
         error: (error: any) => {
           this.logger.error('Erro ao adicionar horário:', error);
-          const msgDias = diasAlvo.length > 1 ? 'os dias selecionados' : 'o dia escolhido';
-          this.snackBar.open(`Não foi possível adicionar o horário nos ${msgDias}.`, 'Ciente', { duration: 5000 });
+          this.snackBar.open('Não foi possível adicionar o horário nos dias selecionados.', 'Ciente', { duration: 5000 });
         }
       });
     }
@@ -511,20 +510,21 @@ import { UserService } from 'src/app/services/user.service';
     
     // Remove horário definitivamente usando o endpoint `/remover`
     removerHorarioBase(): void {
-      if (!this.diaSelecionado || !this.horarioPersonalizado) {
-        this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: SNACKBAR_DURATION });
+      if (this.diaSelecionado !== 'todos') {
+        this.removerHorarioDia();
+        return;
+      }
+
+      if (!this.horarioPersonalizado) {
+        this.snackBar.open('Selecione o horário que deseja remover.', 'Ciente', { duration: SNACKBAR_DURATION });
         return;
       }
 
       const horario = this.horarioPersonalizado;
       const categoria = this.categoriaSelecionada;
-      const diasAlvo: DiaKey[] = this.diaSelecionado === 'todos' ? this.diasDaSemana : [this.diaSelecionado as DiaKey];
+      const diasAlvo: DiaKey[] = this.diasDaSemana;
 
-      const requisicao$: Observable<any> = diasAlvo.length > 1
-        ? this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria)
-        : this.horariosService.removerHorarioBase(horario, this.diaSelecionado as DiaKey, categoria);
-
-      requisicao$.subscribe({
+      this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
         next: () => {
           const base = (this.horariosBasePorCategoria[categoria] || []).filter(h => h !== horario);
           this.horariosBasePorCategoria[categoria] = base;
@@ -538,13 +538,37 @@ import { UserService } from 'src/app/services/user.service';
           this.horariosPorDia = { ...this.horariosPorDia };
           this.cdr.markForCheck();
           this.carregarHorariosDaSemana();
-          const msgDias = diasAlvo.length > 1 ? 'todos os dias' : `o dia ${this.getDiaLabel(this.diaSelecionado)}`;
-          this.snackBar.open(`Horário removido com sucesso de ${msgDias}.`, 'Ciente', { duration: SNACKBAR_DURATION });
+          this.snackBar.open('Horário removido com sucesso de todos os dias.', 'Ciente', { duration: SNACKBAR_DURATION });
         },
         error: (err: any) => {
           this.logger.error('Erro ao remover horário:', err);
-          const msgDias = diasAlvo.length > 1 ? 'os dias selecionados' : 'o dia escolhido';
-          this.snackBar.open(`Falha ao remover o horário dos ${msgDias}.`, 'Ciente', { duration: SNACKBAR_DURATION });
+          this.snackBar.open('Falha ao remover o horário dos dias selecionados.', 'Ciente', { duration: SNACKBAR_DURATION });
+        }
+      });
+    }
+
+    removerHorarioDia(): void {
+      if (!this.horarioValido || !this.horarioPersonalizado) {
+        this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: SNACKBAR_DURATION });
+        return;
+      }
+
+      const horario = this.horarioPersonalizado;
+      const dia = this.diaSelecionado as DiaKey;
+      const categoria = this.categoriaSelecionada;
+
+      this.horariosService.removerHorarioBase(horario, dia, categoria).subscribe({
+        next: () => {
+          this.snackBar.open(`Horário ${horario} removido de ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: SNACKBAR_DURATION });
+          this.carregarHorariosDaSemana();
+          this.carregarHorariosBase();
+          this.horarioPersonalizado = '';
+          this.horarioValido = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          this.logger.error('Erro ao remover horário do dia:', err);
+          this.snackBar.open(err.message || 'Erro ao remover horário.', 'Ciente', { duration: 5000 });
         }
       });
     }
