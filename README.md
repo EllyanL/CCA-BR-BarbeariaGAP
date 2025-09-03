@@ -15,11 +15,14 @@ Frontend (Angular) → API (Spring Boot) → Banco PostgreSQL
 
 ## Estrutura do Projeto
 fab-barbearia-gap/
-├── backend/ # API Spring Boot
-├── frontend/ # Aplicação Angular
-├── docs/ # Notas e instruções extras
-├── start-dev.sh # Executa backend e frontend em modo dev
-└── build-prod.sh # Gera build Angular e inicia o backend
+├── backend/           # API Spring Boot
+│   └── Dockerfile     # Configura a imagem Docker do backend
+├── frontend/          # Aplicação Angular
+├── docs/              # Notas e instruções extras
+│   └── ANOTATIONS.md  # Passo a passo para o admin gerenciar horários
+├── start-dev.sh       # Executa backend e frontend em modo dev
+├── build-prod.sh      # Gera build Angular e inicia o backend
+└── format-code.sh     # Formata o código do projeto
 
 ## Pré-requisitos
 - **JDK**: versão 18 ou superior.
@@ -189,4 +192,5 @@ definições de banco de dados) antes de rodar os testes.
 - **Erros de build do frontend**: remova `node_modules` e execute `npm install` novamente.
 
 ## Documentação
-Informações detalhadas sobre regras de agendamento e desenvolvimento estão em `docs/ANOTATIONS.md`.
+Informações detalhadas sobre regras de agendamento e desenvolvimento estão em `docs/ANOTATIONS.md`,
+que descreve passo a passo o gerenciamento de horários pelo administrador.
