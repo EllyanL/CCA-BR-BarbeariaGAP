@@ -27,8 +27,8 @@
       </mat-list-item>
     </mat-list>
   </mat-card-content>
+  <mat-checkbox [(ngModel)]="naoMostrarNovamente">Não mostrar novamente</mat-checkbox>
   <mat-dialog-actions align="end" class="orientacoes-card__actions">
-    <button mat-button color="primary" (click)="onAgendar()">Agendar</button>
-    <button mat-button [mat-dialog-close]="true" color="primary">Ciente</button>
+    <button mat-button color="primary" (click)="onCiente()">Ciente</button>
   </mat-dialog-actions>
 </mat-card>

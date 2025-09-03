@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule } from '@angular/forms';
 
 import { OrientacoesComponent } from './orientacoes.component';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
@@ -23,11 +25,18 @@ describe('OrientacoesComponent', () => {
 
     TestBed.configureTestingModule({
       declarations: [OrientacoesComponent],
-      imports: [MatDialogModule, MatCardModule, MatIconModule, MatListModule, MatButtonModule],
+      imports: [
+        MatDialogModule,
+        MatCardModule,
+        MatIconModule,
+        MatListModule,
+        MatButtonModule,
+        MatCheckboxModule,
+        FormsModule,
+      ],
       providers: [
         { provide: ConfiguracoesAgendamentoService, useValue: configService },
-        { provide: MatDialogRef, useValue: dialogRefSpy },
-        { provide: MAT_DIALOG_DATA, useValue: { destino: '/graduado' } }
+        { provide: MatDialogRef, useValue: dialogRefSpy }
       ]
     });
     fixture = TestBed.createComponent(OrientacoesComponent);
@@ -44,10 +53,11 @@ describe('OrientacoesComponent', () => {
     expect(compiled.textContent).toContain('das 09:00 às 18:00');
   });
 
-  it('emite destino ao agendar', () => {
-    spyOn(component.navigate, 'emit');
-    component.onAgendar();
-    expect(component.navigate.emit).toHaveBeenCalledWith('/graduado');
+  it('salva preferencia quando marcado', () => {
+    spyOn(localStorage, 'setItem');
+    component.naoMostrarNovamente = true;
+    component.onCiente();
+    expect(localStorage.setItem).toHaveBeenCalledWith('orientacoesOcultas', 'true');
     expect(dialogRefSpy.close).toHaveBeenCalled();
   });
 });

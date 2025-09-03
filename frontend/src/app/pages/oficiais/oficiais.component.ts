@@ -93,8 +93,10 @@ export class OficiaisComponent implements OnInit {
       }
     });
 
-    this.dialog.open(OrientacoesComponent, {
-      enterAnimationDuration: '1000ms'
-    });
+    if (!localStorage.getItem('orientacoesOcultas')) {
+      this.dialog.open(OrientacoesComponent, {
+        enterAnimationDuration: '1000ms'
+      });
+    }
   }
 }

@@ -1,5 +1,5 @@
-import { Component, OnInit, Output, EventEmitter, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Component, OnInit } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from 'src/app/services/configuracoes-agendamento.service';
 
 @Component({
@@ -64,13 +64,11 @@ import { ConfiguracoesAgendamentoService, ConfiguracaoAgendamento } from 'src/ap
 export class OrientacoesComponent implements OnInit {
   horarioInicio?: string;
   horarioFim?: string;
-
-  @Output() navigate = new EventEmitter<string>();
+  naoMostrarNovamente = false;
 
   constructor(
     private configService: ConfiguracoesAgendamentoService,
-    private dialogRef: MatDialogRef<OrientacoesComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { destino?: string }
+    private dialogRef: MatDialogRef<OrientacoesComponent>
   ) {}
 
   ngOnInit(): void {
@@ -80,9 +78,10 @@ export class OrientacoesComponent implements OnInit {
     });
   }
 
-  onAgendar(): void {
-    const destino = this.data?.destino || '/graduado';
-    this.navigate.emit(destino);
+  onCiente(): void {
+    if (this.naoMostrarNovamente) {
+      localStorage.setItem('orientacoesOcultas', 'true');
+    }
     this.dialogRef.close();
   }
 }
