@@ -49,7 +49,7 @@
                 Adicionar
               </button>
               <button mat-raised-button color="warn"
-                (click)="diaSelecionado === 'todos' ? removerHorarioBase() : removerHorarioDia()"
+                (click)="removerHorarioBase()"
                 [disabled]="!horarioValido || !horarioPersonalizado">
                 Remover
               </button>
