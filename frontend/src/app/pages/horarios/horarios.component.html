@@ -144,7 +144,7 @@
         </tbody>
       </table>
       </div>
-      <div *ngIf="!horariosBaseSemana.length || isHorariosEmpty()" class="no-horarios">
+      <div *ngIf="(horariosBaseSemana?.length ?? 0) === 0 || isHorariosEmpty()" class="no-horarios">
         Nenhum horário encontrado
       </div>
     </mat-card-content>
