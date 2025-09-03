@@ -21,6 +21,13 @@ fab-barbearia-gap/
 ├── start-dev.sh # Executa backend e frontend em modo dev
 └── build-prod.sh # Gera build Angular e inicia o backend
 
+## Pré-requisitos
+- **JDK**: versão 18 ou superior.
+- **Maven**: 3.8 ou superior (o wrapper `./mvnw` baixa o Maven e as dependências automaticamente).
+- **Node.js**: versão 18 ou superior com **npm** 9 ou superior.
+- **Angular CLI**: versão 16 ou superior (`npm install -g @angular/cli`).
+
+O wrapper `./mvnw` e o comando `npm install` cuidam do download automático de todas as dependências do backend e do frontend.
 
 ## Setup do Ambiente
 ### Desenvolvimento com script
