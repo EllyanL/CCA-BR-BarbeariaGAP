@@ -483,6 +483,11 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     adicionarHorarioIndividual(dia: DiaKey, horario: string, categoria: string): void { //Adiciona horário fixo na base
+      if (this.diaSelecionado === 'todos') {
+        this.snackBar.open('Selecione um dia específico para disponibilizar horários.', 'Ciente', { duration: SNACKBAR_DURATION });
+        return;
+      }
+
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: () => {
           // Garante que ele exista na base da semana da categoria
@@ -591,6 +596,11 @@ import { UserService } from 'src/app/services/user.service';
   }
 
   toggleHorario(dia: string, hhmm: string): void {
+    if (this.diaSelecionado === 'todos') {
+      this.snackBar.open('Selecione um dia específico antes de alterar a disponibilidade.', 'Ciente', { duration: SNACKBAR_DURATION });
+      return;
+    }
+
     const slot = this.getSlot(dia, hhmm);
     if (!slot?.id) {
       return;
