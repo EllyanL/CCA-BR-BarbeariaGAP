@@ -43,11 +43,13 @@
                 </mat-error>
               </mat-form-field>
 
-              <button mat-raised-button color="primary" (click)="adicionarHorarioBase()"
+              <button mat-raised-button color="primary"
+                (click)="diaSelecionado === 'todos' ? adicionarHorarioBase() : adicionarHorarioDia()"
                 [disabled]="!horarioValido || !horarioPersonalizado">
                 Adicionar
               </button>
-              <button mat-raised-button color="warn" (click)="removerHorarioBase()"
+              <button mat-raised-button color="warn"
+                (click)="diaSelecionado === 'todos' ? removerHorarioBase() : removerHorarioDia()"
                 [disabled]="!horarioValido || !horarioPersonalizado">
                 Remover
               </button>
