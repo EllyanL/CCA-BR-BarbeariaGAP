@@ -67,22 +67,35 @@ Defina no sistema as seguintes variáveis antes de rodar o backend:
 
 | Variável              | Descrição                               | Obrigatória? |
 | --------------------- | --------------------------------------- | ------------ |
-| `DB_URL`              | URL JDBC do banco PostgreSQL            |              |
-| `DB_DRIVER_CLASS`     | Classe do driver JDBC (opcional)        |              |
-| `DB_USERNAME`         | Usuário do banco                        |              |
+| `DB_URL`              | URL JDBC do banco PostgreSQL            | Não          |
+| `DB_DRIVER_CLASS`     | Classe do driver JDBC                   | Não          |
+| `DB_USERNAME`         | Usuário do banco                        | Não          |
 | `DB_PASSWORD`         | Senha do banco                          | Sim          |
 | `JWT_SECRET`          | Chave para assinar tokens JWT           | Sim          |
-| `LDAP_BASE`           | Base de pesquisa do servidor LDAP       |              |
-| `LDAP_URL`            | URL do servidor LDAP                    |              |
-| `WEBSERVICE_API_URL`  | URL base do WebService CCABR            |              |
-| `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService |              |
+| `LDAP_BASE`           | Base de pesquisa do servidor LDAP       | Não          |
+| `LDAP_URL`            | URL do servidor LDAP                    | Não          |
+| `WEBSERVICE_API_URL`  | URL base do WebService CCABR            | Não          |
+| `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService | Não          |
 | `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   | Sim          |
 
-As variáveis `DB_PASSWORD`, `JWT_SECRET` e `WEBSERVICE_PASSWORD` devem
-ser definidas no ambiente; valores padrão não são fornecidos por
-questões de segurança. A configuração utiliza `application.yml` com
-perfis (`dev`, `prod`) para definir valores seguros para os demais
-parâmetros.
+Valores padrão (definidos em `application.yml`):
+
+- `DB_URL`: `jdbc:postgresql://localhost:5432/barbearia`
+- `DB_DRIVER_CLASS`: `org.postgresql.Driver`
+- `DB_USERNAME`: `postgres`
+- `JWT_SECRET`: `dev-secret` (apenas para desenvolvimento)
+- `LDAP_BASE`: `ou=contas,dc=fab,dc=intraer`
+- `LDAP_URL`: `ldap://10.228.64.168:389`
+- `WEBSERVICE_API_URL`: `http://webservice.ccabr.intraer/api/`
+- `WEBSERVICE_USERNAME`: `barbearia`
+
+As variáveis `DB_PASSWORD`, `JWT_SECRET` e `WEBSERVICE_PASSWORD` são
+obrigatórias e devem ser definidas no ambiente; para `JWT_SECRET`, o
+valor padrão `dev-secret` serve apenas para desenvolvimento e não deve
+ser usado em produção. As demais variáveis são opcionais e podem usar os
+valores padrão acima ou serem sobrescritas conforme necessário. A
+configuração utiliza `application.yml` com perfis (`dev`, `prod`) para
+definir valores seguros para cada ambiente.
 
 Valores de exemplo podem ser vistos em
 `backend/src/main/resources/application-dev.yml`
