@@ -2,11 +2,12 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/c
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { getCookie } from '../utils/cookie.util';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = localStorage.getItem('barbearia-token') || sessionStorage.getItem('barbearia-token');
+    const token = getCookie('barbearia-token');
 
     if (token) {
       const cloned = req.clone({

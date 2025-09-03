@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { SlotHorario, HorariosPorDia } from '../models/slot-horario';
 import { normalizeHorariosPorDia } from '../utils/horarios-utils';
 import { normalizeDia, DiaKey } from '../shared/dias.util';
+import { getCookie } from '../utils/cookie.util';
 
 interface HorarioResponse {
   mensagem: string;
@@ -350,7 +351,7 @@ export class HorariosService {
     );
   }
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('barbearia-token') || sessionStorage.getItem('barbearia-token');
+    const token = getCookie('barbearia-token');
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
