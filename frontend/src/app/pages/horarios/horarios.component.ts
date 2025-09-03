@@ -41,6 +41,7 @@ import { UserService } from 'src/app/services/user.service';
 
     diasDaSemana: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
     diasParaSelecao: (DiaKey | 'todos')[] = ['todos', ...this.diasDaSemana];
+    horariosBasePorCategoria: Record<string, string[]> = {};
     horariosBaseSemana: string[] = [];
     diaSelecionado: DiaKey | 'todos' = 'segunda';
     horariosPorDia: HorariosPorDia = this.diasDaSemana.reduce((acc, dia) => {
@@ -142,7 +143,9 @@ import { UserService } from 'src/app/services/user.service';
         const m = this.toMinutes(h);
         return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
       };
-      this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(inRange);
+      const baseAtual = (this.horariosBasePorCategoria[this.categoriaSelecionada] || []).filter(inRange);
+      this.horariosBasePorCategoria[this.categoriaSelecionada] = baseAtual;
+      this.horariosBaseSemana = baseAtual;
       (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
         const arr: SlotHorario[] = this.horariosPorDia[dia] || [];
         this.horariosPorDia[dia] = arr.filter((h: SlotHorario) => inRange(h.horario));
@@ -330,6 +333,7 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     onCategoriaChange(): void {
+      this.horariosBaseSemana = this.horariosBasePorCategoria[this.categoriaSelecionada] ?? [];
       this.loadHorarios();
     }
 
@@ -355,6 +359,7 @@ import { UserService } from 'src/app/services/user.service';
             slots.push(`${hh}:${mm}`);
           }
 
+          this.horariosBasePorCategoria[this.categoriaSelecionada] = slots;
           this.horariosBaseSemana = slots;
           this.aplicarJanelaHorarios();
           this.ordenarHorarios();
@@ -410,8 +415,11 @@ import { UserService } from 'src/app/services/user.service';
 
       requisicao$.subscribe({
         next: () => {
-          if (!this.horariosBaseSemana.includes(horario)) {
-            this.horariosBaseSemana.push(horario);
+          const base = this.horariosBasePorCategoria[categoria] || [];
+          if (!base.includes(horario)) {
+            base.push(horario);
+            this.horariosBasePorCategoria[categoria] = base;
+            this.horariosBaseSemana = base;
             this.ordenarHorarios();
           }
           this.carregarHorariosDaSemana();
@@ -478,9 +486,12 @@ import { UserService } from 'src/app/services/user.service';
     adicionarHorarioIndividual(dia: DiaKey, horario: string, categoria: string): void { //Adiciona horário fixo na base
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: () => {
-          // Garante que ele exista na base da semana
-          if (!this.horariosBaseSemana.includes(horario)) {
-            this.horariosBaseSemana.push(horario);
+          // Garante que ele exista na base da semana da categoria
+          const base = this.horariosBasePorCategoria[categoria] || [];
+          if (!base.includes(horario)) {
+            base.push(horario);
+            this.horariosBasePorCategoria[categoria] = base;
+            this.horariosBaseSemana = base;
             this.ordenarHorarios();
           }
 
@@ -515,7 +526,9 @@ import { UserService } from 'src/app/services/user.service';
 
       requisicao$.subscribe({
         next: () => {
-          this.horariosBaseSemana = this.horariosBaseSemana.filter(h => h !== horario);
+          const base = (this.horariosBasePorCategoria[categoria] || []).filter(h => h !== horario);
+          this.horariosBasePorCategoria[categoria] = base;
+          this.horariosBaseSemana = base;
           diasAlvo.forEach(dia => {
             const diaKey = normalizeDia(dia);
             if (this.horariosPorDia[diaKey]) {
