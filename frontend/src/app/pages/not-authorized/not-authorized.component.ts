@@ -32,6 +32,7 @@ import { Component } from '@angular/core';
       width: 500px;
       text-align: center;
       padding: 3rem;
+      color: #000;
     }
 
     .error-number {
@@ -58,6 +59,7 @@ import { Component } from '@angular/core';
 
     mat-card-content {
       font-size: 1rem;
+      color: #000;
     }
 
     a {
