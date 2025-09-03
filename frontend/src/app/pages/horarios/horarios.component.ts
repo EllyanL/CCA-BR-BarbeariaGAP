@@ -515,11 +515,6 @@ import { UserService } from 'src/app/services/user.service';
     
     // Remove horário definitivamente usando o endpoint `/remover`
     removerHorarioBase(): void {
-      if (this.diaSelecionado !== 'todos') {
-        this.removerHorarioDia();
-        return;
-      }
-
       if (!this.horarioPersonalizado) {
         this.snackBar.open('Selecione o horário que deseja remover.', 'Ciente', { duration: SNACKBAR_DURATION });
         return;
@@ -527,55 +522,51 @@ import { UserService } from 'src/app/services/user.service';
 
       const horario = this.horarioPersonalizado;
       const categoria = this.categoriaSelecionada;
-      const diasAlvo: DiaKey[] = this.diasDaSemana;
 
-      this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
-        next: () => {
-          const base = (this.horariosBasePorCategoria[categoria] || []).filter(h => h !== horario);
-          this.horariosBasePorCategoria[categoria] = base;
-          this.horariosBaseSemana = base;
-          diasAlvo.forEach(dia => {
+      if (this.diaSelecionado === 'todos') {
+        const diasAlvo: DiaKey[] = this.diasDaSemana;
+        this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
+          next: () => {
+            const base = (this.horariosBasePorCategoria[categoria] || []).filter(h => h !== horario);
+            this.horariosBasePorCategoria[categoria] = base;
+            this.horariosBaseSemana = base;
+            diasAlvo.forEach(dia => {
+              const diaKey = normalizeDia(dia);
+              if (this.horariosPorDia[diaKey]) {
+                this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
+              }
+            });
+            this.horariosPorDia = { ...this.horariosPorDia };
+            this.cdr.markForCheck();
+            this.carregarHorariosDaSemana();
+            this.snackBar.open('Horário removido com sucesso de todos os dias.', 'Ciente', { duration: SNACKBAR_DURATION });
+          },
+          error: (err: any) => {
+            this.logger.error('Erro ao remover horário:', err);
+            this.snackBar.open('Falha ao remover o horário dos dias selecionados.', 'Ciente', { duration: SNACKBAR_DURATION });
+          }
+        });
+      } else {
+        const dia = this.diaSelecionado as DiaKey;
+        this.horariosService.removerHorarioBase(horario, dia, categoria).subscribe({
+          next: () => {
             const diaKey = normalizeDia(dia);
             if (this.horariosPorDia[diaKey]) {
               this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
             }
-          });
-          this.horariosPorDia = { ...this.horariosPorDia };
-          this.cdr.markForCheck();
-          this.carregarHorariosDaSemana();
-          this.snackBar.open('Horário removido com sucesso de todos os dias.', 'Ciente', { duration: SNACKBAR_DURATION });
-        },
-        error: (err: any) => {
-          this.logger.error('Erro ao remover horário:', err);
-          this.snackBar.open('Falha ao remover o horário dos dias selecionados.', 'Ciente', { duration: SNACKBAR_DURATION });
-        }
-      });
-    }
-
-    removerHorarioDia(): void {
-      if (!this.horarioValido || !this.horarioPersonalizado) {
-        this.snackBar.open('Selecione o dia e o horário que deseja remover.', 'Ciente', { duration: SNACKBAR_DURATION });
-        return;
+            this.horariosPorDia = { ...this.horariosPorDia };
+            this.carregarHorariosDaSemana();
+            this.horarioPersonalizado = '';
+            this.horarioValido = false;
+            this.cdr.markForCheck();
+            this.snackBar.open(`Horário ${horario} removido de ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: SNACKBAR_DURATION });
+          },
+          error: (err: any) => {
+            this.logger.error('Erro ao remover horário do dia:', err);
+            this.snackBar.open(err.message || 'Erro ao remover horário.', 'Ciente', { duration: 5000 });
+          }
+        });
       }
-
-      const horario = this.horarioPersonalizado;
-      const dia = this.diaSelecionado as DiaKey;
-      const categoria = this.categoriaSelecionada;
-
-      this.horariosService.removerHorarioBase(horario, dia, categoria).subscribe({
-        next: () => {
-          this.snackBar.open(`Horário ${horario} removido de ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: SNACKBAR_DURATION });
-          this.carregarHorariosDaSemana();
-          this.carregarHorariosBase();
-          this.horarioPersonalizado = '';
-          this.horarioValido = false;
-          this.cdr.markForCheck();
-        },
-        error: (err: any) => {
-          this.logger.error('Erro ao remover horário do dia:', err);
-          this.snackBar.open(err.message || 'Erro ao remover horário.', 'Ciente', { duration: 5000 });
-        }
-      });
     }
         
 
