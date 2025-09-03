@@ -36,7 +36,7 @@ describe('AuthService token decoding', () => {
       postoGrad: 'SGT'
     };
     const token = createToken(payload);
-    localStorage.setItem('barbearia-token', token);
+    document.cookie = `barbearia-token=${token}; path=/`;
 
     const militar = service.getUsuarioAutenticado();
 
@@ -46,7 +46,7 @@ describe('AuthService token decoding', () => {
       categoria: payload.categoria
     }));
 
-    localStorage.removeItem('barbearia-token');
+    document.cookie = 'barbearia-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
   });
 
   it('uses id claim when present', () => {
@@ -57,13 +57,13 @@ describe('AuthService token decoding', () => {
       categoria: 'GRADUADO'
     };
     const token = createToken(payload);
-    sessionStorage.setItem('barbearia-token', token);
+    document.cookie = `barbearia-token=${token}; path=/`;
 
     const militar = service.getUsuarioAutenticado();
 
     expect(militar?.id).toBe(99);
 
-    sessionStorage.removeItem('barbearia-token');
+    document.cookie = 'barbearia-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
   });
 
   it('extracts nomeCompleto and email when present', () => {
@@ -75,13 +75,13 @@ describe('AuthService token decoding', () => {
       email: 'email@test.com'
     };
     const token = createToken(payload);
-    localStorage.setItem('barbearia-token', token);
+    document.cookie = `barbearia-token=${token}; path=/`;
 
     const militar = service.getUsuarioAutenticado();
 
     expect(militar?.nomeCompleto).toBe(payload.nomeCompleto);
     expect(militar?.email).toBe(payload.email);
 
-    localStorage.removeItem('barbearia-token');
+    document.cookie = 'barbearia-token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
   });
 });

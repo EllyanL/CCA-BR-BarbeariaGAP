@@ -9,6 +9,7 @@ import { UserData } from '../models/user-data';
 import { UserService } from './user.service';
 import { environment } from 'src/environments/environment';
 import { jwtDecode } from 'jwt-decode';
+import { setCookie, getCookie, deleteCookie } from '../utils/cookie.util';
 
 export interface LoginResponse {
   id?: number;
@@ -58,10 +59,7 @@ export class AuthService {
           secao: response.secao || '',
           ramal: response.ramal || ''
         };
-        this.userService.setUserData([userData]);
-        if (rememberMe) {
-          localStorage.setItem('user-data', JSON.stringify([userData]));
-        }
+        this.userService.setUserData([userData], rememberMe);
       }),
       catchError(this.handleError)
     );
@@ -74,14 +72,13 @@ export class AuthService {
   }
 
   saveToken(token: string, rememberMe: boolean): void {
-    // Clear existing token and any persisted user data before saving the new token
-    localStorage.removeItem(this.tokenKey);
-    sessionStorage.removeItem(this.tokenKey);
-    localStorage.removeItem('user-data');
+    // Clear existing token and persisted user data before saving the new token
+    deleteCookie(this.tokenKey);
+    deleteCookie('user-data');
     sessionStorage.removeItem('user-data');
 
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem(this.tokenKey, token); // this.tokenKey deve ser 'barbearia-token'
+    const days = rememberMe ? 30 : undefined;
+    setCookie(this.tokenKey, token, days);
   }
 
   isAuthenticated(): boolean {
@@ -136,13 +133,12 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem('barbearia-token') || sessionStorage.getItem('barbearia-token');
+    return getCookie(this.tokenKey);
   }
   
   private clearToken(): void {
-    localStorage.removeItem(this.tokenKey);
-    sessionStorage.removeItem(this.tokenKey);
-    localStorage.removeItem('user-data');
+    deleteCookie(this.tokenKey);
+    deleteCookie('user-data');
     sessionStorage.removeItem('user-data');
   }
 

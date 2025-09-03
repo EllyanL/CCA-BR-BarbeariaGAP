@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
 import { normalizeDia, DiaKey } from '../shared/dias.util';
+import { getCookie } from '../utils/cookie.util';
 
 @Injectable({
   providedIn: 'root'
@@ -104,10 +105,10 @@ export class AgendamentoService {
   }
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('barbearia-token') || sessionStorage.getItem('barbearia-token');
+    const token = getCookie('barbearia-token');
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': token ? `Bearer ${token}` : ''
       });
   }
 
