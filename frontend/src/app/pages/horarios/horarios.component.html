@@ -93,6 +93,8 @@
                   <ng-container *ngIf="getSlot(dia, horario); else adicionar">
                     <button mat-raised-button
                             (click)="toggleHorario(dia, horario)"
+                            [disabled]="diaSelecionado === 'todos'"
+                            [matTooltip]="diaSelecionado === 'todos' ? 'Selecione um dia específico para alterar a disponibilidade.' : ''"
                             [ngClass]="{
                               'botao-hora-disponivel': getStatus(dia, horario) === 'DISPONIVEL',
                               'botao-hora-indisponivel': getStatus(dia, horario) === 'INDISPONIVEL',
@@ -110,7 +112,9 @@
                   </ng-container>
                   <ng-template #adicionar>
                     <button mat-raised-button class="botao-hora-adicionar" color="accent"
-                            (click)="adicionarHorarioIndividual(dia, horario, categoriaSelecionada)">
+                            (click)="adicionarHorarioIndividual(dia, horario, categoriaSelecionada)"
+                            [disabled]="diaSelecionado === 'todos'"
+                            [matTooltip]="diaSelecionado === 'todos' ? 'Selecione um dia específico antes de adicionar um horário.' : ''">
                       Adicionar
                     </button>
                   </ng-template>
