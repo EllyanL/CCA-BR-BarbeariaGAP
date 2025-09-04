@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class AgendamentoCreateDTO {
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate data;
 
     @NotNull
