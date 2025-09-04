@@ -13,9 +13,18 @@ import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
 import autoTable from 'jspdf-autotable';
 import jsPDF from 'jspdf';
 
+function parseDataHora(data?: string, hora?: string): number {
+  if (!data) {
+    return 0;
+  }
+  const [dia, mes, ano] = data.split('/').map(Number);
+  const [h, m] = (hora || '00:00').split(':').map(Number);
+  return new Date(ano, mes - 1, dia, h, m).getTime();
+}
+
 function compararDesc(a: Agendamento, b: Agendamento): number {
-  const dataA = new Date(`${a.data}T${a.hora}`).getTime();
-  const dataB = new Date(`${b.data}T${b.hora}`).getTime();
+  const dataA = parseDataHora(a.data, a.hora);
+  const dataB = parseDataHora(b.data, b.hora);
   return dataB - dataA;
 }
 
@@ -73,7 +82,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       this.dataSource.sortingDataAccessor = (item, property) => {
         switch (property) {
           case 'data':
-            return new Date(`${item.data}T${item.hora || '00:00'}`).getTime();
+            return parseDataHora(item.data, item.hora);
           default:
             return (item as any)[property];
         }
@@ -107,10 +116,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   
 
   private formatDateForApi(d: Date): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const y = d.getFullYear();
+    return `${day}/${m}/${y}`;
   }
 
   onDateRangeChange(): void {
@@ -138,7 +147,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const inicio = this.filtros.dataInicio ? this.normalizarData00(this.filtros.dataInicio) : undefined;
       const fim = this.filtros.dataFim ? this.normalizarData2359(this.filtros.dataFim) : undefined;
       filtrados = filtrados.filter(a => {
-        const [y, m, d] = a.data!.split('-').map(Number);
+        const [d, m, y] = a.data!.split('/').map(Number);
         const data = new Date(y, m - 1, d);
         return (!inicio || data >= inicio) && (!fim || data <= fim);
       });
