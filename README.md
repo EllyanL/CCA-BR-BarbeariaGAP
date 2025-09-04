@@ -184,6 +184,25 @@ definições de banco de dados) antes de rodar os testes.
 4. Execute os testes:
     npm test
 
+## Checklist de Testes Manuais
+
+Antes de publicar, inicie o ambiente local com:
+
+```bash
+./start-dev.sh
+```
+
+O frontend estará disponível em `http://localhost:4200` e a API em `http://localhost:8080`.
+
+### Cenários Essenciais
+- **Login**: acessar `http://localhost:4200/auth/login` e autenticar-se.
+- **Agendamento**: navegar para `/oficiais` ou `/graduados`, escolher um horário e confirmar.
+- **Cancelamento**: em `/meus-agendamentos`, cancelar um horário existente.
+- **Restrições**:
+  - impedir agendar ou cancelar com menos de 30 min de antecedência;
+  - bloquear novo agendamento até 15 dias após o último corte.
+- **Páginas de Admin**: validar `/admin/dashboard`, `/admin/horarios`, `/admin/usuarios` e `/admin/gerenciar-registros`.
+
 ## Troubleshooting
 - **Permissão de execução**: certifique-se de que `backend/mvnw` e `start-dev.sh` estão marcados como executáveis.
 - **Variáveis de ambiente**: valores ausentes podem impedir a inicialização.
