@@ -2,6 +2,7 @@ package intraer.ccabr.barbearia_api.controllers;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -140,8 +141,8 @@ public class AgendamentoController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> findForAdmin(
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate dataFim
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate dataInicio,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(pattern = "dd/MM/yyyy") LocalDate dataFim
     ) {
         List<Agendamento> agendamentos = agendamentoService.findByCategoriaAndPeriodo(categoria, dataInicio, dataFim);
         if (agendamentos.isEmpty()) {
@@ -163,10 +164,10 @@ public class AgendamentoController {
         @RequestParam(required = false) String dataFim
     ) {
         LocalDate inicio = (dataInicio != null && !dataInicio.isBlank())
-            ? LocalDate.parse(dataInicio)
+            ? LocalDate.parse(dataInicio, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             : null;
         LocalDate fim = (dataFim != null && !dataFim.isBlank())
-            ? LocalDate.parse(dataFim)
+            ? LocalDate.parse(dataFim, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             : null;
 
         List<Agendamento> agendamentos =
@@ -285,7 +286,7 @@ public class AgendamentoController {
             @RequestParam("categoria") String categoria,
             @RequestBody List<Map<String, Object>> horariosPorDia) {
         try {
-            LocalDate parsedData = LocalDate.parse(data);
+            LocalDate parsedData = LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             Map<String, Map<String, Agendamento>> resultado = agendamentoService.verificarAgendamentosEmLote(parsedData, categoria, horariosPorDia);
             return ResponseEntity.ok(resultado);
         } catch (DateTimeParseException e) {
@@ -301,7 +302,7 @@ public class AgendamentoController {
             @RequestParam("dia") String dia,
             @RequestParam("categoria") String categoria) {
         try {
-            LocalDate parsedData = LocalDate.parse(data);
+            LocalDate parsedData = LocalDate.parse(data, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             LocalTime parsedHora = LocalTime.parse(hora);
             String diaNorm = DiaSemana.from(dia).getValor();
             return agendamentoService
