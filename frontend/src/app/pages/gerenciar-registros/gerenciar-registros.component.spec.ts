@@ -1,5 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 
 import { GerenciarRegistrosComponent } from './gerenciar-registros.component';
@@ -21,6 +23,7 @@ describe('GerenciarRegistrosComponent', () => {
 
     TestBed.configureTestingModule({
       declarations: [GerenciarRegistrosComponent, StatusFormatPipe],
+      imports: [FormsModule],
       providers: [
         { provide: AgendamentoService, useValue: agendamentoService },
         { provide: LoggingService, useValue: { error: () => {} } },
@@ -73,6 +76,27 @@ describe('GerenciarRegistrosComponent', () => {
       '2024-01-12'
     );
     expect(component.todosRegistros).toEqual(registrosJan11);
+  });
+
+  it('simula seleção de intervalo e chama serviço com datas formatadas', () => {
+    agendamentoService.listarAgendamentosAdmin.and.returnValue(of([]));
+    fixture.detectChanges();
+    agendamentoService.listarAgendamentosAdmin.calls.reset();
+
+    const startInput = fixture.debugElement.query(By.css('input[matStartDate]'));
+    const endInput = fixture.debugElement.query(By.css('input[matEndDate]'));
+
+    startInput.triggerEventHandler('ngModelChange', new Date('2024-03-01'));
+    fixture.detectChanges();
+    expect(agendamentoService.listarAgendamentosAdmin).not.toHaveBeenCalled();
+
+    endInput.triggerEventHandler('ngModelChange', new Date('2024-03-05'));
+    fixture.detectChanges();
+    expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(
+      undefined,
+      '2024-03-01',
+      '2024-03-05'
+    );
   });
 });
 

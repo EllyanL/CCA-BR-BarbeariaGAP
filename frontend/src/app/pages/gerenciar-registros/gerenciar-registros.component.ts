@@ -82,10 +82,10 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
   carregarAgendamentos(): void {
     const dataInicio = this.filtros.dataInicio
-      ? this.datePipe.transform(this.filtros.dataInicio, 'yyyy-MM-dd') || undefined
+      ? this.filtros.dataInicio.toISOString().slice(0, 10)
       : undefined;
     const dataFim = this.filtros.dataFim
-      ? this.datePipe.transform(this.filtros.dataFim, 'yyyy-MM-dd') || undefined
+      ? this.filtros.dataFim.toISOString().slice(0, 10)
       : undefined;
 
     this.agendamentoService
@@ -105,7 +105,9 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   onDateRangeChange(): void {
-    this.carregarAgendamentos();
+    if (this.filtros.dataInicio && this.filtros.dataFim) {
+      this.carregarAgendamentos();
+    }
   }
 
   aplicarFiltros(): void {
