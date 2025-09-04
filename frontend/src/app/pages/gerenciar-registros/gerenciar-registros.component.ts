@@ -137,7 +137,9 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const statusUpper = this.filtros.status.map(s => s.toUpperCase());
       filtrados = filtrados.filter(a => {
         const statusAtual = (a.status || '').toUpperCase();
-        return statusUpper.includes(statusAtual);
+        const statusNormalizado =
+          statusAtual === 'ADMIN_CANCELADO' ? 'CANCELADO' : statusAtual;
+        return statusUpper.includes(statusNormalizado);
       });
     }
 
