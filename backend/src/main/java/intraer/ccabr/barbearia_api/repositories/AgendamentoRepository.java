@@ -101,8 +101,8 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("""
             SELECT a FROM Agendamento a JOIN FETCH a.militar
             WHERE (:categoria IS NULL OR a.categoria = :categoria)
-              AND (:dataInicio IS NULL OR a.data >= :dataInicio)
-              AND (:dataFim IS NULL OR a.data <= :dataFim)
+              AND a.data >= COALESCE(:dataInicio, a.data)
+              AND a.data <= COALESCE(:dataFim, a.data)
             ORDER BY a.data DESC, a.hora DESC
             """)
     // Sem filtro por status para incluir agendados e cancelados
