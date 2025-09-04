@@ -9,7 +9,8 @@ export class StatusFormatPipe implements PipeTransform {
     INDISPONIVEL: 'Indisponível',
     AGENDADO: 'Agendado',
     REALIZADO: 'Efetuado',
-    CANCELADO: 'Cancelado'
+    CANCELADO: 'Cancelado',
+    ADMIN_CANCELADO: 'Cancelado'
   };
 
   private readonly classMap: Record<string, string> = {
@@ -17,7 +18,8 @@ export class StatusFormatPipe implements PipeTransform {
     DISPONIVEL: 'status-disponivel',
     INDISPONIVEL: 'status-indisponivel',
     REALIZADO: 'status-realizado',
-    CANCELADO: 'status-cancelado'
+    CANCELADO: 'status-cancelado',
+    ADMIN_CANCELADO: 'status-cancelado'
   };
 
   private readonly tabelaClassMap: Record<string, string> = {
@@ -25,7 +27,8 @@ export class StatusFormatPipe implements PipeTransform {
     AGENDADO: 'botao-agendado',
     INDISPONIVEL: 'tabela-botao-indisponivel',
     REALIZADO: 'tabela-botao-realizado',
-    CANCELADO: 'tabela-botao-cancelado'
+    CANCELADO: 'tabela-botao-cancelado',
+    ADMIN_CANCELADO: 'tabela-botao-cancelado'
   };
 
   transform(value?: string, mode: 'text' | 'class' | 'tabelaClass' = 'text'): string {
