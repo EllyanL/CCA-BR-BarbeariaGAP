@@ -329,8 +329,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return;
     }
 
-    const dataISO = this.getDataFromDiaSemana(diaSemana);
-    const agendamentoDate = new Date(`${dataISO}T${hora.slice(0, 5)}`);
+    const dataStr = this.getDataFromDiaSemana(diaSemana);
+    const [dia, mes, ano] = dataStr.split('/').map(Number);
+    const [horaNum, minutoNum] = hora.slice(0, 5).split(':').map(Number);
+    const agendamentoDate = new Date(ano, mes - 1, dia, horaNum, minutoNum);
     const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
     if (diffMs < 30 * 60 * 1000) {
       this.snackBar.open('O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.', 'Ciente', { duration: SNACKBAR_DURATION });
@@ -340,7 +342,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const dialogRef = this.dialog.open(DialogoAgendamentoComponent, {
       width: '500px',
       data: {
-        data: this.getDataFromDiaSemana(diaSemana),
+        data: dataStr,
         diaSemana: diaSemanaFormatado,
         hora: hora,
         categoria: this.categoria.toUpperCase(),
@@ -675,7 +677,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       if (!this.isAgendamentoDoMilitarLogado(agendamento)) {
         return false;
       }
-      const agendamentoDate = new Date(`${agendamento.data}T${agendamento.hora.slice(0, 5)}`);
+      const [diaAg, mesAg, anoAg] = agendamento.data.split('/').map(Number);
+      const [horaAg, minutoAg] = agendamento.hora.slice(0, 5).split(':').map(Number);
+      const agendamentoDate = new Date(anoAg, mesAg - 1, diaAg, horaAg, minutoAg);
       const diffMs = agendamentoDate.getTime() - agora;
       return diffMs >= 30 * 60 * 1000;
     }
@@ -692,11 +696,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return false;
     }
 
-    const dataISO = this.getDataFromDiaSemana(dia);
-    if (!dataISO) {
+    const dataStr = this.getDataFromDiaSemana(dia);
+    if (!dataStr) {
       return true;
     }
-    const agendamentoDate = new Date(`${dataISO}T${hora.slice(0, 5)}`);
+    const [diaNum, mesNum, anoNum] = dataStr.split('/').map(Number);
+    const [horaNum, minutoNum] = hora.slice(0, 5).split(':').map(Number);
+    const agendamentoDate = new Date(anoNum, mesNum - 1, diaNum, horaNum, minutoNum);
     const diffMs = agendamentoDate.getTime() - agora;
     return diffMs >= 30 * 60 * 1000;
   }
@@ -724,7 +730,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const anoAtual = new Date().getFullYear();
     const pad = (n: number) => n.toString().padStart(2, '0');
 
-    return `${anoAtual}-${pad(mes)}-${pad(dia)}`;
+    return `${pad(dia)}/${pad(mes)}/${anoAtual}`;
   }
 
   trackByIndex(index: number, _item: any): number {

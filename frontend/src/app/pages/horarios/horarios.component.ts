@@ -820,7 +820,9 @@ import { UserService } from 'src/app/services/user.service';
         return true;
       }
       const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
-      const agendamentoDate = new Date(`${agendamento.data}T${horaFormatada}`);
+      const [dia, mes, ano] = agendamento.data.split('/').map(Number);
+      const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
+      const agendamentoDate = new Date(ano, mes - 1, dia, horaNum, minutoNum);
       const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
       return diffMs >= 30 * 60 * 1000;
     }
@@ -879,14 +881,14 @@ import { UserService } from 'src/app/services/user.service';
       });
     }
     
-  converterParaDataISO(diaSemanaComData: string): string {
+  converterParaDataBR(diaSemanaComData: string): string {
     const partes = diaSemanaComData.split(' - ');
     if (partes.length < 2) return '';
     const [_, dataStr] = partes;
     const [dia, mes] = dataStr.split('/').map(Number);
     const anoAtual = new Date().getFullYear();
     const pad = (n: number) => n.toString().padStart(2, '0');
-    return `${anoAtual}-${pad(mes)}-${pad(dia)}`;
+    return `${pad(dia)}/${pad(mes)}/${anoAtual}`;
   }
 
 
