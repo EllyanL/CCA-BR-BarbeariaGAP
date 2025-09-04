@@ -155,6 +155,31 @@ public class AgendamentoController {
         return new ResponseEntity<>(dtos, HttpStatus.OK);
     }
 
+    @GetMapping("/admin/listar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AgendamentoAdminDTO>> listarAgendamentosAdmin(
+        @RequestParam(required = false) String categoria,
+        @RequestParam(required = false) String dataInicio,
+        @RequestParam(required = false) String dataFim
+    ) {
+        LocalDate inicio = (dataInicio != null && !dataInicio.isBlank())
+            ? LocalDate.parse(dataInicio)
+            : null;
+        LocalDate fim = (dataFim != null && !dataFim.isBlank())
+            ? LocalDate.parse(dataFim)
+            : null;
+
+        List<Agendamento> agendamentos =
+            agendamentoService.findByCategoriaAndPeriodo(categoria, inicio, fim);
+
+        if (agendamentos.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        List<AgendamentoAdminDTO> dtos =
+            agendamentos.stream().map(AgendamentoAdminDTO::new).toList();
+        return ResponseEntity.ok(dtos);
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'GRADUADO', 'OFICIAL')")
     public ResponseEntity<Agendamento> findById(@PathVariable Long id, org.springframework.security.core.Authentication authentication) {
