@@ -51,29 +51,29 @@ describe('GerenciarRegistrosComponent', () => {
   });
 
   it('envia datas formatadas ao buscar registros por intervalo', () => {
-    const registrosJan10 = [{ data: '2024-01-10', hora: '08:00' } as any];
+    const registrosJan10 = [{ data: '10/01/2024', hora: '08:00' } as any];
     agendamentoService.listarAgendamentosAdmin.and.returnValue(of(registrosJan10));
 
-    component.filtros.dataInicio = new Date('2024-01-10');
-    component.filtros.dataFim = new Date('2024-01-10');
+    component.filtros.dataInicio = new Date(2024, 0, 10);
+    component.filtros.dataFim = new Date(2024, 0, 10);
     component.carregarAgendamentos();
     expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(
       undefined,
-      '2024-01-10',
-      '2024-01-10'
+      '10/01/2024',
+      '10/01/2024'
     );
     expect(component.todosRegistros).toEqual(registrosJan10);
 
-    const registrosJan11 = [{ data: '2024-01-11', hora: '09:00' } as any];
+    const registrosJan11 = [{ data: '11/01/2024', hora: '09:00' } as any];
     agendamentoService.listarAgendamentosAdmin.and.returnValue(of(registrosJan11));
 
-    component.filtros.dataInicio = new Date('2024-01-11');
-    component.filtros.dataFim = new Date('2024-01-12');
+    component.filtros.dataInicio = new Date(2024, 0, 11);
+    component.filtros.dataFim = new Date(2024, 0, 12);
     component.carregarAgendamentos();
     expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(
       undefined,
-      '2024-01-11',
-      '2024-01-12'
+      '11/01/2024',
+      '12/01/2024'
     );
     expect(component.todosRegistros).toEqual(registrosJan11);
   });
@@ -86,16 +86,16 @@ describe('GerenciarRegistrosComponent', () => {
     const startInput = fixture.debugElement.query(By.css('input[matStartDate]'));
     const endInput = fixture.debugElement.query(By.css('input[matEndDate]'));
 
-    startInput.triggerEventHandler('ngModelChange', new Date('2024-03-01'));
+    startInput.triggerEventHandler('ngModelChange', new Date(2024, 2, 1));
     fixture.detectChanges();
     expect(agendamentoService.listarAgendamentosAdmin).not.toHaveBeenCalled();
 
-    endInput.triggerEventHandler('ngModelChange', new Date('2024-03-05'));
+    endInput.triggerEventHandler('ngModelChange', new Date(2024, 2, 5));
     fixture.detectChanges();
     expect(agendamentoService.listarAgendamentosAdmin).toHaveBeenCalledWith(
       undefined,
-      '2024-03-01',
-      '2024-03-05'
+      '01/03/2024',
+      '05/03/2024'
     );
   });
 });
