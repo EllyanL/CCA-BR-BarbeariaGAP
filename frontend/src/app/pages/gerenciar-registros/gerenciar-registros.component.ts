@@ -1,16 +1,17 @@
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { DatePipe } from '@angular/common';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, MatSortable } from '@angular/material/sort';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+
 import { Agendamento } from '../../models/agendamento';
 import { AgendamentoService } from '../../services/agendamento.service';
+import { DatePipe } from '@angular/common';
 import { LoggingService } from '../../services/logging.service';
-import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTableDataSource } from '@angular/material/table';
 import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
+import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
+import autoTable from 'jspdf-autotable';
+import jsPDF from 'jspdf';
 
 function compararDesc(a: Agendamento, b: Agendamento): number {
   const dataA = new Date(`${a.data}T${a.hora}`).getTime();
@@ -82,17 +83,17 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
 
   carregarAgendamentos(): void {
     const dataInicio = this.filtros.dataInicio
-      ? this.filtros.dataInicio.toISOString().slice(0, 10)
+      ? this.formatDateForApi(this.filtros.dataInicio)
       : undefined;
     const dataFim = this.filtros.dataFim
-      ? this.filtros.dataFim.toISOString().slice(0, 10)
+      ? this.formatDateForApi(this.filtros.dataFim)
       : undefined;
-
+  
     this.agendamentoService
       .listarAgendamentosAdmin(undefined, dataInicio, dataFim)
       .subscribe({
         next: agendamentos => {
-          this.todosRegistros = agendamentos.sort((a, b) => compararDesc(a, b));
+          this.todosRegistros = agendamentos.sort(compararDesc);
           this.aplicarFiltros();
         },
         error: err => {
@@ -102,6 +103,14 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
           });
         }
       });
+  }
+  
+
+  private formatDateForApi(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   onDateRangeChange(): void {
