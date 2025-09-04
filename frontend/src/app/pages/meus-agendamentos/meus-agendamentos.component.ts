@@ -48,7 +48,19 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
       this.dataSource.sortingDataAccessor = (item, property) => {
         switch (property) {
           case 'data':
-            return new Date(`${item.data}T${item.hora || '00:00'}`).getTime();
+            if (!item.data) {
+              return 0;
+            }
+            const [dia, mes, ano] = item.data.split('/');
+            const [hora, minuto] = (item.hora || '00:00').split(':');
+            const date = new Date(
+              Number(ano),
+              Number(mes) - 1,
+              Number(dia),
+              Number(hora),
+              Number(minuto)
+            );
+            return date.getTime();
           default:
             return (item as any)[property];
         }
