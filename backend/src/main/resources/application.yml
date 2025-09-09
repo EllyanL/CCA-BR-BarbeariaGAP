@@ -5,7 +5,7 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/barbearia}
     driver-class-name: ${DB_DRIVER_CLASS:org.postgresql.Driver}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:root}
+    password: ${DB_PASSWORD:123}
   jpa:
     properties:
       hibernate:
@@ -31,5 +31,5 @@ webservice:
   api-url: ${WEBSERVICE_API_URL:http://webservice.ccabr.intraer/api/}
   username: ${WEBSERVICE_USERNAME:barbearia}
   password: ${WEBSERVICE_PASSWORD:B@rber$h0p}
-# server:
-#   port: ${SERVER_PORT:8081}
+server:
+  port: ${SERVER_PORT:8081}
