@@ -86,7 +86,7 @@ public class HorarioService {
         String[] categorias = {"GRADUADO", "OFICIAL"};
 
         for (DiaSemana ds : DiaSemana.values()) {
-            String dia = ds.getValor();
+            final String dia = ds.getValor();
             Map<String, List<Horario>> porCategoria = new HashMap<>();
             for (String categoria : categorias) {
                 List<Horario> horariosDiaCategoria = horarioRepository.findByDiaAndCategoria(dia, categoria)
@@ -261,8 +261,8 @@ public class HorarioService {
         List<String> categorias = List.of("GRADUADO", "OFICIAL");
 
         List<Horario> adicionados = new ArrayList<>();
-        for (String dia : dias) {
-            for (String categoria : categorias) {
+        for (final String dia : dias) {
+            for (final String categoria : categorias) {
                 if (!horarioRepository.existsByDiaAndHorarioAndCategoria(dia, hora, categoria)) {
                     Horario h = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
                     adicionados.add(horarioRepository.save(h));
@@ -448,8 +448,8 @@ public class HorarioService {
         validarIncrementoMeiaHora(hora);
         List<String> diasDaSemana = Arrays.stream(DiaSemana.values()).map(DiaSemana::getValor).toList();
         List<String> categorias = Arrays.asList("GRADUADO", "OFICIAL");
-        for (String dia : diasDaSemana) {
-            for (String categoria : categorias) {
+        for (final String dia : diasDaSemana) {
+            for (final String categoria : categorias) {
                 if (!horarioRepository.existsByDiaAndHorarioAndCategoria(dia, hora, categoria)) {
                     Horario horario = new Horario(dia, hora, categoria,HorarioStatus.DISPONIVEL);
                     horarioRepository.save(horario);
