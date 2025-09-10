@@ -141,7 +141,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
-        militar = authenticationService.saveOrUpdateFromDto(militarData, data.senha());
+        militar = authenticationService.saveOrUpdateFromDto(militarData, null);
         if (userOpt.isEmpty()) {
             logger.info("✅ Novo militar registrado no banco.");
         } else {

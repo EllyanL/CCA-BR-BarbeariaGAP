@@ -67,7 +67,7 @@ public class Militar implements UserDetails {
     @JsonProperty
     private String cpf;
 
-    @Column(name = "senha", length = 255)
+    @Column(name = "senha", length = 255, nullable = true)
     @JsonProperty
     private String senha;
 
