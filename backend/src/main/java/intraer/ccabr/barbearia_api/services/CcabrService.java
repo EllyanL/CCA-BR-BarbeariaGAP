@@ -145,9 +145,41 @@ public class CcabrService {
     }
     
     private String mapRole(String posto, String pessfisType) {
+        logger.debug("Determinando categoria para posto: {}, pessfisType: {}", posto, pessfisType);
+
+        if (pessfisType != null && !pessfisType.trim().isEmpty()) {
+            String type = pessfisType.trim().toUpperCase();
+            switch (type) {
+                case "OFICIAL":
+                case "OFIC":
+                    logger.debug("Categoria determinada: OFICIAL");
+                    return "OFICIAL";
+                case "GRADUADO":
+                case "GRAD":
+                    logger.debug("Categoria determinada: GRADUADO");
+                    return "GRADUADO";
+                case "CIVIL":
+                case "SERVIDOR CIVIL":
+                    logger.debug("Categoria determinada: USER");
+                    return "USER";
+                default:
+                    logger.error("Tipo de pessfisType desconhecido: {}", type);
+                    throw new IllegalArgumentException("Tipo de pessfisType desconhecido: " + pessfisType);
+            }
+        }
+
         List<String> oficiais = List.of("AP", "2T", "1T", "CP", "MJ", "TC", "CL", "BG", "MB", "TB");
-        if (oficiais.contains(posto)) return "OFICIAL";
-        return "GRADUADO";
+        if (posto != null && oficiais.contains(posto)) {
+            logger.debug("Categoria determinada por posto: OFICIAL");
+            return "OFICIAL";
+        }
+        if (posto != null && !posto.trim().isEmpty()) {
+            logger.debug("Categoria determinada por posto: GRADUADO");
+            return "GRADUADO";
+        }
+
+        logger.error("Não foi possível determinar categoria para posto: {} e pessfisType: {}", posto, pessfisType);
+        throw new IllegalArgumentException("Não foi possível determinar categoria do militar");
     }
        
 
