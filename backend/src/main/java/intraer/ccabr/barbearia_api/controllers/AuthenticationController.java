@@ -130,7 +130,7 @@ public class AuthenticationController {
         Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
 
         Militar militar;
-        if (userOpt.isEmpty()) {
+        if (userOpt.isEmpty() || userOpt.get().getCategoria() == null) {
             CcabrUserDto militarData = webserviceService.fetchMilitarByCpf(data.cpf());
             logger.debug("📡 Dados do WebService recebidos: {}", militarData);
             if (militarData == null) {
@@ -139,7 +139,7 @@ public class AuthenticationController {
             }
 
             militar = authenticationService.createFromWebserviceData(militarData);
-            logger.info("✅ Novo militar registrado no banco.");
+            logger.info("✅ Militar salvo/atualizado no banco.");
         } else {
             militar = userOpt.get();
             logger.info("⏳ Usando dados locais para CPF: {}", militar.getCpf());
