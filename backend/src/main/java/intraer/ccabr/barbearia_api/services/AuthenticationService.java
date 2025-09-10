@@ -21,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -236,6 +237,8 @@ public class AuthenticationService {
         } else {
             militar.setSenha(LDAP_AUTH_PLACEHOLDER);
         }
+
+        militar.setLastWebserviceSync(LocalDateTime.now());
 
         return militarRepository.save(militar);
     }

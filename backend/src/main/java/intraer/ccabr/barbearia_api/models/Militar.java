@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -70,6 +71,10 @@ public class Militar implements UserDetails {
     @Column(name = "senha", length = 255, nullable = true)
     @JsonProperty
     private String senha;
+
+    @Column(name = "last_webservice_sync")
+    @JsonProperty
+    private LocalDateTime lastWebserviceSync;
 
     @Column(name = "quadro", length = 15)
     @JsonProperty

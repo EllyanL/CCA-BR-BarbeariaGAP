@@ -1,5 +1,6 @@
 package intraer.ccabr.barbearia_api.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -127,26 +128,34 @@ public class AuthenticationController {
         }
 
         Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
+        boolean shouldSync = userOpt.isEmpty()
+                || userOpt.get().getLastWebserviceSync() == null
+                || userOpt.get().getLastWebserviceSync().isBefore(LocalDateTime.now().minusDays(7));
+
         Militar militar;
+        if (shouldSync) {
+            String tokenWs = ccabrService.authenticateWebService()
+                    .blockOptional()
+                    .orElseThrow(() -> new RuntimeException("Falha ao obter token do WebService"));
 
-        // Obter dados atualizados do WebService
-        String tokenWs = ccabrService.authenticateWebService()
-            .blockOptional()
-            .orElseThrow(() -> new RuntimeException("Falha ao obter token do WebService"));
+            UserDTO militarData = ccabrService.buscarMilitar(data.cpf(), tokenWs).block();
+            logger.debug("📡 Dados do WebService recebidos: {}", militarData);
+            if (militarData == null) {
+                logger.error("❌ WebService não retornou dados para o CPF: {}", data.cpf());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
 
-        UserDTO militarData = ccabrService.buscarMilitar(data.cpf(), tokenWs).block();
-        logger.debug("📡 Dados do WebService recebidos: {}", militarData);
-        if (militarData == null) {
-            logger.error("❌ WebService não retornou dados para o CPF: {}", data.cpf());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-
-        militar = authenticationService.saveOrUpdateFromDto(militarData, null);
-        if (userOpt.isEmpty()) {
-            logger.info("✅ Novo militar registrado no banco.");
+            militar = authenticationService.saveOrUpdateFromDto(militarData, null);
+            if (userOpt.isEmpty()) {
+                logger.info("✅ Novo militar registrado no banco.");
+            } else {
+                logger.info("🔄 Dados do militar atualizados com sucesso.");
+            }
         } else {
-            logger.info("🔄 Dados do militar atualizados com sucesso.");
+            militar = userOpt.get();
+            logger.info("⏳ Usando dados locais para CPF: {}", militar.getCpf());
         }
+
         logger.info("📝 CPF: {}, ROLE: {}", militar.getCpf(), militar.getCategoria());
 
         // Geração de token
