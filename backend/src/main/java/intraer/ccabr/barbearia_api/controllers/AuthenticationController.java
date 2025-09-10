@@ -1,6 +1,5 @@
 package intraer.ccabr.barbearia_api.controllers;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -131,11 +130,9 @@ public class AuthenticationController {
         Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
 
         Militar militar;
-        boolean needsSync = userOpt.isEmpty()
-                || userOpt.get().getLastWebserviceSync() == null
-                || !userOpt.get().getLastWebserviceSync().isAfter(LocalDateTime.now().minusDays(7));
+        boolean firstAccess = userOpt.isEmpty() || userOpt.get().getCategoria() == null;
 
-        if (needsSync) {
+        if (firstAccess) {
             CcabrUserDto militarData = webserviceService.fetchMilitarByCpf(data.cpf());
             logger.debug("📡 Dados do WebService recebidos: {}", militarData);
             if (militarData == null) {
@@ -145,6 +142,12 @@ public class AuthenticationController {
 
             militar = authenticationService.createFromWebserviceData(militarData);
             logger.info("✅ Militar sincronizado com WebService.");
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         } else {
             militar = userOpt.get();
             logger.info("⏳ Usando dados locais para CPF: {}", militar.getCpf());
