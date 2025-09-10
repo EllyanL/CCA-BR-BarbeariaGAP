@@ -97,4 +97,14 @@ describe('LoginComponent', () => {
 
     expect(router.navigate).toHaveBeenCalledOnceWith(['/admin/dashboard']);
   });
+
+  it('redirects USER users to /graduados', () => {
+    authService.login.and.returnValue(of({ token: 't', categoria: 'USER', om: 'CCA-BR' }));
+    component.cpf = '4';
+    component.senha = 's';
+
+    component.onLogin();
+
+    expect(router.navigate).toHaveBeenCalledWith(['/graduados']);
+  });
 });

@@ -102,6 +102,7 @@ export class AuthService {
   isAdmin(): boolean { return this.hasRole('ADMIN'); }
   isOficial(): boolean { return this.hasRole('OFICIAL'); }
   isGraduado(): boolean { return this.hasRole('GRADUADO'); }
+  isUser(): boolean { return this.hasRole('USER'); }
 
   getUsuarioAutenticado(): Militar | null {
     const token = this.getToken();

@@ -10,7 +10,12 @@ export class UserGuard {
   constructor(private authService: AuthService, private router: Router) { }
 
   canActivate(): boolean {
-    if (this.authService.isAdmin() || this.authService.isGraduado() || this.authService.isOficial()) {
+    if (
+      this.authService.isAdmin() ||
+      this.authService.isGraduado() ||
+      this.authService.isOficial() ||
+      this.authService.isUser()
+    ) {
       return true;
     }
     this.router.navigate(['/not-authorized']);
