@@ -5,6 +5,7 @@ import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.dtos.AuthenticationDTO;
 import intraer.ccabr.barbearia_api.dtos.LoginResponseDTO;
 import intraer.ccabr.barbearia_api.dtos.RegisterDTO;
+import intraer.ccabr.barbearia_api.dtos.CcabrUserDto;
 import intraer.ccabr.barbearia_api.enums.UserRole;
 import intraer.ccabr.barbearia_api.infra.security.TokenService;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
@@ -241,6 +242,17 @@ public class AuthenticationService {
         militar.setLastWebserviceSync(LocalDateTime.now());
 
         return militarRepository.save(militar);
+    }
+
+    /**
+     * Cria um novo {@link Militar} a partir dos dados obtidos do webservice
+     * CCABR.
+     *
+     * @param dto dados retornados pelo webservice
+     * @return militar persistido
+     */
+    public Militar createFromWebserviceData(CcabrUserDto dto) {
+        return saveOrUpdateFromDto(dto, null);
     }
 
     /**

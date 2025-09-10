@@ -1,6 +1,5 @@
 package intraer.ccabr.barbearia_api.controllers;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,12 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 import intraer.ccabr.barbearia_api.dtos.AuthenticationDTO;
 import intraer.ccabr.barbearia_api.dtos.LoginResponseDTO;
 import intraer.ccabr.barbearia_api.dtos.UserDTO;
+import intraer.ccabr.barbearia_api.dtos.CcabrUserDto;
 import intraer.ccabr.barbearia_api.enums.UserRole;
 import intraer.ccabr.barbearia_api.infra.security.TokenService;
 import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import intraer.ccabr.barbearia_api.services.AuthenticationService;
-import intraer.ccabr.barbearia_api.services.CcabrService;
+import intraer.ccabr.barbearia_api.services.WebserviceService;
 import intraer.ccabr.barbearia_api.services.LdapService;
 import jakarta.validation.Valid;
 
@@ -46,7 +46,7 @@ public class AuthenticationController {
 
     private final LdapService ldapService;
 
-    private final CcabrService ccabrService;
+    private final WebserviceService webserviceService;
 
     private final MilitarRepository militarRepository;
 
@@ -57,14 +57,14 @@ public class AuthenticationController {
     public AuthenticationController(
         AuthenticationService authenticationService,
         LdapService ldapService,
-        CcabrService ccabrService,
+        WebserviceService webserviceService,
         MilitarRepository militarRepository,
         PasswordEncoder passwordEncoder,
         TokenService tokenService
     ) {
         this.authenticationService = authenticationService;
         this.ldapService = ldapService;
-        this.ccabrService = ccabrService;
+        this.webserviceService = webserviceService;
         this.militarRepository = militarRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
@@ -128,29 +128,18 @@ public class AuthenticationController {
         }
 
         Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
-        boolean shouldSync = userOpt.isEmpty()
-                || userOpt.get().getLastWebserviceSync() == null
-                || userOpt.get().getLastWebserviceSync().isBefore(LocalDateTime.now().minusDays(7));
 
         Militar militar;
-        if (shouldSync) {
-            String tokenWs = ccabrService.authenticateWebService()
-                    .blockOptional()
-                    .orElseThrow(() -> new RuntimeException("Falha ao obter token do WebService"));
-
-            UserDTO militarData = ccabrService.buscarMilitar(data.cpf(), tokenWs).block();
+        if (userOpt.isEmpty()) {
+            CcabrUserDto militarData = webserviceService.fetchMilitarByCpf(data.cpf());
             logger.debug("📡 Dados do WebService recebidos: {}", militarData);
             if (militarData == null) {
                 logger.error("❌ WebService não retornou dados para o CPF: {}", data.cpf());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
 
-            militar = authenticationService.saveOrUpdateFromDto(militarData, null);
-            if (userOpt.isEmpty()) {
-                logger.info("✅ Novo militar registrado no banco.");
-            } else {
-                logger.info("🔄 Dados do militar atualizados com sucesso.");
-            }
+            militar = authenticationService.createFromWebserviceData(militarData);
+            logger.info("✅ Novo militar registrado no banco.");
         } else {
             militar = userOpt.get();
             logger.info("⏳ Usando dados locais para CPF: {}", militar.getCpf());
