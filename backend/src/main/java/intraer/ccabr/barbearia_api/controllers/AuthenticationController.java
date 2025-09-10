@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.dao.DataAccessException;
+import jakarta.persistence.PersistenceException;
 
 import intraer.ccabr.barbearia_api.dtos.AuthenticationDTO;
 import intraer.ccabr.barbearia_api.dtos.LoginResponseDTO;
@@ -140,8 +142,13 @@ public class AuthenticationController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
 
-            militar = authenticationService.createFromWebserviceData(militarData);
-            logger.info("✅ Militar sincronizado com WebService.");
+            try {
+                militar = authenticationService.createFromWebserviceData(militarData);
+                logger.info("✅ Militar sincronizado com WebService.");
+            } catch (DataAccessException | PersistenceException e) {
+                logger.error("Erro ao persistir militar para CPF {}: {}", data.cpf(), e.getMessage(), e);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
 
             try {
                 Thread.sleep(1000);

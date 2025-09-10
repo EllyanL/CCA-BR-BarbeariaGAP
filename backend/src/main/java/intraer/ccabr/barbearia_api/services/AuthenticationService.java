@@ -21,6 +21,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import jakarta.persistence.PersistenceException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -41,6 +45,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     private final AuthenticationManager authenticationManager;
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     private static final String ADMIN_CPF = "00000000000";
 
@@ -235,7 +241,13 @@ public class AuthenticationService {
             militar.setSenha(Militar.LDAP_AUTH_PLACEHOLDER);
         }
 
-        return updateLastWebserviceSync(militar);
+        militar.setLastWebserviceSync(LocalDateTime.now());
+        try {
+            return militarRepository.saveAndFlush(militar);
+        } catch (DataAccessException | PersistenceException e) {
+            logger.error("Erro ao persistir militar com CPF {}: {}", externalData.getCpf(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     /**
@@ -247,18 +259,6 @@ public class AuthenticationService {
      */
     public Militar createFromWebserviceData(CcabrUserDto dto) {
         return saveOrUpdateFromDto(dto);
-    }
-
-    /**
-     * Atualiza o campo {@code lastWebserviceSync} com a data e hora atuais e
-     * persiste o militar.
-     *
-     * @param militar entidade a ser atualizada
-     * @return militar atualizado e salvo
-     */
-    public Militar updateLastWebserviceSync(Militar militar) {
-        militar.setLastWebserviceSync(LocalDateTime.now());
-        return militarRepository.save(militar);
     }
 
     /**
