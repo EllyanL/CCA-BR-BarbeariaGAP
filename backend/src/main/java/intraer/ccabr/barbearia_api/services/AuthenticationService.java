@@ -235,9 +235,7 @@ public class AuthenticationService {
             militar.setSenha(Militar.LDAP_AUTH_PLACEHOLDER);
         }
 
-        militar.setLastWebserviceSync(LocalDateTime.now());
-
-        return militarRepository.save(militar);
+        return updateLastWebserviceSync(militar);
     }
 
     /**
@@ -249,6 +247,18 @@ public class AuthenticationService {
      */
     public Militar createFromWebserviceData(CcabrUserDto dto) {
         return saveOrUpdateFromDto(dto);
+    }
+
+    /**
+     * Atualiza o campo {@code lastWebserviceSync} com a data e hora atuais e
+     * persiste o militar.
+     *
+     * @param militar entidade a ser atualizada
+     * @return militar atualizado e salvo
+     */
+    public Militar updateLastWebserviceSync(Militar militar) {
+        militar.setLastWebserviceSync(LocalDateTime.now());
+        return militarRepository.save(militar);
     }
 
     /**
