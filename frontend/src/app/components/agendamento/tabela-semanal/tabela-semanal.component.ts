@@ -21,6 +21,7 @@ import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
 import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
+import { normalizeHora } from 'src/app/utils/horarios-utils';
 
 
 @Component({
@@ -673,15 +674,31 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   ): boolean {
     const agora = Date.now() + this.timeOffsetMs;
 
-    if (agendamento && agendamento.data) {
+    if (agendamento) {
       if (!this.isAgendamentoDoMilitarLogado(agendamento)) {
         return false;
       }
-      const [diaAg, mesAg, anoAg] = agendamento.data.split('/').map(Number);
-      const [horaAg, minutoAg] = agendamento.hora.slice(0, 5).split(':').map(Number);
-      const agendamentoDate = new Date(anoAg, mesAg - 1, diaAg, horaAg, minutoAg);
-      const diffMs = agendamentoDate.getTime() - agora;
-      return diffMs >= 30 * 60 * 1000;
+
+      let timestamp: number | null = agendamento.timestamp ?? null;
+
+      if (!timestamp && agendamento.data && agendamento.hora) {
+        const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
+        let diaAg: number, mesAg: number, anoAg: number;
+
+        if (agendamento.data.includes('-')) {
+          [anoAg, mesAg, diaAg] = agendamento.data.split('-').map(Number);
+        } else {
+          [diaAg, mesAg, anoAg] = agendamento.data.split('/').map(Number);
+        }
+
+        const [horaAg, minutoAg] = horaFormatada.split(':').map(Number);
+        timestamp = new Date(anoAg, mesAg - 1, diaAg, horaAg, minutoAg).getTime();
+      }
+
+      if (timestamp) {
+        const diffMs = timestamp - agora;
+        return diffMs >= 30 * 60 * 1000;
+      }
     }
 
     if (!dia || !hora) {
@@ -701,7 +718,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return true;
     }
     const [diaNum, mesNum, anoNum] = dataStr.split('/').map(Number);
-    const [horaNum, minutoNum] = hora.slice(0, 5).split(':').map(Number);
+    const horaFormatada = normalizeHora(hora).substring(0, 5);
+    const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
     const agendamentoDate = new Date(anoNum, mesNum - 1, diaNum, horaNum, minutoNum);
     const diffMs = agendamentoDate.getTime() - agora;
     return diffMs >= 30 * 60 * 1000;

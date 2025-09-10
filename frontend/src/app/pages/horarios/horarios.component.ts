@@ -814,16 +814,33 @@ import { UserService } from 'src/app/services/user.service';
       const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
       return saramAgendamento === this.saramUsuario;
     }
-    
+
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
-      if (!agendamento?.data || !agendamento?.hora) {
+      if (!agendamento) {
         return true;
       }
-      const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
-      const [dia, mes, ano] = agendamento.data.split('/').map(Number);
-      const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
-      const agendamentoDate = new Date(ano, mes - 1, dia, horaNum, minutoNum);
-      const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
+
+      let timestamp: number | null = agendamento.timestamp ?? null;
+
+      if (!timestamp) {
+        if (!agendamento.data || !agendamento.hora) {
+          return true;
+        }
+
+        const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
+        let dia: number, mes: number, ano: number;
+
+        if (agendamento.data.includes('-')) {
+          [ano, mes, dia] = agendamento.data.split('-').map(Number);
+        } else {
+          [dia, mes, ano] = agendamento.data.split('/').map(Number);
+        }
+
+        const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
+        timestamp = new Date(ano, mes - 1, dia, horaNum, minutoNum).getTime();
+      }
+
+      const diffMs = timestamp - (Date.now() + this.timeOffsetMs);
       return diffMs >= 30 * 60 * 1000;
     }
 
