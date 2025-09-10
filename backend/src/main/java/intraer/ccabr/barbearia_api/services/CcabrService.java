@@ -162,33 +162,40 @@ public class CcabrService {
 
         if (pessfisType != null && !pessfisType.trim().isEmpty()) {
             String type = pessfisType.trim().toUpperCase();
-            switch (type) {
-                case "OFICIAL":
-                case "OFIC":
-                    logger.debug("Categoria determinada: OFICIAL");
-                    return "OFICIAL";
-                case "GRADUADO":
-                case "GRAD":
-                    logger.debug("Categoria determinada: GRADUADO");
-                    return "GRADUADO";
-                case "CIVIL":
-                case "SERVIDOR CIVIL":
-                    logger.debug("Categoria determinada: USER");
-                    return "USER";
-                default:
-                    logger.error("Tipo de pessfisType desconhecido: {}", type);
-                    throw new IllegalArgumentException("Tipo de pessfisType desconhecido: " + pessfisType);
+            if ("CIVIL".equals(type) || "SERVIDOR CIVIL".equals(type)) {
+                logger.debug("Categoria determinada: USER");
+                return "USER";
             }
         }
 
-        List<String> oficiais = List.of("AP", "2T", "1T", "CP", "MJ", "TC", "CL", "BG", "MB", "TB");
-        if (posto != null && oficiais.contains(posto)) {
-            logger.debug("Categoria determinada por posto: OFICIAL");
-            return "OFICIAL";
-        }
         if (posto != null && !posto.trim().isEmpty()) {
-            logger.debug("Categoria determinada por posto: GRADUADO");
-            return "GRADUADO";
+            String normalized = posto.trim().toUpperCase();
+            List<String> oficiais = List.of(
+                    "AP", "ASP",
+                    "2T", "2TEN",
+                    "1T", "1TEN",
+                    "CP", "CAP",
+                    "MJ", "MAJ",
+                    "TC",
+                    "CL", "CEL",
+                    "BG", "MB", "TB");
+
+            List<String> graduados = List.of(
+                    "SO",
+                    "1S", "S1",
+                    "2S", "S2",
+                    "3S", "S3",
+                    "CB",
+                    "SD");
+
+            if (oficiais.contains(normalized)) {
+                logger.debug("Categoria determinada por posto: OFICIAL");
+                return "OFICIAL";
+            }
+            if (graduados.contains(normalized)) {
+                logger.debug("Categoria determinada por posto: GRADUADO");
+                return "GRADUADO";
+            }
         }
 
         logger.error("Não foi possível determinar categoria para posto: {} e pessfisType: {}", posto, pessfisType);

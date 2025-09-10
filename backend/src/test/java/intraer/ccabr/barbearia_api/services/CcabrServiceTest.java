@@ -30,18 +30,23 @@ class CcabrServiceTest {
     }
 
     @Test
-    void shouldMapOficialByPessfisType() throws Exception {
-        assertEquals("OFICIAL", invokeMapRole("1T", "OFICIAL"));
-    }
-
-    @Test
-    void shouldMapGraduadoByPessfisType() throws Exception {
-        assertEquals("GRADUADO", invokeMapRole("S1", "GRADUADO"));
-    }
-
-    @Test
     void shouldMapUserForCivil() throws Exception {
-        assertEquals("USER", invokeMapRole(null, "CIVIL"));
+        assertEquals("USER", invokeMapRole("1T", "CIVIL"));
+    }
+
+    @Test
+    void shouldMapUserForServidorCivil() throws Exception {
+        assertEquals("USER", invokeMapRole("1T", "SERVIDOR CIVIL"));
+    }
+
+    @Test
+    void shouldMapOficialByPostoEvenWithGraduadoPessfisType() throws Exception {
+        assertEquals("OFICIAL", invokeMapRole("CAP", "GRADUADO"));
+    }
+
+    @Test
+    void shouldMapGraduadoByPostoEvenWithOficialPessfisType() throws Exception {
+        assertEquals("GRADUADO", invokeMapRole("S2", "OFICIAL"));
     }
 
     @Test
@@ -50,8 +55,13 @@ class CcabrServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionForUnknownType() {
-        Exception ex = assertThrows(Exception.class, () -> invokeMapRole("XX", "ALIEN"));
+    void shouldMapGraduadoByPostoWhenPessfisTypeMissing() throws Exception {
+        assertEquals("GRADUADO", invokeMapRole("3S", null));
+    }
+
+    @Test
+    void shouldThrowExceptionForUnknownPosto() {
+        Exception ex = assertThrows(Exception.class, () -> invokeMapRole("XX", null));
         assertTrue(ex.getCause() instanceof IllegalArgumentException);
     }
 
