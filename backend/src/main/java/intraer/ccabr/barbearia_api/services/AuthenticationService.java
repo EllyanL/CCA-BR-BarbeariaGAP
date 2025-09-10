@@ -40,6 +40,9 @@ public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
 
+    private static final String ADMIN_CPF = "00000000000";
+    private static final String LDAP_AUTH_PLACEHOLDER = "Autenticado no LDAP";
+
     public AuthenticationService(
         MilitarRepository militarRepository,
         TokenService tokenService,
@@ -172,7 +175,11 @@ public class AuthenticationService {
             data.getCpf(),
             role
     );
-    user.setSenha(passwordEncoder.encode(data.getSenha()));
+    if (ADMIN_CPF.equals(data.getCpf()) && data.getSenha() != null) {
+        user.setSenha(passwordEncoder.encode(data.getSenha()));
+    } else {
+        user.setSenha(LDAP_AUTH_PLACEHOLDER);
+    }
     user.setQuadro(role.name()); // Restaurado
 
     return Optional.of(militarRepository.save(user));
@@ -224,8 +231,10 @@ public class AuthenticationService {
             militar.setCategoria(UserRole.valueOf(externalData.getCategoria().toUpperCase()));
         }
 
-        if (rawPassword != null) {
+        if (ADMIN_CPF.equals(externalData.getCpf()) && rawPassword != null) {
             militar.setSenha(passwordEncoder.encode(rawPassword));
+        } else {
+            militar.setSenha(LDAP_AUTH_PLACEHOLDER);
         }
 
         return militarRepository.save(militar);
