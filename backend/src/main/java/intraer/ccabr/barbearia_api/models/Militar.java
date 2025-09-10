@@ -27,6 +27,9 @@ import java.util.List;
 @EqualsAndHashCode(of = "id")
 public class Militar implements UserDetails {
 
+    /** Valor padrão armazenado para indicar autenticação via LDAP. */
+    public static final String LDAP_AUTH_PLACEHOLDER = "Autenticado no LDAP";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonProperty
@@ -68,7 +71,8 @@ public class Militar implements UserDetails {
     @JsonProperty
     private String cpf;
 
-    @Column(name = "senha", length = 255, nullable = true)
+    @Column(name = "senha", length = 255, nullable = true,
+            columnDefinition = "varchar(255) default 'Autenticado no LDAP'")
     @JsonProperty
     private String senha;
 

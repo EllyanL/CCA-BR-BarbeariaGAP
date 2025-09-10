@@ -108,7 +108,7 @@ public class LdapService {
             }
     
             UserDTO ldapData = ldapDataList.get(0);
-            Militar militar = authenticationService.saveOrUpdateFromDto(ldapData, null);
+            Militar militar = authenticationService.saveOrUpdateFromDto(ldapData);
             logger.info("✅ Usuário autenticado/atualizado. CPF: {}", militar.getCpf());
 
             return true;
