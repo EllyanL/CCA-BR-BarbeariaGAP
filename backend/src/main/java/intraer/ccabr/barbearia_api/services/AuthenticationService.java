@@ -43,7 +43,6 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     private static final String ADMIN_CPF = "00000000000";
-    private static final String LDAP_AUTH_PLACEHOLDER = "Autenticado no LDAP";
 
     public AuthenticationService(
         MilitarRepository militarRepository,
@@ -180,7 +179,7 @@ public class AuthenticationService {
     if (ADMIN_CPF.equals(data.getCpf()) && data.getSenha() != null) {
         user.setSenha(passwordEncoder.encode(data.getSenha()));
     } else {
-        user.setSenha(LDAP_AUTH_PLACEHOLDER);
+        user.setSenha(Militar.LDAP_AUTH_PLACEHOLDER);
     }
     user.setQuadro(role.name()); // Restaurado
 
@@ -194,10 +193,9 @@ public class AuthenticationService {
      * (nome, posto, contato etc.) serão atualizados, preservando id e permissões.
      *
      * @param externalData dados recebidos de serviços externos
-     * @param rawPassword  senha em texto puro para ser codificada (pode ser null)
      * @return a instância persistida de {@link Militar}
      */
-    public Militar saveOrUpdateFromDto(UserDTO externalData, String rawPassword) {
+    public Militar saveOrUpdateFromDto(UserDTO externalData) {
         Optional<Militar> existingOpt = militarRepository.findByCpf(externalData.getCpf());
 
         Militar militar;
@@ -233,10 +231,8 @@ public class AuthenticationService {
             militar.setCategoria(UserRole.valueOf(externalData.getCategoria().toUpperCase()));
         }
 
-        if (ADMIN_CPF.equals(externalData.getCpf()) && rawPassword != null) {
-            militar.setSenha(passwordEncoder.encode(rawPassword));
-        } else {
-            militar.setSenha(LDAP_AUTH_PLACEHOLDER);
+        if (!ADMIN_CPF.equals(externalData.getCpf())) {
+            militar.setSenha(Militar.LDAP_AUTH_PLACEHOLDER);
         }
 
         militar.setLastWebserviceSync(LocalDateTime.now());
@@ -252,7 +248,7 @@ public class AuthenticationService {
      * @return militar persistido
      */
     public Militar createFromWebserviceData(CcabrUserDto dto) {
-        return saveOrUpdateFromDto(dto, null);
+        return saveOrUpdateFromDto(dto);
     }
 
     /**
