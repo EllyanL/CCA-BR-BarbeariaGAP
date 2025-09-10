@@ -208,9 +208,20 @@ public class AuthenticationService {
         if (existingOpt.isPresent()) {
             militar = existingOpt.get();
         } else {
-            UserRole role = externalData.getCategoria() != null
-                    ? UserRole.valueOf(externalData.getCategoria().toUpperCase())
-                    : UserRole.USER;
+            UserRole role;
+            if (externalData.getCategoria() != null) {
+                role = UserRole.valueOf(externalData.getCategoria().toUpperCase());
+            } else if (isOficial(externalData.getPostoGrad())) {
+                role = UserRole.OFICIAL;
+            } else if (isGraduado(externalData.getPostoGrad())) {
+                role = UserRole.GRADUADO;
+            } else {
+                logger.error(
+                        "Não foi possível determinar categoria para CPF {} com posto {}",
+                        externalData.getCpf(),
+                        externalData.getPostoGrad());
+                role = UserRole.USER;
+            }
             militar = new Militar(
                     externalData.getSaram(),
                     externalData.getNomeCompleto(),
