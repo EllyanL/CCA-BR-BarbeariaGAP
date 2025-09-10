@@ -8,22 +8,26 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { UserService } from '../../../services/user.service';
 import { RouterTestingModule } from '@angular/router/testing';
+import { AuthService } from '../../../services/auth.service';
 
 describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
   let userSubject: ReplaySubject<any>;
+  let authServiceStub: Partial<AuthService>;
 
   beforeEach(() => {
     userSubject = new ReplaySubject(1);
     const userServiceStub = { userData$: userSubject.asObservable() } as Partial<UserService>;
+    authServiceStub = { isOficial: () => false, isGraduado: () => false };
     TestBed.configureTestingModule({
       declarations: [HeaderComponent],
       imports: [MatIconModule, MatMenuModule, RouterTestingModule],
       providers: [
         { provide: UserService, useValue: userServiceStub },
         { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of() }) } },
-        { provide: LoggingService, useValue: { log: () => {}, warn: () => {}, error: () => {} } }
+        { provide: LoggingService, useValue: { log: () => {}, warn: () => {}, error: () => {} } },
+        { provide: AuthService, useValue: authServiceStub }
       ]
     });
     fixture = TestBed.createComponent(HeaderComponent);
@@ -59,5 +63,20 @@ describe('HeaderComponent', () => {
     const spans = Array.from(compiled.querySelectorAll('button span'));
     const hasAgendar = spans.some((el) => el.textContent?.trim() === 'Agendar');
     expect(hasAgendar).toBeTrue();
+  });
+
+  it('sets agendar route for oficial', () => {
+    authServiceStub.isOficial = () => true;
+    userSubject.next([{ postoGrad: 'SGT', nomeDeGuerra: 'Teste' }]);
+    fixture.detectChanges();
+    expect(component.agendarRoute).toBe('/oficiais');
+  });
+
+  it('sets agendar route for graduado', () => {
+    authServiceStub.isOficial = () => false;
+    authServiceStub.isGraduado = () => true;
+    userSubject.next([{ postoGrad: 'SGT', nomeDeGuerra: 'Teste' }]);
+    fixture.detectChanges();
+    expect(component.agendarRoute).toBe('/graduados');
   });
 });

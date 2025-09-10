@@ -9,6 +9,7 @@ import { OrientacoesComponent } from '../../agendamento/orientacoes/orientacoes.
 import { Subscription } from 'rxjs';
 import { UserData } from 'src/app/models/user-data';
 import { UserService } from '../../../services/user.service';
+import { AuthService } from '../../../services/auth.service';
 
 // Certifique-se de importar o modelo
 
@@ -59,7 +60,7 @@ export const rotateToggle = trigger('rotateToggle', [
           <mat-icon>assignment</mat-icon>
           <span>Regras</span>
         </button>
-        <button mat-menu-item class="icon-text" [routerLink]="'/graduado'">
+        <button mat-menu-item class="icon-text" [routerLink]="agendarRoute">
           <mat-icon>schedule</mat-icon>
           <span>Agendar</span>
         </button>
@@ -127,6 +128,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @Input() titleHeader: string = '';
   nomeHeader: string = '';
 
+  agendarRoute: string = '/graduados';
+
   private userDataSubscription?: Subscription;
 
   menuOpen: boolean = false;
@@ -134,11 +137,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(
     private dialog: MatDialog,
     private userService: UserService,
-    private logger: LoggingService
+    private logger: LoggingService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.setNomeHeader();
+    this.setAgendarRoute();
   }
 
   logout() {
@@ -175,6 +180,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.nomeHeader = 'Usuário Não Identificado';
       }
     );
+  }
+
+  setAgendarRoute() {
+    if (this.authService.isOficial()) {
+      this.agendarRoute = '/oficiais';
+    } else if (this.authService.isGraduado()) {
+      this.agendarRoute = '/graduados';
+    } else {
+      this.agendarRoute = '/not-authorized';
+    }
   }
 
   ngOnDestroy(): void {
