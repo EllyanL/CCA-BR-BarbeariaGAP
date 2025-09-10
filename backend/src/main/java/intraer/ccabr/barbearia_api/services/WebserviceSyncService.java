@@ -32,7 +32,8 @@ public class WebserviceSyncService {
     @Transactional
     public void syncAllUsers() {
         List<Militar> militares = militarRepository.findAll();
-        logger.info("Iniciando sincronização de {} militares via webservice", militares.size());
+        int total = militares.size();
+        logger.info("Iniciando sincronização de {} militares via webservice", total);
         int updated = 0;
         for (Militar militar : militares) {
             CcabrUserDto dto = webserviceService.fetchMilitarByCpf(militar.getCpf());
@@ -59,7 +60,7 @@ public class WebserviceSyncService {
                 updated++;
             }
         }
-        logger.info("Sincronização concluída. {} militares atualizados", updated);
+        logger.info("Sincronização concluída. {} de {} militares atualizados", updated, total);
     }
 }
 
