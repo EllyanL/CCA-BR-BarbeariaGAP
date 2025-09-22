@@ -27,6 +27,16 @@ interface HorarioBase {
   horario: string;
 }
 
+export interface AdicionarHorarioBaseResultado {
+  dia: DiaKey;
+  horario: string;
+  categoria: string;
+  sucesso: boolean;
+  conflito?: boolean;
+  mensagem?: string;
+  status?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -82,13 +92,41 @@ export class HorariosService {
     );
   }
 
-  adicionarHorarioBase(horario: string, dia: DiaKey, categoria: string): Observable<any> {
-    const novoHorario = { horario, dia: normalizeDia(dia) as DiaKey, categoria };
+  adicionarHorarioBase(horario: string, dia: DiaKey, categoria: string): Observable<AdicionarHorarioBaseResultado> {
+    const diaNormalizado = normalizeDia(dia) as DiaKey;
+    const novoHorario = { horario, dia: diaNormalizado, categoria };
     const headers = this.getAuthHeaders();
     return this.http.post(`${this.apiUrl}/adicionar`, novoHorario, { headers }).pipe(
+      map(() => ({
+        dia: diaNormalizado,
+        horario,
+        categoria,
+        sucesso: true,
+        conflito: false,
+        status: 200,
+      } as AdicionarHorarioBaseResultado)),
       catchError((error: HttpErrorResponse) => {
         if (error.status === 404 || error.status === 409) {
-          return of(null);
+          const mensagemPadrao = error.status === 409
+            ? 'Horário já existente para o dia selecionado.'
+            : 'Horário não encontrado para o dia selecionado.';
+          const mensagem = this.extrairMensagemErro(error, mensagemPadrao);
+          this.logger.warn('Horário base não pôde ser adicionado.', {
+            status: error.status,
+            horario,
+            dia: diaNormalizado,
+            categoria,
+            mensagem,
+          });
+          return of({
+            dia: diaNormalizado,
+            horario,
+            categoria,
+            sucesso: false,
+            conflito: error.status === 409,
+            mensagem,
+            status: error.status,
+          });
         }
         return throwError(() => error);
       })
@@ -124,16 +162,9 @@ export class HorariosService {
     );
   }
 
-  adicionarHorarioBaseEmDias(horario: string, dias: DiaKey[], categoria: string): Observable<any[]> {
+  adicionarHorarioBaseEmDias(horario: string, dias: DiaKey[], categoria: string): Observable<AdicionarHorarioBaseResultado[]> {
     return from(dias).pipe(
-      mergeMap(d => this.adicionarHorarioBase(horario, d, categoria).pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 404 || error.status === 409) {
-            return of(null);
-          }
-          return throwError(() => error);
-        })
-      )),
+      mergeMap(d => this.adicionarHorarioBase(horario, d, categoria)),
       toArray()
     );
   }
@@ -349,6 +380,28 @@ export class HorariosService {
         return throwError(() => new Error(error.message || 'Erro desconhecido'));
       })
     );
+  }
+
+  private extrairMensagemErro(error: HttpErrorResponse, fallback: string): string {
+    const payload = error?.error as unknown;
+    if (typeof payload === 'string') {
+      const mensagemLimpa = payload.trim();
+      if (mensagemLimpa.length > 0) {
+        return mensagemLimpa;
+      }
+    }
+    if (payload && typeof payload === 'object') {
+      const possivelMensagem = (payload as { mensagem?: unknown; message?: unknown; error?: unknown });
+      const mensagemExtraida = [possivelMensagem.mensagem, possivelMensagem.message, possivelMensagem.error]
+        .find(valor => typeof valor === 'string' && valor.trim().length > 0) as string | undefined;
+      if (mensagemExtraida) {
+        return mensagemExtraida.trim();
+      }
+    }
+    if (typeof error?.message === 'string' && error.message.trim().length > 0) {
+      return error.message.trim();
+    }
+    return fallback;
   }
   private getAuthHeaders(): HttpHeaders {
     const token = getCookie('barbearia-token');

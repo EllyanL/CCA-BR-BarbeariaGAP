@@ -68,7 +68,12 @@ public class HorarioController {
         LocalTime hora = LocalTime.parse(horarioStr);
 
         if (horarioRepository.existsByDiaAndHorarioAndCategoria(dia, hora, categoria)) {
-            return ResponseEntity.ok("Horário já existente, nenhuma ação realizada.");
+            Map<String, String> responseBody = Map.of(
+                    "mensagem", "Horário já existente, nenhuma ação realizada.",
+                    "dia", dia,
+                    "horario", horarioStr,
+                    "categoria", categoria);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(responseBody);
         }
 
         Horario novo = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
