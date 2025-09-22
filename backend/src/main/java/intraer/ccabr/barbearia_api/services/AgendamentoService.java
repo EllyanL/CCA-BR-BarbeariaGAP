@@ -59,6 +59,10 @@ public class AgendamentoService {
 
     private static final ZoneId ZONE_ID_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
 
+    protected ZonedDateTime agora() {
+        return ZonedDateTime.now(ZONE_ID_SAO_PAULO);
+    }
+
     @Transactional
     public Agendamento saveAgendamento(Agendamento agendamento) {
         Militar militar = agendamento.getMilitar();
@@ -130,7 +134,7 @@ public class AgendamentoService {
             boolean isAdmin = "ADMIN".equalsIgnoreCase(canceladoPor);
 
             if (!isAdmin) {
-                LocalDateTime limiteCancelamento = ZonedDateTime.now(ZONE_ID_SAO_PAULO)
+                LocalDateTime limiteCancelamento = agora()
                     .plusMinutes(30)
                     .toLocalDateTime();
                 if (agendamentoDateTime.isBefore(limiteCancelamento)) {
@@ -204,32 +208,43 @@ public class AgendamentoService {
 
     public boolean podeAgendarDataHora(LocalDate data, LocalTime hora) {
         LocalDateTime agendamentoDateTime = LocalDateTime.of(data, hora);
-        LocalDateTime agora = ZonedDateTime.now(ZONE_ID_SAO_PAULO)
+        LocalDateTime agora = agora()
             .withSecond(0)
             .withNano(0)
             .toLocalDateTime();
         logger.debug("🌍 Zone ID do backend: {}", ZONE_ID_SAO_PAULO);
         logger.debug("⏱️ [DEBUG] Data/Hora do agendamento: {}", agendamentoDateTime);
         logger.debug("⏱️ [DEBUG] Data/Hora atual (ajustada): {}", agora);
-    
-        // Permitir agendamentos com pelo menos 30 minutos de antecedência
-        if (agendamentoDateTime.minusMinutes(30).isBefore(agora)) {
+
+        ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
+        boolean excecaoPrimeiroHorarioSegunda = isPrimeiroHorarioSegunda(data, hora, configuracao);
+
+        if (!excecaoPrimeiroHorarioSegunda && agendamentoDateTime.minusMinutes(30).isBefore(agora)) {
             return false;
         }
 
-        // Permitir agendamentos no mesmo minuto ou posterior
         return !agendamentoDateTime.isBefore(agora);
     }
 
+    private boolean isPrimeiroHorarioSegunda(LocalDate data, LocalTime hora, ConfiguracaoAgendamento configuracao) {
+        if (data == null || hora == null || configuracao == null || configuracao.getHorarioInicio() == null) {
+            return false;
+        }
+
+        return data.getDayOfWeek() == DayOfWeek.MONDAY
+            && hora.truncatedTo(ChronoUnit.MINUTES)
+                .equals(configuracao.getHorarioInicio().truncatedTo(ChronoUnit.MINUTES));
+    }
+
     public boolean isAgendamentoPassado(Agendamento agendamento) {
-        ZonedDateTime agora = ZonedDateTime.now(ZONE_ID_SAO_PAULO);
-        LocalDate dataAtual = agora.toLocalDate();
-        LocalTime horaAtual = agora.toLocalTime();
-    
+        ZonedDateTime agoraAtual = agora();
+        LocalDate dataAtual = agoraAtual.toLocalDate();
+        LocalTime horaAtual = agoraAtual.toLocalTime();
+
         if (agendamento.getData().isBefore(dataAtual)) {
             return true;
         }
-    
+
         return agendamento.getData().isEqual(dataAtual) && agendamento.getHora().isBefore(horaAtual);
     }
 
@@ -388,17 +403,29 @@ public class AgendamentoService {
     public void validarRegrasDeNegocio(Agendamento agendamento) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
 
-        // 1. Agendamento só é permitido a partir de segunda às horárioInicio configurado
-        LocalDate hoje = ZonedDateTime.now(ZONE_ID_SAO_PAULO).toLocalDate();
+        ZonedDateTime agoraZoned = agora();
+        LocalDate hoje = agoraZoned.toLocalDate();
         LocalDate segundaDaSemana = hoje.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getHorarioInicio());
+        LocalDateTime agoraDateTime = agoraZoned.toLocalDateTime();
 
-        if (ZonedDateTime.now(ZONE_ID_SAO_PAULO).toLocalDateTime().isBefore(inicioDaSemana)) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Agendamentos só são permitidos a partir de segunda às " +
-                HoraUtil.format(config.getHorarioInicio()) + "."
-            );
+        boolean excecaoPrimeiroHorarioSegunda = isPrimeiroHorarioSegunda(
+            agendamento.getData(),
+            agendamento.getHora(),
+            config
+        );
+
+        if (agoraDateTime.isBefore(inicioDaSemana)) {
+            LocalDateTime limiteExcecao = inicioDaSemana.minusMinutes(30);
+            boolean dentroDaJanelaExcecao = excecaoPrimeiroHorarioSegunda && !agoraDateTime.isBefore(limiteExcecao);
+
+            if (!dentroDaJanelaExcecao) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Agendamentos só são permitidos a partir de segunda às " +
+                    HoraUtil.format(config.getHorarioInicio()) + "."
+                );
+            }
         }
 
         // 2. Horários válidos somente de segunda a sexta entre horárioInicio e horárioFim configurados
@@ -418,17 +445,32 @@ public class AgendamentoService {
         LocalTime limiteInicial = inicio.plusMinutes(10);
         LocalTime limiteFinal = fim.minusMinutes(30);
 
-        if (hora.isBefore(limiteInicial) || hora.isAfter(limiteFinal)) {
+        boolean antesDoInicio = hora.isBefore(limiteInicial);
+        boolean depoisDoFim = hora.isAfter(limiteFinal);
+
+        if ((antesDoInicio && !(excecaoPrimeiroHorarioSegunda && hora.equals(inicio))) || depoisDoFim) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "FORA_DA_JANELA_PERMITIDA");
         }
 
         // bloqueia agendamentos em datas/horas já passadas
-        if (!podeAgendarDataHora(agendamento.getData(), agendamento.getHora())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar horários passados.");
+        boolean podeAgendar = podeAgendarDataHora(agendamento.getData(), agendamento.getHora());
+        LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+
+        if (!podeAgendar) {
+            if (agendamentoDateTime.isBefore(agoraDateTime)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar horários passados.");
+            }
+
+            if (!excecaoPrimeiroHorarioSegunda) {
+                throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O agendamento deve ser feito com pelo menos 30 minutos de antecedência."
+                );
+            }
         }
 
-        LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
-        if (agendamentoDateTime.isBefore(ZonedDateTime.now(ZONE_ID_SAO_PAULO).plusMinutes(30).toLocalDateTime())) {
+        if (!excecaoPrimeiroHorarioSegunda
+            && agendamentoDateTime.isBefore(agoraDateTime.plusMinutes(30))) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
                 "O agendamento deve ser feito com pelo menos 30 minutos de antecedência."
