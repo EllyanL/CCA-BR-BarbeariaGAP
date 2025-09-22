@@ -552,6 +552,18 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return !!agendamento && !this.isAgendamentoDoMilitarLogado(agendamento);
   }
 
+  deveDestacarSlot(slot: SlotHorario, dia: string, hora: string): boolean {
+    if (!slot || slot.status !== 'AGENDADO') {
+      return false;
+    }
+
+    if (slot.usuarioId != null && this.idMilitarLogado != null && slot.usuarioId === this.idMilitarLogado) {
+      return true;
+    }
+
+    return this.isAgendamentoDoMilitarLogado(this.getAgendamentoParaDiaHora(dia, hora));
+  }
+
   getTextTooltip(agendamento: Agendamento | undefined): string { // Tooltip com dados do militar.
     if (!agendamento) {
       return "";

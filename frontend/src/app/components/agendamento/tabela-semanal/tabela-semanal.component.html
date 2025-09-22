@@ -31,7 +31,10 @@
                 mat-raised-button
                 [disabled]="slot.status === 'INDISPONIVEL'"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
-                [ngClass]="slot.status | statusFormat : 'tabelaClass'"
+                [ngClass]="[
+                  slot.status | statusFormat : 'tabelaClass',
+                  deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : null
+                ]"
                 (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), getLabelDiaComData(dia), hora)"
               >
                 {{ slot.status | statusFormat }}

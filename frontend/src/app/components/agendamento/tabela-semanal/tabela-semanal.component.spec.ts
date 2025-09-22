@@ -87,6 +87,44 @@ describe('TabelaSemanalComponent', () => {
     expect(component.getSlot('segunda', '14:15')?.status).toBe('DISPONIVEL');
   });
 
+  describe('destaque de agendamentos próprios', () => {
+    beforeEach(() => {
+      component.usuarioCarregado = true;
+      component.diasDaSemana = ['segunda'] as any;
+      component.diasComData = ['01/01'];
+      component.horariosBaseSemana = ['09:00'];
+      component.agendamentos = [];
+    });
+
+    it('aplica classe especial quando o slot é do militar logado', () => {
+      component.idMilitarLogado = 1;
+      component.horariosPorDia = {
+        segunda: [{ horario: '09:00', status: 'AGENDADO', usuarioId: 1 }]
+      } as any;
+
+      fixture.detectChanges();
+
+      const botao = fixture.debugElement.query(By.css('button'));
+      expect(botao).toBeTruthy();
+      expect(botao.nativeElement.classList).toContain('botao-agendado');
+      expect(botao.nativeElement.classList).toContain('botao-agendado-proprio');
+    });
+
+    it('mantém estilo padrão para agendamentos de outros usuários', () => {
+      component.idMilitarLogado = 1;
+      component.horariosPorDia = {
+        segunda: [{ horario: '09:00', status: 'AGENDADO', usuarioId: 99 }]
+      } as any;
+
+      fixture.detectChanges();
+
+      const botao = fixture.debugElement.query(By.css('button'));
+      expect(botao).toBeTruthy();
+      expect(botao.nativeElement.classList).toContain('botao-agendado');
+      expect(botao.nativeElement.classList).not.toContain('botao-agendado-proprio');
+    });
+  });
+
   describe('desabilitarBotoesPorHorario', () => {
     afterEach(() => {
       jasmine.clock().uninstall();

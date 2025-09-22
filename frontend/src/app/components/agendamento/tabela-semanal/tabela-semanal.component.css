@@ -108,6 +108,16 @@
   color: #fff;
 }
 
+.botao-agendado-proprio {
+  background-color: #2e7d32;
+  color: #fff;
+  border: 1px solid #1b5e20;
+}
+
+.botao-agendado-proprio:disabled {
+  color: #e8f5e9;
+}
+
 .botao-agendado-outro {
   background-color: white;
   color: black;
