@@ -235,8 +235,20 @@ public class AuthenticationService {
         }
 
         militar.setQuadro(externalData.getQuadro());
-        militar.setSecao(externalData.getSecao() != null ? externalData.getSecao() : "Não informado");
-        militar.setRamal(externalData.getRamal() != null ? externalData.getRamal() : "Não informado");
+
+        String secaoExterna = sanitizeInfo(externalData.getSecao());
+        if (secaoExterna != null) {
+            militar.setSecao(secaoExterna);
+        } else if (sanitizeInfo(militar.getSecao()) == null) {
+            militar.setSecao("Não informado");
+        }
+
+        String ramalExterno = sanitizeInfo(externalData.getRamal());
+        if (ramalExterno != null) {
+            militar.setRamal(ramalExterno);
+        } else if (sanitizeInfo(militar.getRamal()) == null) {
+            militar.setRamal("Não informado");
+        }
         militar.setEmail(externalData.getEmail());
         militar.setNomeCompleto(externalData.getNomeCompleto());
         militar.setNomeDeGuerra(externalData.getNomeDeGuerra());
@@ -296,5 +308,18 @@ public class AuthenticationService {
         List<String> graduados = Arrays.asList("S2", "S1", "CB", "3S", "2S", "1S", "SO");
         String normalized = postoGrad.trim().toUpperCase();
         return graduados.contains(normalized);
+    }
+
+    private String sanitizeInfo(String valor) {
+        if (valor == null) {
+            return null;
+        }
+
+        String trimmed = valor.trim();
+        if (trimmed.isEmpty() || "Não informado".equalsIgnoreCase(trimmed)) {
+            return null;
+        }
+
+        return trimmed;
     }
 }

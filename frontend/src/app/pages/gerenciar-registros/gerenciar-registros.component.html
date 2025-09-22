@@ -4,7 +4,6 @@
       <mat-label>Buscar</mat-label>
       <input
         matInput
-        placeholder="Buscar"
         [(ngModel)]="filtros.texto"
         (ngModelChange)="aplicarFiltros()"
       />
@@ -45,13 +44,11 @@
           matStartDate
           [(ngModel)]="filtros.dataInicio"
           (ngModelChange)="onDateRangeChange()"
-          placeholder="Data inicial"
         />
         <input
           matEndDate
           [(ngModel)]="filtros.dataFim"
           (ngModelChange)="onDateRangeChange()"
-          placeholder="Data final"
         />
       </mat-date-range-input>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
