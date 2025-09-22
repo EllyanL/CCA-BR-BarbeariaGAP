@@ -279,7 +279,39 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
   }
 
   formatarDataBR(data?: string | Date | null): string {
-    return data ? this.datePipe.transform(data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '' : '';
+    if (!data) {
+      return '';
+    }
+
+    if (typeof data === 'string') {
+      const partes = data.split('/').map(p => p.trim());
+      if (partes.length === 3) {
+        const [diaStr, mesStr, anoStr] = partes;
+        const dia = Number(diaStr);
+        const mes = Number(mesStr);
+        const ano = Number(anoStr);
+        if (
+          Number.isFinite(dia) &&
+          Number.isFinite(mes) &&
+          Number.isFinite(ano) &&
+          dia > 0 &&
+          mes > 0 &&
+          ano > 0
+        ) {
+          const diaNormalizado = dia.toString().padStart(2, '0');
+          const mesNormalizado = mes.toString().padStart(2, '0');
+          const anoNormalizado = ano.toString().padStart(4, '0');
+          return `${diaNormalizado}/${mesNormalizado}/${anoNormalizado}`;
+        }
+      }
+      return data;
+    }
+
+    if (data instanceof Date) {
+      return this.datePipe.transform(data, 'dd/MM/yyyy', undefined, 'pt-BR') ?? '';
+    }
+
+    return '';
   }
 
   formatarHoraBR(hora?: string | Date | null): string {
