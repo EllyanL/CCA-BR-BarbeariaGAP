@@ -643,7 +643,8 @@ import { UserService } from 'src/app/services/user.service';
           },
           error: (err: any) => {
             this.logger.error('Erro ao remover horário:', err);
-            this.snackBar.open('Falha ao remover o horário dos dias selecionados.', 'Ciente', { duration: SNACKBAR_DURATION });
+            const mensagem = err?.message || 'Falha ao remover o horário dos dias selecionados.';
+            this.snackBar.open(mensagem, 'Ciente', { duration: SNACKBAR_DURATION });
           }
         });
       } else {

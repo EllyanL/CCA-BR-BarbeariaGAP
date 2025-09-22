@@ -3,6 +3,7 @@ package intraer.ccabr.barbearia_api.services;
 import intraer.ccabr.barbearia_api.dtos.HorarioDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
+import intraer.ccabr.barbearia_api.exceptions.HorarioComAgendamentoAtivoException;
 import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
@@ -332,8 +333,28 @@ public class HorarioService {
     public boolean removerHorarioPersonalizado(String dia, LocalTime horario, String categoria) {
         String diaNorm = DiaSemana.from(dia).getValor();
         Optional<Horario> existente = horarioRepository.findByDiaAndHorarioAndCategoria(diaNorm, horario, categoria);
-        existente.ifPresent(horarioRepository::delete);
-        return existente.isPresent();
+        if (existente.isEmpty()) {
+            return false;
+        }
+
+        boolean possuiAgendamentoAtivo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+                horario,
+                diaNorm,
+                categoria
+        );
+
+        if (possuiAgendamentoAtivo) {
+            String mensagem = String.format(
+                    "Não é possível remover o horário %s de %s (%s). Existe agendamento ativo. Cancele o agendamento antes de remover.",
+                    HoraUtil.format(horario),
+                    diaNorm,
+                    categoria
+            );
+            throw new HorarioComAgendamentoAtivoException(mensagem);
+        }
+
+        horarioRepository.delete(existente.get());
+        return true;
     }
 
     @Transactional
