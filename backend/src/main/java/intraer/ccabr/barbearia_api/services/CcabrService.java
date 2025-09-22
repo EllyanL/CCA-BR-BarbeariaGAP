@@ -287,6 +287,36 @@ public class CcabrService {
         }
 
         if (telefoneData instanceof Map<?, ?> mapa) {
+            for (Map.Entry<?, ?> entry : mapa.entrySet()) {
+                Object chave = entry.getKey();
+                if (chave instanceof String chaveTexto) {
+                    String chaveNormalizada = chaveTexto.toLowerCase();
+                    if (chaveNormalizada.contains("ramal")
+                            || chaveNormalizada.contains("extensao")
+                            || chaveNormalizada.contains("extensão")) {
+                        String telefone = extractTelefone(entry.getValue());
+                        if (!isBlank(telefone)) {
+                            return telefone;
+                        }
+                    }
+                }
+            }
+
+            for (Map.Entry<?, ?> entry : mapa.entrySet()) {
+                Object chave = entry.getKey();
+                if (chave instanceof String chaveTexto) {
+                    String chaveNormalizada = chaveTexto.toLowerCase();
+                    if (chaveNormalizada.contains("numero")
+                            || chaveNormalizada.contains("número")
+                            || chaveNormalizada.contains("telefone")) {
+                        String telefone = extractTelefone(entry.getValue());
+                        if (!isBlank(telefone)) {
+                            return telefone;
+                        }
+                    }
+                }
+            }
+
             for (Object value : mapa.values()) {
                 String telefone = extractTelefone(value);
                 if (!isBlank(telefone)) {
