@@ -139,19 +139,73 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     private aplicarJanelaHorarios(): void {
-      const inRange = (h: string) => {
-        const m = this.toMinutes(h);
-        return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
-      };
-      const baseAtual = (this.horariosBasePorCategoria[this.categoriaSelecionada] || []).filter(inRange);
-      this.horariosBasePorCategoria[this.categoriaSelecionada] = baseAtual;
-      this.horariosBaseSemana = baseAtual;
-      (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
-        const arr: SlotHorario[] = this.horariosPorDia[dia] || [];
-        this.horariosPorDia[dia] = arr.filter((h: SlotHorario) => inRange(h.horario));
+      const dias = Object.keys(this.horariosPorDia) as DiaKey[];
+      const atualizados: HorariosPorDia = { ...this.horariosPorDia };
+
+      dias.forEach(dia => {
+        const slots = (this.horariosPorDia[dia] || []).map(slot => ({
+          ...slot,
+          horario: normalizeHora(slot.horario)
+        })).filter(slot => this.isHoraAgendavel(slot.horario));
+
+        atualizados[dia] = slots;
       });
-      this.horariosPorDia = { ...this.horariosPorDia };
+
+      this.horariosPorDia = atualizados;
+      this.atualizarHorariosBaseSemana();
+    }
+
+    private atualizarHorariosBaseSemana(): void {
+      const todosHorarios = new Set<string>();
+      const base = this.horariosBasePorCategoria[this.categoriaSelecionada] || [];
+
+      const adicionar = (hora?: string) => {
+        const normalizado = normalizeHora(hora);
+        if (normalizado) {
+          todosHorarios.add(normalizado);
+        }
+      };
+
+      base.forEach(adicionar);
+
+      (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
+        (this.horariosPorDia[dia] || []).forEach(slot => adicionar(slot.horario));
+      });
+
+      const filtrados = Array.from(todosHorarios).filter(h => this.isHoraAgendavel(h));
+      this.horariosBaseSemana = this.ordenarHorarios(filtrados);
       this.cdr.markForCheck?.();
+    }
+
+    private atualizarBaseCategoria(categoria: string, horarios: string[]): void {
+      const normalizados = horarios.map(h => normalizeHora(h)).filter(Boolean);
+      const unicos = Array.from(new Set(normalizados));
+      this.horariosBasePorCategoria[categoria] = this.ordenarHorarios(unicos);
+    }
+
+    private incluirHorarioNaBaseLocal(horario: string, categoria: string): void {
+      const normalizado = normalizeHora(horario);
+      if (!normalizado) {
+        return;
+      }
+      const atual = this.horariosBasePorCategoria[categoria] || [];
+      const conjunto = new Set(atual.map(h => normalizeHora(h)));
+      conjunto.add(normalizado);
+      this.horariosBasePorCategoria[categoria] = this.ordenarHorarios(Array.from(conjunto));
+      if (categoria === this.categoriaSelecionada) {
+        this.atualizarHorariosBaseSemana();
+      }
+    }
+
+    private removerHorarioDaBaseLocal(horario: string, categoria: string): void {
+      const alvo = normalizeHora(horario);
+      const atual = this.horariosBasePorCategoria[categoria] || [];
+      const filtrado = atual.filter(h => normalizeHora(h) !== alvo);
+      const normalizados = filtrado.map(h => normalizeHora(h)).filter(Boolean);
+      this.horariosBasePorCategoria[categoria] = this.ordenarHorarios(Array.from(new Set(normalizados)));
+      if (categoria === this.categoriaSelecionada) {
+        this.atualizarHorariosBaseSemana();
+      }
     }
     
     
@@ -333,7 +387,11 @@ import { UserService } from 'src/app/services/user.service';
     }
 
     onCategoriaChange(): void {
-      this.horariosBaseSemana = this.horariosBasePorCategoria[this.categoriaSelecionada] ?? [];
+      if (this.horariosBasePorCategoria[this.categoriaSelecionada]) {
+        this.atualizarHorariosBaseSemana();
+      } else {
+        this.carregarHorariosBase();
+      }
       this.loadHorarios();
     }
 
@@ -341,49 +399,52 @@ import { UserService } from 'src/app/services/user.service';
       return Object.values(this.horariosPorDia).every(arr => !arr || arr.length === 0);
     }
     carregarHorariosBase(): void {
-      this.configuracoesService.getConfig().subscribe({
-        next: config => {
-          this.configuracao = config;
+      const categoria = this.categoriaSelecionada;
+      const aplicar = (horarios: string[]) => {
+        this.atualizarBaseCategoria(categoria, horarios);
+        if (categoria === this.categoriaSelecionada) {
+          this.atualizarHorariosBaseSemana();
+        }
+      };
 
-          const [inicioHora, inicioMin] = (config.horarioInicio ?? '08:00').split(':').map(Number);
-          const [fimHora, fimMin] = (config.horarioFim ?? '18:00').split(':').map(Number);
-          const inicio = new Date();
-          inicio.setHours(inicioHora, inicioMin, 0, 0);
-          const fim = new Date();
-          fim.setHours(fimHora, fimMin, 0, 0);
-
-          const slots: string[] = [];
-          for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
-            const hh = t.getHours().toString().padStart(2, '0');
-            const mm = t.getMinutes().toString().padStart(2, '0');
-            slots.push(`${hh}:${mm}`);
-          }
-
-          this.horariosBasePorCategoria[this.categoriaSelecionada] = slots;
-          this.horariosBaseSemana = slots;
-          this.aplicarJanelaHorarios();
-          this.ordenarHorarios();
-          this.cdr.markForCheck();
-        },
+      this.horariosService.getHorariosBase().subscribe({
+        next: horarios => aplicar(horarios || []),
         error: err => {
-          this.logger.error('Erro ao carregar configurações de agendamento:', err);
-          this.snackBar.open(
-            'Não foi possível carregar as configurações de horários. Recarregue a página.',
-            'Ciente',
-            { duration: SNACKBAR_DURATION }
-          );
+          this.logger.error('Erro ao carregar horários base do serviço:', err);
+          this.configuracoesService.getConfig().subscribe({
+            next: config => {
+              this.configuracao = config;
+              const [inicioHora, inicioMin] = (config.horarioInicio ?? '08:00').split(':').map(Number);
+              const [fimHora, fimMin] = (config.horarioFim ?? '18:00').split(':').map(Number);
+              const inicio = new Date();
+              inicio.setHours(inicioHora, inicioMin, 0, 0);
+              const fim = new Date();
+              fim.setHours(fimHora, fimMin, 0, 0);
+
+              const slots: string[] = [];
+              for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
+                const hh = t.getHours().toString().padStart(2, '0');
+                const mm = t.getMinutes().toString().padStart(2, '0');
+                slots.push(`${hh}:${mm}`);
+              }
+
+              aplicar(slots);
+            },
+            error: configErr => {
+              this.logger.error('Erro ao carregar configurações de agendamento:', configErr);
+              this.snackBar.open(
+                'Não foi possível carregar as configurações de horários. Recarregue a página.',
+                'Ciente',
+                { duration: SNACKBAR_DURATION }
+              );
+            }
+          });
         }
       });
     }
 
-    private ordenarHorarios(): void {
-      this.horariosBaseSemana.sort((a, b) => {
-        const getTimeValue = (horarioStr: string) => {
-          const [hours, minutes] = horarioStr.split(':').map(Number);
-          return hours * 60 + minutes;
-        };
-        return getTimeValue(a) - getTimeValue(b);
-      });
+    private ordenarHorarios(horarios: string[]): string[] {
+      return [...horarios].sort((a, b) => this.toMinutes(normalizeHora(a)) - this.toMinutes(normalizeHora(b)));
     }
 
     validarHorario(): void {
@@ -416,13 +477,7 @@ import { UserService } from 'src/app/services/user.service';
 
       this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
         next: () => {
-          const base = this.horariosBasePorCategoria[categoria] || [];
-          if (!base.includes(horario)) {
-            base.push(horario);
-            this.horariosBasePorCategoria[categoria] = base;
-            this.horariosBaseSemana = base;
-            this.ordenarHorarios();
-          }
+          this.incluirHorarioNaBaseLocal(horario, categoria);
           this.carregarHorariosDaSemana();
           this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em todos os dias.`, 'Ciente', { duration: SNACKBAR_DURATION });
           this.horarioPersonalizado = '';
@@ -457,6 +512,7 @@ import { UserService } from 'src/app/services/user.service';
         this.horariosService.adicionarHorarioDia(horario, dia, categoria).subscribe({
           next: () => {
             this.snackBar.open(`Horário ${horario} adicionado em ${this.getDiaLabel(dia)}`, 'Ciente', { duration: SNACKBAR_DURATION });
+            this.incluirHorarioNaBaseLocal(horario, categoria);
             this.carregarHorariosDaSemana();
             this.carregarHorariosBase();
             this.horarioPersonalizado = '';
@@ -490,15 +546,7 @@ import { UserService } from 'src/app/services/user.service';
 
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
         next: () => {
-          // Garante que ele exista na base da semana da categoria
-          const base = this.horariosBasePorCategoria[categoria] || [];
-          if (!base.includes(horario)) {
-            base.push(horario);
-            this.horariosBasePorCategoria[categoria] = base;
-            this.horariosBaseSemana = base;
-            this.ordenarHorarios();
-          }
-
+          this.incluirHorarioNaBaseLocal(horario, categoria);
           this.snackBar.open(`Horário ${horario} adicionado ao dia ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: SNACKBAR_DURATION });
           this.carregarHorariosDaSemana();
         },
@@ -527,16 +575,14 @@ import { UserService } from 'src/app/services/user.service';
         const diasAlvo: DiaKey[] = this.diasDaSemana;
         this.horariosService.removerHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
           next: () => {
-            const base = (this.horariosBasePorCategoria[categoria] || []).filter(h => h !== horario);
-            this.horariosBasePorCategoria[categoria] = base;
-            this.horariosBaseSemana = base;
             diasAlvo.forEach(dia => {
               const diaKey = normalizeDia(dia);
               if (this.horariosPorDia[diaKey]) {
-                this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
+                this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => normalizeHora(h.horario) !== normalizeHora(horario));
               }
             });
             this.horariosPorDia = { ...this.horariosPorDia };
+            this.removerHorarioDaBaseLocal(horario, categoria);
             this.cdr.markForCheck();
             this.carregarHorariosDaSemana();
             this.snackBar.open('Horário removido com sucesso de todos os dias.', 'Ciente', { duration: SNACKBAR_DURATION });
@@ -552,7 +598,7 @@ import { UserService } from 'src/app/services/user.service';
           next: () => {
             const diaKey = normalizeDia(dia);
             if (this.horariosPorDia[diaKey]) {
-              this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => h.horario !== horario);
+              this.horariosPorDia[diaKey] = this.horariosPorDia[diaKey].filter(h => normalizeHora(h.horario) !== normalizeHora(horario));
             }
             this.horariosPorDia = { ...this.horariosPorDia };
             this.carregarHorariosDaSemana();
