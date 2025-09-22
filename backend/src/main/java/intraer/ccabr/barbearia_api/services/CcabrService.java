@@ -115,10 +115,12 @@ public class CcabrService {
                     userDTO.setOm(omBruta != null ? omBruta.trim().replace(" ", "-") : "Não informado");
                     userDTO.setCpf((String) response.get("cpf"));
                     userDTO.setQuadro((String) response.get("quadro"));
+                    String funcao = asTrimmedString(response.get("funcao"));
+                    Object secaoData = response.get("secao");
                     Object setorData = response.containsKey("Setor") ? response.get("Setor") : response.get("setor");
                     Object telefoneData = response.get("telefone");
 
-                    String secaoFinal = resolveSecao(setorData);
+                    String secaoFinal = resolveSecao(setorData, secaoData, funcao);
                     String ramalFinal = resolveRamal(telefoneData);
 
                     logger.debug(
@@ -141,9 +143,83 @@ public class CcabrService {
                 .doOnError(error -> logger.error("Erro na busca do militar: {}", error.getMessage()));
     }
 
-    private String resolveSecao(Object setorData) {
+    private String resolveSecao(Object setorData, Object secaoData, String funcao) {
         String secao = extractPrimeiroSetor(setorData);
-        return isBlank(secao) ? "Não informado" : secao;
+        if (!isBlank(secao)) {
+            return secao;
+        }
+
+        String secaoDireta = asTrimmedString(secaoData);
+        if (!isBlank(secaoDireta)) {
+            return secaoDireta;
+        }
+
+        String secaoDerivada = deriveSecaoFromFuncao(funcao);
+        return isBlank(secaoDerivada) ? "Não informado" : secaoDerivada;
+    }
+
+    private String deriveSecaoFromFuncao(String funcao) {
+        if (isBlank(funcao)) {
+            return null;
+        }
+
+        String trimmed = funcao.trim();
+        String upper = trimmed.toUpperCase();
+        int idx = upper.lastIndexOf("SEC");
+        if (idx >= 0) {
+            boolean boundaryBefore = idx == 0 || !Character.isLetterOrDigit(upper.charAt(idx - 1));
+            boolean boundaryAfter = idx + 3 >= upper.length() || !Character.isLetterOrDigit(upper.charAt(idx + 3));
+            if (boundaryBefore && boundaryAfter) {
+                int start = idx + 3;
+                while (start < trimmed.length() && !Character.isLetterOrDigit(trimmed.charAt(start))) {
+                    start++;
+                }
+                if (start < trimmed.length()) {
+                    String candidate = stripNonAlphanumericEdges(trimmed.substring(start));
+                    if (!isBlank(candidate) && !candidate.equalsIgnoreCase("SEC")) {
+                        return candidate;
+                    }
+                }
+            }
+        }
+
+        String cleaned = stripNonAlphanumericEdges(trimmed);
+        if (isBlank(cleaned) || cleaned.equalsIgnoreCase("SEC")) {
+            return null;
+        }
+
+        int lastSpace = cleaned.lastIndexOf(' ');
+        if (lastSpace >= 0 && lastSpace + 1 < cleaned.length()) {
+            String candidate = stripNonAlphanumericEdges(cleaned.substring(lastSpace + 1));
+            if (!isBlank(candidate) && !candidate.equalsIgnoreCase("SEC")) {
+                return candidate;
+            }
+        }
+
+        return cleaned;
+    }
+
+    private String stripNonAlphanumericEdges(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        int start = 0;
+        int end = value.length();
+
+        while (start < end && !Character.isLetterOrDigit(value.charAt(start))) {
+            start++;
+        }
+
+        while (end > start && !Character.isLetterOrDigit(value.charAt(end - 1))) {
+            end--;
+        }
+
+        if (start >= end) {
+            return null;
+        }
+
+        return value.substring(start, end).trim();
     }
 
     private String extractPrimeiroSetor(Object setorData) {
