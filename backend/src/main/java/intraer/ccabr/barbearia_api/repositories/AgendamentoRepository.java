@@ -1,6 +1,7 @@
 package intraer.ccabr.barbearia_api.repositories;
 
 import intraer.ccabr.barbearia_api.models.Agendamento;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -70,6 +71,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             @Param("categoria") String categoria
     );
 
+    @EntityGraph(attributePaths = "militar")
     Optional<Agendamento> findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
             LocalTime hora,
             String diaSemana,
