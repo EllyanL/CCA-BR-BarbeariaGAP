@@ -98,5 +98,25 @@ describe('GerenciarRegistrosComponent', () => {
       '05/03/2024'
     );
   });
+
+  it('mantém datas com dia maior que 12 exibidas como dd/MM/yyyy', () => {
+    const registro = {
+      data: '25/01/2024',
+      hora: '09:00',
+      militar: { nomeDeGuerra: 'joao', postoGrad: 'SGT' },
+      status: 'AGENDADO',
+      canceladoPor: null
+    } as any;
+
+    component.todosRegistros = [registro];
+    component.aplicarFiltros();
+    fixture.detectChanges();
+
+    expect(component.formatarDataBR(registro.data)).toBe('25/01/2024');
+
+    const tabela = fixture.nativeElement.querySelector('table');
+    expect(tabela).withContext('Tabela deveria estar presente para verificar a data').toBeTruthy();
+    expect(tabela!.textContent).toContain('25/01/2024');
+  });
 });
 
