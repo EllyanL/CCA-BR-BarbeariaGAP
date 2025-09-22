@@ -3,11 +3,12 @@ spring:
     name: barbearia-api
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/barbearia}
+    # url: ${DB_URL:jdbc:postgresql://172.16.44.208:5432/barbearia}
+    url: ${DB_URL:jdbc:postgresql://localhost/barbearia}
     driver-class-name: ${DB_DRIVER_CLASS:org.postgresql.Driver}
     username: ${DB_USERNAME:postgres}
+    # password: ${DB_PASSWORD:123}
     password: ${DB_PASSWORD:root}
-
   jpa:
     show-sql: true
     hibernate:
@@ -26,7 +27,8 @@ spring:
     enabled: true
 
   ldap:
-    urls: ldap://10.228.64.168:389
+    # urls: ${LDAP_URL:ldap://172.16.38.168:389}
+    urls: ${LDAP_URL:ldap://10.228.64.168:389}
     base: ${LDAP_BASE:ou=contas,dc=fab,dc=intraer}
 
 api:
