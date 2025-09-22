@@ -1,7 +1,7 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
-import { HorariosService } from '../../services/horarios.service';
+import { HorariosService, AdicionarHorarioBaseResultado } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
 import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
@@ -476,12 +476,59 @@ import { UserService } from 'src/app/services/user.service';
       const diasAlvo: DiaKey[] = this.diasDaSemana;
 
       this.horariosService.adicionarHorarioBaseEmDias(horario, diasAlvo, categoria).subscribe({
-        next: () => {
-          this.incluirHorarioNaBaseLocal(horario, categoria);
-          this.carregarHorariosDaSemana();
-          this.snackBar.open(`Horário base ${horario} cadastrado com sucesso em todos os dias.`, 'Ciente', { duration: SNACKBAR_DURATION });
-          this.horarioPersonalizado = '';
-          this.horarioValido = false;
+        next: (resultados: AdicionarHorarioBaseResultado[]) => {
+          const resultadosValidos = (resultados || []).filter(
+            (resultado): resultado is AdicionarHorarioBaseResultado => !!resultado
+          );
+          const adicionados = resultadosValidos.filter(resultado => resultado.sucesso);
+          const falhas = resultadosValidos.filter(resultado => !resultado.sucesso);
+          const conflitos = falhas.filter(resultado => resultado.conflito);
+          const falhasNaoConflito = falhas.filter(resultado => !resultado.conflito);
+
+          if (falhas.length > 0) {
+            falhas.forEach(resultado => this.logger.warn('Horário base não aplicado em dia selecionado.', resultado));
+          }
+
+          if (adicionados.length > 0) {
+            this.incluirHorarioNaBaseLocal(horario, categoria);
+            this.carregarHorariosDaSemana();
+            const totalDiasSelecionados = diasAlvo.length;
+            let mensagem: string;
+            if (adicionados.length === totalDiasSelecionados && conflitos.length === 0 && falhasNaoConflito.length === 0) {
+              mensagem = `Horário base ${horario} cadastrado com sucesso em todos os dias.`;
+            } else {
+              mensagem = `Horário base ${horario} cadastrado com sucesso em ${adicionados.length} dia(s).`;
+              if (conflitos.length > 0) {
+                mensagem += ` Já existia em ${conflitos.length} dia(s).`;
+              }
+              if (falhasNaoConflito.length > 0) {
+                const mensagemFalha = falhasNaoConflito[0]?.mensagem;
+                mensagem += mensagemFalha
+                  ? ` Alguns dias não foram atualizados: ${mensagemFalha}`
+                  : ' Alguns dias não foram atualizados. Verifique os logs para mais detalhes.';
+              }
+            }
+            this.snackBar.open(mensagem, 'Ciente', { duration: SNACKBAR_DURATION });
+            this.horarioPersonalizado = '';
+            this.horarioValido = false;
+            return;
+          }
+
+          if (conflitos.length > 0) {
+            const mensagemConflito = conflitos[0]?.mensagem
+              || `Horário base ${horario} já existe em todos os dias selecionados.`;
+            this.snackBar.open(mensagemConflito, 'Ciente', { duration: SNACKBAR_DURATION });
+            return;
+          }
+
+          if (falhas.length > 0) {
+            const mensagemFalha = falhas[0]?.mensagem
+              || 'Não foi possível adicionar o horário nos dias selecionados.';
+            this.snackBar.open(mensagemFalha, 'Ciente', { duration: 5000 });
+            return;
+          }
+
+          this.snackBar.open(`Nenhum dia foi atualizado com o horário ${horario}.`, 'Ciente', { duration: 5000 });
         },
         error: (error: any) => {
           this.logger.error('Erro ao adicionar horário:', error);
@@ -545,7 +592,14 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       this.horariosService.adicionarHorarioBase(horario, dia, categoria).subscribe({
-        next: () => {
+        next: (resultado: AdicionarHorarioBaseResultado) => {
+          if (!resultado?.sucesso) {
+            this.logger.warn('Horário base não foi adicionado para o dia selecionado.', resultado);
+            const mensagem = resultado?.mensagem
+              || `Horário ${horario} já está cadastrado em ${this.getDiaLabel(dia)}.`;
+            this.snackBar.open(mensagem, 'Ciente', { duration: SNACKBAR_DURATION });
+            return;
+          }
           this.incluirHorarioNaBaseLocal(horario, categoria);
           this.snackBar.open(`Horário ${horario} adicionado ao dia ${this.getDiaLabel(dia)}.`, 'Ciente', { duration: SNACKBAR_DURATION });
           this.carregarHorariosDaSemana();
