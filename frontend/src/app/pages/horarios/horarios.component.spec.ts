@@ -30,6 +30,7 @@ describe('HorariosComponent', () => {
     authService = jasmine.createSpyObj('AuthService', ['getUsuarioAutenticado', 'isAuthenticated', 'logout']);
     configService = jasmine.createSpyObj('ConfiguracoesAgendamentoService', ['getConfig']);
     configService.getConfig.and.returnValue(of({horarioInicio: '08:00', horarioFim: '18:00'}));
+    horariosService.getHorariosBase.and.returnValue(of([]));
 
     const userService = { userData$: of([{ cpf: '123', saram: '1' }]) } as Partial<UserService>;
     const route = { queryParams: of({}) } as Partial<ActivatedRoute>;
@@ -133,11 +134,27 @@ describe('HorariosComponent', () => {
     expect(resultado).toBeTrue();
   });
 
-  it('carregarHorariosBase gera horários conforme configuração', () => {
-    configService.getConfig.and.returnValue(of({horarioInicio: '08:00', horarioFim: '09:00'}));
+  it('carregarHorariosBase usa horários fornecidos pelo serviço', () => {
+    horariosService.getHorariosBase.and.returnValue(of(['09:00', '08:00']));
     component.carregarHorariosBase();
-    expect(component.horariosBaseSemana[0]).toBe('08:00');
-    expect(component.horariosBaseSemana[component.horariosBaseSemana.length - 1]).toBe('09:00');
+    expect(component.horariosBaseSemana).toEqual(['08:00', '09:00']);
+    expect(component.horariosBasePorCategoria['GRADUADO']).toEqual(['08:00', '09:00']);
+  });
+
+  it('mescla horários personalizados da semana com a base configurada', () => {
+    horariosService.getHorariosBase.and.returnValue(of(['08:00', '09:00']));
+    const horarios: HorariosPorDia = {
+      segunda: [{ horario: '14:15', status: 'DISPONIVEL' } as SlotHorario],
+      terca: [], quarta: [], quinta: [], sexta: []
+    } as HorariosPorDia;
+
+    horariosService.carregarHorariosDaSemana.and.returnValue(of(horarios));
+
+    component.carregarHorariosBase();
+    component.carregarHorariosDaSemana();
+
+    expect(component.horariosBaseSemana).toEqual(['08:00', '09:00', '14:15']);
+    expect(component.getStatus('segunda', '14:15')).toBe('DISPONIVEL');
   });
 
   it('adicionarHorarioBase bloqueia horários fora da configuração', () => {

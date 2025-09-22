@@ -93,6 +93,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   private fimJanelaMin: number = 24 * 60;
   private inicioAgendavelMin: number = 0;
   private fimAgendavelMin: number = 24 * 60;
+  private horariosBaseConfiguracao: string[] = [];
 
   constructor(
     private router: Router,
@@ -161,16 +162,40 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private aplicarJanelaHorarios(): void {
-    const inRange = (horario: string) => {
-      const m = this.toMinutes(horario);
-      return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
-    };
-    this.horariosBaseSemana = (this.horariosBaseSemana || []).filter(h => inRange(h));
-    (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
-      const list: SlotHorario[] = this.horariosPorDia[dia] || [];
-      this.horariosPorDia[dia] = list.filter((slot: SlotHorario) => inRange(slot.horario));
+    const dias = Object.keys(this.horariosPorDia) as DiaKey[];
+    const atualizados: HorariosPorDia = { ...this.horariosPorDia };
+
+    dias.forEach(dia => {
+      const slots = (this.horariosPorDia[dia] || []).map(slot => ({
+        ...slot,
+        horario: normalizeHora(slot.horario)
+      })).filter(slot => this.isHoraAgendavel(slot.horario));
+
+      atualizados[dia] = slots;
     });
+
+    this.horariosPorDia = atualizados;
+    this.atualizarHorariosBaseSemana();
     this.cdr.markForCheck();
+  }
+
+  private atualizarHorariosBaseSemana(): void {
+    const todosHorarios = new Set<string>();
+    const adicionar = (hora?: string) => {
+      const normalizado = normalizeHora(hora);
+      if (normalizado) {
+        todosHorarios.add(normalizado);
+      }
+    };
+
+    (this.horariosBaseConfiguracao || []).forEach(adicionar);
+
+    (Object.keys(this.horariosPorDia) as DiaKey[]).forEach(dia => {
+      (this.horariosPorDia[dia] || []).forEach(slot => adicionar(slot.horario));
+    });
+
+    const filtrados = Array.from(todosHorarios).filter(h => this.isHoraAgendavel(h));
+    this.horariosBaseSemana = this.ordenarHorarios(filtrados);
   }
 
   isHoraAgendavel(hora: string): boolean {
@@ -438,9 +463,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           slots.push(`${hh}:${mm}`);
         }
 
-        this.horariosBaseSemana = slots;
-        this.aplicarJanelaHorarios();
-        this.ordenarHorarios();
+        this.horariosBaseConfiguracao = slots.map(h => normalizeHora(h));
+        this.atualizarHorariosBaseSemana();
+        this.cdr.markForCheck();
       },
       error: err => {
         this.logger.error('Erro ao carregar os horários base:', err);
@@ -448,20 +473,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  private ordenarHorarios(): void {
-    this.horariosBaseSemana.sort((a, b) => {
-      const getTimeValue = (horarioStr: string) => {
-        const [baseHorario, sufixo] = horarioStr.split(' ');
-        const [hours, minutes] = baseHorario.split(':').map(Number);
-        const timeInMinutes = hours * 60 + minutes;
-        if (sufixo) {
-          const suffixNumber = parseInt(sufixo.replace('°', ''), 10);
-          return timeInMinutes + suffixNumber * 0.01;
-        }
-        return timeInMinutes;
-      };
-      return getTimeValue(a) - getTimeValue(b);
-    });
+  private ordenarHorarios(horarios: string[]): string[] {
+    return [...horarios].sort((a, b) => this.toMinutes(normalizeHora(a)) - this.toMinutes(normalizeHora(b)));
   }
 
   loadHorariosDisponiveis() {

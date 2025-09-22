@@ -75,6 +75,18 @@ describe('TabelaSemanalComponent', () => {
     expect(dialogSpy.open).not.toHaveBeenCalled();
   });
 
+  it('inclui horários personalizados da semana na base exibida', () => {
+    component.horariosPorDia = {
+      segunda: [{ horario: '14:15', status: 'DISPONIVEL' }]
+    } as any;
+
+    component.loadHorariosBase();
+    (component as any).aplicarJanelaHorarios();
+
+    expect(component.horariosBaseSemana).toContain('14:15');
+    expect(component.getSlot('segunda', '14:15')?.status).toBe('DISPONIVEL');
+  });
+
   describe('desabilitarBotoesPorHorario', () => {
     afterEach(() => {
       jasmine.clock().uninstall();
