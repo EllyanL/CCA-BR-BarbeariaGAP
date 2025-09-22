@@ -44,11 +44,13 @@
           matStartDate
           [(ngModel)]="filtros.dataInicio"
           (ngModelChange)="onDateRangeChange()"
+          placeholder="Data inicial"
         />
         <input
           matEndDate
           [(ngModel)]="filtros.dataFim"
           (ngModelChange)="onDateRangeChange()"
+          placeholder="Data final"
         />
       </mat-date-range-input>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
