@@ -66,10 +66,28 @@ class CcabrServiceTest {
     }
 
     @Test
-    void shouldUseSecaoAndRamalFromResponseWhenPresent() {
+    void shouldUseSetorListAndTelefoneObjectWhenPresent() {
         ExchangeFunction exchangeFunction = request -> {
-            String body =
-                    "{\"saram\":\"1\",\"nome_completo\":\"Nome\",\"posto\":\"1T\",\"nome_guerra\":\"NG\",\"email\":\"email\",\"organizacao\":\"Org\",\"cpf\":\"123\",\"quadro\":\"Q\",\"funcao\":\"Chefe SEC ANTIGO\",\"telefone\":\"55556666\",\"secao\":\"Secao Real\",\"ramal\":\"1234\",\"pessfis_type\":\"OFICIAL\"}";
+            String body = """
+                    {
+                      "saram": "1",
+                      "nome_completo": "Nome",
+                      "posto": "1T",
+                      "nome_guerra": "NG",
+                      "email": "email",
+                      "organizacao": "Org",
+                      "cpf": "123",
+                      "quadro": "Q",
+                      "funcao": "Chefe SEC ANTIGO",
+                      "Setor": [
+                        { "Nome": "Secao Real" }
+                      ],
+                      "telefone": [
+                        { "numero": "6133229876", "ramal": "5432" }
+                      ],
+                      "pessfis_type": "OFICIAL"
+                    }
+                    """;
             return Mono.just(
                     ClientResponse.create(HttpStatus.OK)
                             .header("Content-Type", "application/json")
@@ -83,7 +101,42 @@ class CcabrServiceTest {
         UserDTO dto = service.buscarMilitar("123", "token").block();
 
         assertEquals("Secao Real", dto.getSecao());
-        assertEquals("1234", dto.getRamal());
+        assertEquals("5432", dto.getRamal());
+    }
+
+    @Test
+    void shouldFallbackToExtractSecaoAndDeriveRamalWhenDataMissing() {
+        ExchangeFunction exchangeFunction = request -> {
+            String body = """
+                    {
+                      "saram": "1",
+                      "nome_completo": "Nome",
+                      "posto": "1T",
+                      "nome_guerra": "NG",
+                      "email": "email",
+                      "organizacao": "Org",
+                      "cpf": "123",
+                      "quadro": "Q",
+                      "funcao": "Chefe SEC ANTIGO",
+                      "setor": [],
+                      "telefone": "6133125678",
+                      "pessfis_type": "OFICIAL"
+                    }
+                    """;
+            return Mono.just(
+                    ClientResponse.create(HttpStatus.OK)
+                            .header("Content-Type", "application/json")
+                            .body(body)
+                            .build());
+        };
+
+        WebClient webClient = WebClient.builder().exchangeFunction(exchangeFunction).build();
+        CcabrService service = new CcabrService(webClient);
+
+        UserDTO dto = service.buscarMilitar("123", "token").block();
+
+        assertEquals("ANTIGO", dto.getSecao());
+        assertEquals("5678", dto.getRamal());
     }
 }
 
