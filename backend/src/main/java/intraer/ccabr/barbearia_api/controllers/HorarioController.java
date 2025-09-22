@@ -2,6 +2,7 @@ package intraer.ccabr.barbearia_api.controllers;
 
 import intraer.ccabr.barbearia_api.dtos.HorarioDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
+import intraer.ccabr.barbearia_api.exceptions.HorarioComAgendamentoAtivoException;
 import intraer.ccabr.barbearia_api.models.Horario;
 
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
@@ -89,12 +90,19 @@ public class HorarioController {
         String dia = request.get("dia");
         String categoria = request.get("categoria");
 
-        LocalTime hora = LocalTime.parse(horarioStr);
+        try {
+            LocalTime hora = LocalTime.parse(horarioStr);
 
-        boolean removido = horarioService.removerHorarioPersonalizado(dia, hora, categoria);
-        horarioUpdateService.sendUpdate("refresh");
-        String mensagem = removido ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
-        return ResponseEntity.ok(mensagem);
+            boolean removido = horarioService.removerHorarioPersonalizado(dia, hora, categoria);
+            if (removido) {
+                horarioUpdateService.sendUpdate("refresh");
+            }
+            String mensagem = removido ? "Horário removido com sucesso." : "Horário inexistente, nenhuma ação realizada.";
+            return ResponseEntity.ok(mensagem);
+        } catch (HorarioComAgendamentoAtivoException e) {
+            logger.warn("Tentativa de remover horário com agendamento ativo: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
     @GetMapping("/{dia}")
     public List<Horario> getHorariosPorDiaECategoria(@PathVariable String dia, @RequestParam String categoria) {

@@ -148,12 +148,21 @@ export class HorariosService {
       map(response => response.toLowerCase().includes('sucesso')),
       catchError((error: HttpErrorResponse | ProgressEvent) => {
         if (error instanceof HttpErrorResponse) {
-          if (error.status === 404 || error.status === 409) {
+          if (error.status === 404) {
             return of(true);
           }
-          this.logger.error('Erro HTTP ao remover horário:', error.status, error.message);
-          const errorMessage = error.error || error.message;
-          return throwError(() => new Error(errorMessage));
+          const mensagem = this.extrairMensagemErro(
+            error,
+            'Falha ao remover o horário. Cancele o agendamento antes de tentar novamente.'
+          );
+          this.logger.warn('Backend impediu remoção do horário.', {
+            status: error.status,
+            horario,
+            dia,
+            categoria,
+            mensagem,
+          });
+          return throwError(() => new Error(mensagem));
         } else {
           this.logger.error('Erro de rede ao remover horário:', error);
           return throwError(() => new Error('Erro de rede: Não foi possível conectar ao servidor. Verifique se o backend está rodando.'));
@@ -171,14 +180,7 @@ export class HorariosService {
 
   removerHorarioBaseEmDias(horario: string, dias: DiaKey[], categoria: string): Observable<any[]> {
     return from(dias).pipe(
-      mergeMap(d => this.removerHorarioBase(horario, d, categoria).pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 404 || error.status === 409) {
-            return of(true);
-          }
-          return throwError(() => error);
-        })
-      )),
+      mergeMap(d => this.removerHorarioBase(horario, d, categoria)),
       toArray()
     );
   }
