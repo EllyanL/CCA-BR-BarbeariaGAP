@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,28 +115,18 @@ public class CcabrService {
                     userDTO.setOm(omBruta != null ? omBruta.trim().replace(" ", "-") : "Não informado");
                     userDTO.setCpf((String) response.get("cpf"));
                     userDTO.setQuadro((String) response.get("quadro"));
-                    String funcao = (String) response.get("funcao");
                     Object setorData = response.containsKey("Setor") ? response.get("Setor") : response.get("setor");
                     Object telefoneData = response.get("telefone");
-                    Object ramalData = response.get("ramal");
 
-                    List<TelefoneInfo> telefoneEntries = extractTelefoneEntries(telefoneData);
-                    String telefoneNormalizado = formatTelefones(telefoneEntries);
-                    String secaoResolvida = resolveSecao(response, funcao, setorData);
-                    String ramalResolvido = resolveRamal(ramalData, telefoneEntries);
-
-                    String secaoFinal = isBlank(secaoResolvida) ? "Não informado" : secaoResolvida;
-                    String ramalFinal = isBlank(ramalResolvido) ? "Não informado" : ramalResolvido;
+                    String secaoFinal = resolveSecao(setorData);
+                    String ramalFinal = resolveRamal(telefoneData);
 
                     logger.debug(
-                            "Valores brutos do webservice - funcao: {}, telefone: {}, setor: {}, ramal: {}",
-                            funcao,
+                            "Valores brutos do webservice - telefone: {}, setor: {}",
                             telefoneData,
-                            setorData,
-                            ramalData);
+                            setorData);
                     logger.debug(
-                            "Valores mapeados - telefone: {}, secao: {}, ramal: {}",
-                            telefoneNormalizado,
+                            "Valores mapeados - secao: {}, ramal: {}",
                             secaoFinal,
                             ramalFinal);
 
@@ -152,176 +141,86 @@ public class CcabrService {
                 .doOnError(error -> logger.error("Erro na busca do militar: {}", error.getMessage()));
     }
 
-    private List<TelefoneInfo> extractTelefoneEntries(Object telefoneData) {
-        List<TelefoneInfo> entries = new ArrayList<>();
-        collectTelefoneEntries(telefoneData, entries);
-        return entries;
+    private String resolveSecao(Object setorData) {
+        String secao = extractPrimeiroSetor(setorData);
+        return isBlank(secao) ? "Não informado" : secao;
     }
 
-    private void collectTelefoneEntries(Object telefoneData, List<TelefoneInfo> entries) {
-        if (telefoneData == null) {
-            return;
-        }
-
-        if (telefoneData instanceof List<?> lista) {
-            for (Object item : lista) {
-                collectTelefoneEntries(item, entries);
-            }
-            return;
-        }
-
-        if (telefoneData instanceof Map<?, ?> mapa) {
-            String numero = null;
-            String ramal = null;
-
-            for (Map.Entry<?, ?> entry : mapa.entrySet()) {
-                Object keyObj = entry.getKey();
-                Object value = entry.getValue();
-
-                if (keyObj instanceof String chave) {
-                    String chaveMin = chave.toLowerCase();
-
-                    if (chaveMin.contains("numero") || chaveMin.contains("telefone")) {
-                        if (value instanceof Map<?, ?> || value instanceof List<?>) {
-                            collectTelefoneEntries(value, entries);
-                        } else {
-                            String candidato = asTrimmedString(value);
-                            if (!isBlank(candidato) && isBlank(numero)) {
-                                numero = candidato;
-                            }
-                        }
-                    } else if (chaveMin.contains("ramal") || chaveMin.contains("extensao")) {
-                        if (value instanceof Map<?, ?> || value instanceof List<?>) {
-                            collectTelefoneEntries(value, entries);
-                        } else {
-                            String candidato = asTrimmedString(value);
-                            if (!isBlank(candidato) && isBlank(ramal)) {
-                                ramal = candidato;
-                            }
-                        }
-                    } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
-                        collectTelefoneEntries(value, entries);
-                    }
-                } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
-                    collectTelefoneEntries(value, entries);
-                }
-            }
-
-            if (!isBlank(numero) || !isBlank(ramal)) {
-                entries.add(new TelefoneInfo(numero, ramal));
-            }
-            return;
-        }
-
-        String numero = asTrimmedString(telefoneData);
-        if (!isBlank(numero)) {
-            entries.add(new TelefoneInfo(numero, null));
-        }
-    }
-
-    private String formatTelefones(List<TelefoneInfo> telefoneEntries) {
-        List<String> numeros = new ArrayList<>();
-        for (TelefoneInfo entry : telefoneEntries) {
-            if (!isBlank(entry.numero())) {
-                numeros.add(entry.numero());
-            }
-        }
-        return numeros.isEmpty() ? null : String.join(", ", numeros);
-    }
-
-    private String resolveRamal(Object ramalData, List<TelefoneInfo> telefoneEntries) {
-        String ramalDireto = asTrimmedString(ramalData);
-        if (!isBlank(ramalDireto)) {
-            return ramalDireto;
-        }
-
-        for (TelefoneInfo entry : telefoneEntries) {
-            if (!isBlank(entry.ramal())) {
-                return entry.ramal();
-            }
-        }
-
-        for (TelefoneInfo entry : telefoneEntries) {
-            if (!isBlank(entry.numero())) {
-                return extractRamal(entry.numero());
-            }
-        }
-
-        return "Não informado";
-    }
-
-    private String resolveSecao(Map<String, Object> response, String funcao, Object setorData) {
-        List<String> nomesSetor = extractSetorNames(setorData);
-        if (!nomesSetor.isEmpty()) {
-            return nomesSetor.size() == 1 ? nomesSetor.get(0) : String.join(", ", nomesSetor);
-        }
-
-        String secaoDireta = asTrimmedString(response.get("secao"));
-        if (!isBlank(secaoDireta)) {
-            return secaoDireta;
-        }
-
-        return extractSecao(funcao);
-    }
-
-    private List<String> extractSetorNames(Object setorData) {
-        List<String> nomes = new ArrayList<>();
-        collectSetorNames(setorData, nomes);
-        return nomes;
-    }
-
-    private void collectSetorNames(Object setorData, List<String> nomes) {
+    private String extractPrimeiroSetor(Object setorData) {
         if (setorData == null) {
-            return;
+            return null;
         }
 
         if (setorData instanceof List<?> lista) {
             for (Object item : lista) {
-                collectSetorNames(item, nomes);
+                String valor = extractPrimeiroSetor(item);
+                if (!isBlank(valor)) {
+                    return valor;
+                }
             }
-            return;
+            return null;
         }
 
         if (setorData instanceof Map<?, ?> mapa) {
             for (Map.Entry<?, ?> entry : mapa.entrySet()) {
-                Object keyObj = entry.getKey();
-                Object value = entry.getValue();
+                Object chave = entry.getKey();
+                Object valor = entry.getValue();
 
-                if (keyObj instanceof String chave) {
-                    String chaveMin = chave.toLowerCase();
-
-                    if (chaveMin.contains("nome") || chaveMin.contains("descricao")) {
-                        addStringIfNotBlank(nomes, value);
-                    } else if ("setor".equalsIgnoreCase(chave)) {
-                        collectSetorNames(value, nomes);
-                    } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
-                        collectSetorNames(value, nomes);
+                if (chave instanceof String chaveTexto) {
+                    String chaveNormalizada = chaveTexto.toLowerCase();
+                    if (chaveNormalizada.contains("nome") || chaveNormalizada.contains("descricao")) {
+                        String texto = asTrimmedString(valor);
+                        if (!isBlank(texto)) {
+                            return texto;
+                        }
                     }
-                } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
-                    collectSetorNames(value, nomes);
                 }
-            }
 
-            if (nomes.isEmpty() && mapa.size() == 1) {
-                for (Object value : mapa.values()) {
-                    addStringIfNotBlank(nomes, value);
+                String texto = extractPrimeiroSetor(valor);
+                if (!isBlank(texto)) {
+                    return texto;
                 }
             }
-            return;
+            return null;
         }
 
-        addStringIfNotBlank(nomes, setorData);
+        return asTrimmedString(setorData);
     }
 
-    private void addStringIfNotBlank(List<String> target, Object value) {
-        if (value instanceof Map<?, ?> || value instanceof List<?>) {
-            return;
+    private String resolveRamal(Object telefoneData) {
+        String telefone = extractTelefone(telefoneData);
+        if (isBlank(telefone)) {
+            return "Não informado";
+        }
+        return extractRamal(telefone);
+    }
+
+    private String extractTelefone(Object telefoneData) {
+        if (telefoneData == null) {
+            return null;
         }
 
-        String texto = asTrimmedString(value);
-        if (!isBlank(texto)) {
-            target.add(texto);
+        if (telefoneData instanceof List<?> lista) {
+            for (Object item : lista) {
+                String telefone = extractTelefone(item);
+                if (!isBlank(telefone)) {
+                    return telefone;
+                }
+            }
+            return null;
         }
+
+        if (telefoneData instanceof Map<?, ?> mapa) {
+            for (Object value : mapa.values()) {
+                String telefone = extractTelefone(value);
+                if (!isBlank(telefone)) {
+                    return telefone;
+                }
+            }
+            return null;
+        }
+
+        return asTrimmedString(telefoneData);
     }
 
     private boolean isBlank(String value) {
@@ -342,20 +241,16 @@ public class CcabrService {
         return texto.isEmpty() ? null : texto;
     }
 
-    private record TelefoneInfo(String numero, String ramal) {}
-
-    private String extractSecao(String funcao) {
-        if (funcao != null && !funcao.trim().isEmpty()) {
-            String[] parts = funcao.trim().split("\\s+");
-            return parts.length > 0 ? parts[parts.length - 1] : "Não informado";
-        }
-        return "Não informado";
-    }
-    
     private String extractRamal(String telefone) {
-        if (telefone != null && telefone.length() >= 4) {
-            return telefone.substring(telefone.length() - 4);
+        if (telefone == null) {
+            return "Não informado";
         }
+
+        String apenasDigitos = telefone.replaceAll("\\D", "");
+        if (apenasDigitos.length() >= 4) {
+            return apenasDigitos.substring(apenasDigitos.length() - 4);
+        }
+
         return "Não informado";
     }
     
