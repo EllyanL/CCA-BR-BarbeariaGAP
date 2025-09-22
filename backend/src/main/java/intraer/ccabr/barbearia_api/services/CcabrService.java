@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,23 +117,32 @@ public class CcabrService {
                     userDTO.setCpf((String) response.get("cpf"));
                     userDTO.setQuadro((String) response.get("quadro"));
                     String funcao = (String) response.get("funcao");
-                    String telefone = (String) response.get("telefone");
-                    String secao = (String) response.get("secao");
-                    String ramal = (String) response.get("ramal");
+                    Object setorData = response.containsKey("Setor") ? response.get("Setor") : response.get("setor");
+                    Object telefoneData = response.get("telefone");
+                    Object ramalData = response.get("ramal");
+
+                    List<TelefoneInfo> telefoneEntries = extractTelefoneEntries(telefoneData);
+                    String telefoneNormalizado = formatTelefones(telefoneEntries);
+                    String secaoResolvida = resolveSecao(response, funcao, setorData);
+                    String ramalResolvido = resolveRamal(ramalData, telefoneEntries);
+
+                    String secaoFinal = isBlank(secaoResolvida) ? "Não informado" : secaoResolvida;
+                    String ramalFinal = isBlank(ramalResolvido) ? "Não informado" : ramalResolvido;
+
                     logger.debug(
-                            "Valores brutos do webservice - funcao: {}, telefone: {}, secao: {}, ramal: {}",
+                            "Valores brutos do webservice - funcao: {}, telefone: {}, setor: {}, ramal: {}",
                             funcao,
-                            telefone,
-                            secao,
-                            ramal);
-                    userDTO.setSecao(
-                            secao != null && !secao.trim().isEmpty()
-                                    ? secao
-                                    : extractSecao(funcao));
-                    userDTO.setRamal(
-                            ramal != null && !ramal.trim().isEmpty()
-                                    ? ramal
-                                    : extractRamal(telefone));
+                            telefoneData,
+                            setorData,
+                            ramalData);
+                    logger.debug(
+                            "Valores mapeados - telefone: {}, secao: {}, ramal: {}",
+                            telefoneNormalizado,
+                            secaoFinal,
+                            ramalFinal);
+
+                    userDTO.setSecao(secaoFinal);
+                    userDTO.setRamal(ramalFinal);
                     userDTO.setCategoria(mapRole((String) response.get("posto"), (String) response.get("pessfis_type")));
                     logger.debug("Valores mapeados - secao: {}, ramal: {}", userDTO.getSecao(), userDTO.getRamal());
                     return userDTO;
@@ -141,7 +151,199 @@ public class CcabrService {
                 .doOnSuccess(militar -> logger.debug("Dados do militar recebidos: {}", militar))
                 .doOnError(error -> logger.error("Erro na busca do militar: {}", error.getMessage()));
     }
-    
+
+    private List<TelefoneInfo> extractTelefoneEntries(Object telefoneData) {
+        List<TelefoneInfo> entries = new ArrayList<>();
+        collectTelefoneEntries(telefoneData, entries);
+        return entries;
+    }
+
+    private void collectTelefoneEntries(Object telefoneData, List<TelefoneInfo> entries) {
+        if (telefoneData == null) {
+            return;
+        }
+
+        if (telefoneData instanceof List<?> lista) {
+            for (Object item : lista) {
+                collectTelefoneEntries(item, entries);
+            }
+            return;
+        }
+
+        if (telefoneData instanceof Map<?, ?> mapa) {
+            String numero = null;
+            String ramal = null;
+
+            for (Map.Entry<?, ?> entry : mapa.entrySet()) {
+                Object keyObj = entry.getKey();
+                Object value = entry.getValue();
+
+                if (keyObj instanceof String chave) {
+                    String chaveMin = chave.toLowerCase();
+
+                    if (chaveMin.contains("numero") || chaveMin.contains("telefone")) {
+                        if (value instanceof Map<?, ?> || value instanceof List<?>) {
+                            collectTelefoneEntries(value, entries);
+                        } else {
+                            String candidato = asTrimmedString(value);
+                            if (!isBlank(candidato) && isBlank(numero)) {
+                                numero = candidato;
+                            }
+                        }
+                    } else if (chaveMin.contains("ramal") || chaveMin.contains("extensao")) {
+                        if (value instanceof Map<?, ?> || value instanceof List<?>) {
+                            collectTelefoneEntries(value, entries);
+                        } else {
+                            String candidato = asTrimmedString(value);
+                            if (!isBlank(candidato) && isBlank(ramal)) {
+                                ramal = candidato;
+                            }
+                        }
+                    } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
+                        collectTelefoneEntries(value, entries);
+                    }
+                } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
+                    collectTelefoneEntries(value, entries);
+                }
+            }
+
+            if (!isBlank(numero) || !isBlank(ramal)) {
+                entries.add(new TelefoneInfo(numero, ramal));
+            }
+            return;
+        }
+
+        String numero = asTrimmedString(telefoneData);
+        if (!isBlank(numero)) {
+            entries.add(new TelefoneInfo(numero, null));
+        }
+    }
+
+    private String formatTelefones(List<TelefoneInfo> telefoneEntries) {
+        List<String> numeros = new ArrayList<>();
+        for (TelefoneInfo entry : telefoneEntries) {
+            if (!isBlank(entry.numero())) {
+                numeros.add(entry.numero());
+            }
+        }
+        return numeros.isEmpty() ? null : String.join(", ", numeros);
+    }
+
+    private String resolveRamal(Object ramalData, List<TelefoneInfo> telefoneEntries) {
+        String ramalDireto = asTrimmedString(ramalData);
+        if (!isBlank(ramalDireto)) {
+            return ramalDireto;
+        }
+
+        for (TelefoneInfo entry : telefoneEntries) {
+            if (!isBlank(entry.ramal())) {
+                return entry.ramal();
+            }
+        }
+
+        for (TelefoneInfo entry : telefoneEntries) {
+            if (!isBlank(entry.numero())) {
+                return extractRamal(entry.numero());
+            }
+        }
+
+        return "Não informado";
+    }
+
+    private String resolveSecao(Map<String, Object> response, String funcao, Object setorData) {
+        List<String> nomesSetor = extractSetorNames(setorData);
+        if (!nomesSetor.isEmpty()) {
+            return nomesSetor.size() == 1 ? nomesSetor.get(0) : String.join(", ", nomesSetor);
+        }
+
+        String secaoDireta = asTrimmedString(response.get("secao"));
+        if (!isBlank(secaoDireta)) {
+            return secaoDireta;
+        }
+
+        return extractSecao(funcao);
+    }
+
+    private List<String> extractSetorNames(Object setorData) {
+        List<String> nomes = new ArrayList<>();
+        collectSetorNames(setorData, nomes);
+        return nomes;
+    }
+
+    private void collectSetorNames(Object setorData, List<String> nomes) {
+        if (setorData == null) {
+            return;
+        }
+
+        if (setorData instanceof List<?> lista) {
+            for (Object item : lista) {
+                collectSetorNames(item, nomes);
+            }
+            return;
+        }
+
+        if (setorData instanceof Map<?, ?> mapa) {
+            for (Map.Entry<?, ?> entry : mapa.entrySet()) {
+                Object keyObj = entry.getKey();
+                Object value = entry.getValue();
+
+                if (keyObj instanceof String chave) {
+                    String chaveMin = chave.toLowerCase();
+
+                    if (chaveMin.contains("nome") || chaveMin.contains("descricao")) {
+                        addStringIfNotBlank(nomes, value);
+                    } else if ("setor".equalsIgnoreCase(chave)) {
+                        collectSetorNames(value, nomes);
+                    } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
+                        collectSetorNames(value, nomes);
+                    }
+                } else if (value instanceof Map<?, ?> || value instanceof List<?>) {
+                    collectSetorNames(value, nomes);
+                }
+            }
+
+            if (nomes.isEmpty() && mapa.size() == 1) {
+                for (Object value : mapa.values()) {
+                    addStringIfNotBlank(nomes, value);
+                }
+            }
+            return;
+        }
+
+        addStringIfNotBlank(nomes, setorData);
+    }
+
+    private void addStringIfNotBlank(List<String> target, Object value) {
+        if (value instanceof Map<?, ?> || value instanceof List<?>) {
+            return;
+        }
+
+        String texto = asTrimmedString(value);
+        if (!isBlank(texto)) {
+            target.add(texto);
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private String asTrimmedString(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof String texto) {
+            String trim = texto.trim();
+            return trim.isEmpty() ? null : trim;
+        }
+
+        String texto = value.toString().trim();
+        return texto.isEmpty() ? null : texto;
+    }
+
+    private record TelefoneInfo(String numero, String ramal) {}
+
     private String extractSecao(String funcao) {
         if (funcao != null && !funcao.trim().isEmpty()) {
             String[] parts = funcao.trim().split("\\s+");
