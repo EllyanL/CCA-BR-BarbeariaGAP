@@ -121,6 +121,9 @@ public class AuthenticationController {
             ));
         }
 
+        Optional<Militar> militarBeforeAuthOpt = militarRepository.findByCpf(data.cpf());
+        boolean militarExistedBeforeAuth = militarBeforeAuthOpt.isPresent();
+        logger.debug("Estado pré-autenticação para CPF {}: existed={}.", data.cpf(), militarExistedBeforeAuth);
 
         // 🔐 Autenticação LDAP para os demais
         boolean ldapSuccess = ldapService.authenticateLdap(data);
@@ -129,10 +132,33 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Optional<Militar> userOpt = militarRepository.findByCpf(data.cpf());
+        Optional<Militar> userOpt = militarExistedBeforeAuth
+            ? militarBeforeAuthOpt
+            : militarRepository.findByCpf(data.cpf());
 
         Militar militar;
-        boolean firstAccess = userOpt.isEmpty() || userOpt.get().getCategoria() == null;
+        boolean firstAccess = !militarExistedBeforeAuth;
+
+        if (!firstAccess) {
+            if (userOpt.isEmpty()) {
+                firstAccess = true;
+            } else {
+                Militar existingMilitar = userOpt.get();
+                boolean missingCategoria = existingMilitar.getCategoria() == null;
+                boolean missingSecao = isMissingInfo(existingMilitar.getSecao());
+                boolean missingRamal = isMissingInfo(existingMilitar.getRamal());
+                if (missingCategoria || missingSecao || missingRamal) {
+                    logger.info(
+                        "📡 Sincronização necessária para CPF {} (categoria ausente: {}, secao ausente: {}, ramal ausente: {}).",
+                        data.cpf(),
+                        missingCategoria,
+                        missingSecao,
+                        missingRamal
+                    );
+                    firstAccess = true;
+                }
+            }
+        }
 
         if (firstAccess) {
             CcabrUserDto militarData = webserviceService.fetchMilitarByCpf(data.cpf());
@@ -241,5 +267,14 @@ public class AuthenticationController {
         dto.setRamal(militar.getRamal());
 
         return ResponseEntity.ok(dto);
+    }
+
+    private boolean isMissingInfo(String value) {
+        if (value == null) {
+            return true;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() || "Não informado".equalsIgnoreCase(trimmed);
     }
 }
