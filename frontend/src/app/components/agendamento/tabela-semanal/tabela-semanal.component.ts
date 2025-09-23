@@ -27,6 +27,11 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 import { normalizeHora } from 'src/app/utils/horarios-utils';
 import { UserData } from 'src/app/models/user-data';
 
+type HorariosGradeView = {
+  horas: string[];
+  horarios: HorariosPorDia;
+};
+
 
 @Component({
   selector: 'app-tabela-semanal',
@@ -82,6 +87,17 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   diasDaSemana: DiaKey[] = Object.keys(DIA_SEMANA) as DiaKey[];
   diasComData: string[] = []; // datas correspondentes
   horariosBaseSemana: string[] = [];
+  private readonly horariosGradeSubject = new BehaviorSubject<HorariosGradeView>({
+    horas: [],
+    horarios: {
+      segunda: [],
+      terca: [],
+      quarta: [],
+      quinta: [],
+      sexta: [],
+    },
+  });
+  readonly horariosGrade$ = this.horariosGradeSubject.asObservable();
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
   usuarioCarregado = false;
@@ -196,6 +212,33 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.cdr.markForCheck();
   }
 
+  private cloneHorariosPorDia(source: HorariosPorDia | null | undefined): HorariosPorDia {
+    const clone: HorariosPorDia = {
+      segunda: [],
+      terca: [],
+      quarta: [],
+      quinta: [],
+      sexta: [],
+    };
+
+    if (!source) {
+      return clone;
+    }
+
+    (Object.keys(source) as DiaKey[]).forEach(dia => {
+      clone[dia] = [...(source[dia] ?? [])];
+    });
+
+    return clone;
+  }
+
+  private emitGradeView(): void {
+    this.horariosGradeSubject.next({
+      horas: [...this.horariosBaseSemana],
+      horarios: this.cloneHorariosPorDia(this.horariosPorDia),
+    });
+  }
+
   private atualizarHorariosBaseSemana(): void {
     const todosHorarios = new Set<string>();
     const adicionar = (hora?: string) => {
@@ -213,6 +256,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     const filtrados = Array.from(todosHorarios).filter(h => this.isHoraAgendavel(h));
     this.horariosBaseSemana = this.ordenarHorarios(filtrados);
+    this.emitGradeView();
   }
 
   isHoraAgendavel(hora: string): boolean {
@@ -490,6 +534,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
             this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'AGENDADO';
             this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = agendamento.militar?.id;
             this.horariosPorDia = { ...this.horariosPorDia };
+            this.emitGradeView();
           }
         }
 
@@ -614,6 +659,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
             this.horariosPorDia[diaNovo][idxNovo].usuarioId = resultado.militar?.id;
           }
           this.horariosPorDia = { ...this.horariosPorDia };
+          this.emitGradeView();
           this.saveAgendamentos();
         } else if (resultado === true && agendamento.id) {
           this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
@@ -625,6 +671,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
               this.horariosPorDia[diaSemanaFormatado][horarioIndex].status = 'DISPONIVEL';
               this.horariosPorDia[diaSemanaFormatado][horarioIndex].usuarioId = undefined;
               this.horariosPorDia = { ...this.horariosPorDia };
+              this.emitGradeView();
             }
           }
           this.saveAgendamentos();
@@ -695,8 +742,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return agendamento;
   }
 
-  getSlot(dia: DiaKey, hora: string): SlotHorario | null {
-    const list: SlotHorario[] = this.horariosPorDia?.[dia] || [];
+  getSlot(dia: DiaKey, hora: string, source?: HorariosPorDia): SlotHorario | null {
+    const horariosFonte = source ?? this.horariosPorDia;
+    const list: SlotHorario[] = horariosFonte?.[dia] || [];
     const hh = (hora || '').trim();
     return list.find?.((h: SlotHorario) => (h?.horario || '').trim() === hh) || null;
   }
