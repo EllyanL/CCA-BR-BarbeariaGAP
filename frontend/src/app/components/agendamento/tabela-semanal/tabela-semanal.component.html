@@ -11,7 +11,7 @@
     </ng-template>
 
     <!-- Tabela Principal -->
-    <table class="tabela" *ngIf="!agendamentoBloqueado">
+    <table class="tabela">
       <thead class="tabela-header">
         <tr>
           <th>HORÁRIO</th>
@@ -29,7 +29,7 @@
             <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
               <button
                 mat-raised-button
-                [disabled]="slot.status === 'INDISPONIVEL'"
+                [disabled]="agendamentoBloqueado || slot.status === 'INDISPONIVEL'"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
                 [ngClass]="[
                   slot.status | statusFormat : 'tabelaClass',
