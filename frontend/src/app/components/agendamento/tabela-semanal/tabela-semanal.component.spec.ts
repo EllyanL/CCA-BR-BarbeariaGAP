@@ -9,6 +9,7 @@ import { TabelaSemanalComponent } from './tabela-semanal.component';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { of } from 'rxjs';
 import { StatusFormatPipe } from 'src/app/pipes/status-format.pipe';
+import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 
 describe('TabelaSemanalComponent', () => {
   let component: TabelaSemanalComponent;
@@ -34,7 +35,8 @@ describe('TabelaSemanalComponent', () => {
         {
           provide: ConfiguracoesAgendamentoService,
           useValue: { getConfig: () => of({ horarioInicio: '09:00', horarioFim: '18:00' }) }
-        }
+        },
+        ErrorMessagesService
       ]
     });
     fixture = TestBed.createComponent(TabelaSemanalComponent);
@@ -108,6 +110,7 @@ describe('TabelaSemanalComponent', () => {
       expect(botao).toBeTruthy();
       expect(botao.nativeElement.classList).toContain('botao-agendado');
       expect(botao.nativeElement.classList).toContain('botao-agendado-proprio');
+      expect(botao.nativeElement.disabled).toBeFalse();
     });
 
     it('mantém estilo padrão para agendamentos de outros usuários', () => {
@@ -122,6 +125,48 @@ describe('TabelaSemanalComponent', () => {
       expect(botao).toBeTruthy();
       expect(botao.nativeElement.classList).toContain('botao-agendado');
       expect(botao.nativeElement.classList).not.toContain('botao-agendado-proprio');
+      expect(botao.nativeElement.disabled).toBeTrue();
+    });
+  });
+
+  describe('regra de 15 dias para novos agendamentos', () => {
+    beforeEach(() => {
+      component.usuarioCarregado = true;
+      component.diasDaSemana = ['segunda'] as any;
+      component.diasComData = ['10/06'];
+      component.horariosBaseSemana = ['09:00'];
+      component.horariosPorDia = {
+        segunda: [{ horario: '09:00', status: 'DISPONIVEL' }]
+      } as any;
+      component.inicioDaSemana = new Date('2024-06-10T00:00:00');
+    });
+
+    it('desabilita botão quando existe agendamento recente', () => {
+      component.agendamentos = [{
+        data: '2024-06-05',
+        hora: '09:00',
+        diaSemana: 'quarta',
+        categoria: 'GRADUADO'
+      } as any];
+
+      fixture.detectChanges();
+
+      const botao = fixture.debugElement.query(By.css('button'));
+      expect(botao.nativeElement.disabled).toBeTrue();
+    });
+
+    it('mantém botão habilitado quando diferença é igual ou superior a 15 dias', () => {
+      component.agendamentos = [{
+        data: '2024-05-20',
+        hora: '09:00',
+        diaSemana: 'segunda',
+        categoria: 'GRADUADO'
+      } as any];
+
+      fixture.detectChanges();
+
+      const botao = fixture.debugElement.query(By.css('button'));
+      expect(botao.nativeElement.disabled).toBeFalse();
     });
   });
 

@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
+import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
 import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 import { normalizeHora } from 'src/app/utils/horarios-utils';
@@ -94,6 +95,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   private inicioAgendavelMin: number = 0;
   private fimAgendavelMin: number = 24 * 60;
   private horariosBaseConfiguracao: string[] = [];
+  private readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
 
   constructor(
     private router: Router,
@@ -107,7 +109,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     private authService: AuthService,
     private logger: LoggingService,
     private cdr: ChangeDetectorRef,
-    private configuracoesService: ConfiguracoesAgendamentoService
+    private configuracoesService: ConfiguracoesAgendamentoService,
+    private errorMessages: ErrorMessagesService
   ) {}
 
   private saveAgendamentos(): void {
@@ -355,6 +358,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return;
     }
 
+    if (!this.podeAgendarNovamente(diaSemanaFormatado, hora)) {
+      this.snackBar.open(this.errorMessages.AGENDAMENTO_INTERVAL_ERROR, 'Ciente', { duration: SNACKBAR_DURATION });
+      return;
+    }
+
     const dataStr = this.getDataFromDiaSemana(diaSemana);
     const [dia, mes, ano] = dataStr.split('/').map(Number);
     const [horaNum, minutoNum] = hora.slice(0, 5).split(':').map(Number);
@@ -493,7 +501,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   isCurrentRoute(route: string): boolean {
     return this.router.url.includes(route);
   }
-  handleClick(agendamento: Agendamento | undefined, dia: string, hora: string): void {
+  handleClick(agendamento: Agendamento | undefined, diaKey: DiaKey, hora: string): void {
     if (agendamento) {
       const podeDesmarcar =
         this.isAgendamentoDoMilitarLogado(agendamento) &&
@@ -545,14 +553,20 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return;
     }
 
-    this.abrirDialogoAgendamento(dia, hora);
+    if (!this.podeAgendarNovamente(diaKey, hora)) {
+      this.snackBar.open(this.errorMessages.AGENDAMENTO_INTERVAL_ERROR, 'Ciente', { duration: SNACKBAR_DURATION });
+      return;
+    }
+
+    const labelDia = this.getLabelDiaComData(diaKey);
+    this.abrirDialogoAgendamento(labelDia, hora);
   }
 
   isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
     const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
     return !!agendamento && saramAgendamento === this.saramUsuario;
   }
-  
+
 
   isAgendamentoDeOutroUsuario(dia: string, hora: string): boolean {
     const agendamento = this.getAgendamentoParaDiaHora(dia, hora);
@@ -605,6 +619,159 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const list: SlotHorario[] = this.horariosPorDia?.[dia] || [];
     const hh = (hora || '').trim();
     return list.find?.((h: SlotHorario) => (h?.horario || '').trim() === hh) || null;
+  }
+
+  podeInteragirComSlot(slot: SlotHorario, dia: DiaKey, hora: string): boolean {
+    if (!slot) {
+      return false;
+    }
+
+    if (this.agendamentoBloqueado) {
+      return false;
+    }
+
+    if (slot.status === 'INDISPONIVEL') {
+      return false;
+    }
+
+    if (slot.status === 'AGENDADO') {
+      return this.isSlotDoUsuario(slot, dia, hora);
+    }
+
+    if (slot.status === 'DISPONIVEL') {
+      return this.podeAgendarNovamente(dia, hora);
+    }
+
+    return false;
+  }
+
+  private isSlotDoUsuario(slot: SlotHorario, dia: DiaKey, hora: string): boolean {
+    if (slot.usuarioId != null && this.idMilitarLogado != null) {
+      return slot.usuarioId === this.idMilitarLogado;
+    }
+
+    return this.isAgendamentoDoMilitarLogado(this.getAgendamentoParaDiaHora(dia, hora));
+  }
+
+  private getUltimaDataAgendada(): Date | null {
+    if (!this.agendamentos || this.agendamentos.length === 0) {
+      return null;
+    }
+
+    const datas = this.agendamentos
+      .map(agendamento => this.getDataHoraAgendamento(agendamento))
+      .filter((data): data is Date => data instanceof Date);
+
+    if (datas.length === 0) {
+      return null;
+    }
+
+    datas.sort((a, b) => b.getTime() - a.getTime());
+    return datas[0];
+  }
+
+  private getDataHoraAgendamento(agendamento: Agendamento): Date | null {
+    if (agendamento.timestamp) {
+      return new Date(agendamento.timestamp);
+    }
+
+    const dataBase = this.parseDataString(agendamento.data);
+    if (!dataBase) {
+      return null;
+    }
+
+    const horaNormalizada = normalizeHora(agendamento.hora);
+    if (horaNormalizada) {
+      const [hora, minuto] = horaNormalizada.split(':').map(Number);
+      dataBase.setHours(hora, minuto, 0, 0);
+    }
+
+    return dataBase;
+  }
+
+  private parseDataString(data?: string | null): Date | null {
+    if (!data) {
+      return null;
+    }
+
+    const isoPattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const brPattern = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+
+    if (isoPattern.test(data)) {
+      const [, ano, mes, dia] = data.match(isoPattern) ?? [];
+      if (ano && mes && dia) {
+        const date = new Date(Number(ano), Number(mes) - 1, Number(dia));
+        date.setHours(0, 0, 0, 0);
+        return date;
+      }
+    }
+
+    if (brPattern.test(data)) {
+      const [, dia, mes, ano] = data.match(brPattern) ?? [];
+      if (ano && mes && dia) {
+        const date = new Date(Number(ano), Number(mes) - 1, Number(dia));
+        date.setHours(0, 0, 0, 0);
+        return date;
+      }
+    }
+
+    return null;
+  }
+
+  private getDateForDia(dia: DiaKey): Date | null {
+    if (!this.inicioDaSemana) {
+      return null;
+    }
+
+    const index = this.diasDaSemana.indexOf(dia);
+    if (index === -1) {
+      return null;
+    }
+
+    const base = new Date(this.inicioDaSemana);
+    base.setHours(0, 0, 0, 0);
+    base.setDate(base.getDate() + index);
+    return base;
+  }
+
+  private calcularDiferencaDias(base: Date, comparacao: Date): number {
+    const dataBase = new Date(base);
+    const dataComparacao = new Date(comparacao);
+    dataBase.setHours(0, 0, 0, 0);
+    dataComparacao.setHours(0, 0, 0, 0);
+    return Math.floor((dataComparacao.getTime() - dataBase.getTime()) / this.MS_PER_DAY);
+  }
+
+  private getDateForSlot(dia: DiaKey, hora: string): Date | null {
+    const dataDia = this.getDateForDia(dia);
+    if (!dataDia) {
+      return null;
+    }
+
+    const horaNormalizada = normalizeHora(hora);
+    if (!horaNormalizada) {
+      return null;
+    }
+
+    const [hh, mm] = horaNormalizada.split(':').map(Number);
+    const resultado = new Date(dataDia);
+    resultado.setHours(hh, mm, 0, 0);
+    return resultado;
+  }
+
+  private podeAgendarNovamente(dia: DiaKey, hora: string): boolean {
+    const ultimaData = this.getUltimaDataAgendada();
+    if (!ultimaData) {
+      return true;
+    }
+
+    const novaData = this.getDateForSlot(dia, hora);
+    if (!novaData) {
+      return true;
+    }
+
+    const diffDias = this.calcularDiferencaDias(ultimaData, novaData);
+    return diffDias >= 15;
   }
 
   private getPrimeiroHorarioConfigurado(): string | null {
