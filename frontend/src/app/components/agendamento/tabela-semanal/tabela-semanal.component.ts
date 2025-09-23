@@ -217,6 +217,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.horariosPorDia = atualizados;
     this.atualizarHorariosBaseSemana();
+    this.emitGradeView();
     this.cdr.markForCheck();
   }
 
@@ -619,6 +620,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
         this.horariosBaseConfiguracao = slots.map(h => normalizeHora(h));
         this.atualizarHorariosBaseSemana();
+        this.emitGradeView();
         this.cdr.markForCheck();
       },
       error: (err: unknown) => {
@@ -634,6 +636,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   loadHorariosDisponiveis(): void {
     this.horariosService.horariosPorDia$.subscribe((horarios: HorariosPorDia) => {
       this.horariosPorDia = horarios;
+      this.emitGradeView();
     });
   }
 
