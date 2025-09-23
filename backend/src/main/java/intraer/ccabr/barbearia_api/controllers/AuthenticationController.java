@@ -176,11 +176,6 @@ public class AuthenticationController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
         } else {
             militar = userOpt.get();
             logger.info("⏳ Usando dados locais para CPF: {}", militar.getCpf());
