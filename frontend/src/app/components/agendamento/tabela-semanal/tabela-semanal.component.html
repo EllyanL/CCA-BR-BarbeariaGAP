@@ -34,7 +34,7 @@
                   [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
                   [ngClass]="[
                     slot.status | statusFormat : 'tabelaClass',
-                    deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : null
+                    deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : ''
                   ]"
                   (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
                 >
