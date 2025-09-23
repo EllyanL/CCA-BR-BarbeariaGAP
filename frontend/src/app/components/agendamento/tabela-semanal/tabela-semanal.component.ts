@@ -18,9 +18,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Militar } from 'src/app/models/militar';
 import { MilitarService } from 'src/app/services/militar.service';
 import { Router } from '@angular/router';
-import { ServerTimeService } from 'src/app/services/server-time.service';
+import { ServerTimeResponse, ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
-import { ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
+import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from 'src/app/services/configuracoes-agendamento.service';
 import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
 import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
@@ -187,7 +187,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   private carregarConfiguracao(): void {
     this.configuracoesService.getConfig().subscribe({
-      next: ({ horarioInicio, horarioFim }) => {
+      next: ({ horarioInicio, horarioFim }: ConfiguracaoAgendamento) => {
         const inicioNormalizado = normalizeHora(horarioInicio);
         const fimNormalizado = normalizeHora(horarioFim);
 
@@ -198,7 +198,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.aplicarJanelaHorarios();
         this.desabilitarTodosOsBotoes();
       },
-      error: err => this.logger.error('Erro ao carregar janela de horários:', err)
+      error: (err: unknown) => this.logger.error('Erro ao carregar janela de horários:', err)
     });
   }
 
@@ -269,12 +269,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   }
 
-  isHoraAgendavel(hora: string): boolean {
+  public isHoraAgendavel(hora: string): boolean {
     const m = this.toMinutes(hora);
     return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     const usuario = this.authService.getUsuarioAutenticado();
     this.idMilitarLogado = usuario?.id ?? null;
     if (usuario?.cpf) {
@@ -286,7 +286,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.configuracoesService.recarregarGrade$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(cat => {
+      .subscribe((cat: string) => {
         if (cat === this.categoria) {
           this.carregarConfiguracao();
           this.loadHorariosBase();
@@ -297,7 +297,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.serverTimeService.getServerTime()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: res => {
+        next: (res: ServerTimeResponse) => {
           this.timeOffsetMs = res.timestamp - Date.now();
           if (Math.abs(this.timeOffsetMs) > 60 * 1000) {
             this.snackBar.open('Atenção: horário do dispositivo diferente do servidor.', 'Ciente', { duration: 5000 });
@@ -305,7 +305,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.initAfterTime();
           this.desabilitarTodosOsBotoes();
         },
-        error: err => {
+        error: (err: unknown) => {
           this.logger.error('Erro ao obter hora do servidor:', err);
           this.initAfterTime();
           this.desabilitarTodosOsBotoes();
@@ -313,7 +313,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
+  public ngOnChanges(changes: SimpleChanges): void {
     if (changes['categoria'] && !changes['categoria'].firstChange) {
       this.categoriaSubject.next(this.categoria);
       this.triggerHorariosReload();
@@ -329,17 +329,17 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const usuario$ = this.userService.userData$
       .pipe(
         timeout(5000),
-        catchError(err => {
+        catchError((err: unknown) => {
           this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
           return of([]);
         }),
-        map(userData => {
+        map((userData: UserData[]) => {
           if (userData && userData.length > 0) {
             return userData[0];
           }
           return fallback ?? null;
         }),
-        tap(usuario => {
+        tap((usuario: UserData | Militar | null) => {
           if (!usuario) {
             this.logger.warn('Dados de usuário indisponíveis. Usando dados de fallback.');
           }
@@ -358,7 +358,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
-  private loadAllData() {  //Chama todos os load*() necessários.
+  private loadAllData(): void {  //Chama todos os load*() necessários.
     if (this.isCurrentRoute('/graduados')) {
       this.categoria = 'GRADUADO';
     } else if (this.isCurrentRoute('/oficiais')) {
@@ -405,9 +405,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       this.reloadHorarios$.pipe(withLatestFrom(parametros$), map(([, categoria]) => categoria))
     )
       .pipe(
-        switchMap(categoria =>
+        switchMap((categoria: string) =>
           this.horariosService.carregarHorariosDaSemana(categoria).pipe(
-            retryWhen(errors =>
+            retryWhen((errors: Observable<HttpErrorResponse>) =>
               errors.pipe(
                 mergeMap((error: HttpErrorResponse, attempt) => {
                   if ([401, 404].includes(error.status) && attempt < 3) {
@@ -418,8 +418,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
                 })
               )
             ),
-            tap(horarios => this.handleHorariosResponse(horarios)),
-            catchError(error => {
+            tap((horarios: HorariosPorDia) => this.handleHorariosResponse(horarios)),
+            catchError((error: HttpErrorResponse) => {
               this.logger.error('Erro ao carregar horários da semana:', error);
               this.horariosCarregados = false;
               this.cdr.markForCheck();
@@ -526,7 +526,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     });
   
     dialogRef.afterClosed().pipe(
-      catchError(error => {
+      catchError((error: unknown) => {
         this.logger.error('Erro ao buscar dados do militar:', error);
         return of(null);
       })
@@ -558,11 +558,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     });
   }
 
-  private loadAgendamentos() { //Carrega os agendamentos e associa ao usuário logado.
+  private loadAgendamentos(): void { //Carrega os agendamentos e associa ao usuário logado.
     this.agendamentoService.getAgendamentos().pipe(
-      tap(agendamentos => {
+      tap((agendamentos: Agendamento[]) => {
         if (agendamentos && agendamentos.length > 0) {
-          const agendamentosFiltrados = agendamentos.filter(agendamento =>
+          const agendamentosFiltrados = agendamentos.filter((agendamento: Agendamento) =>
             this.isAgendamentoDoMilitarLogado(agendamento) &&
             agendamento.status === 'AGENDADO'
           );
@@ -578,7 +578,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.saveAgendamentos();
         }
       }),
-      catchError(error => {
+      catchError((error: unknown) => {
         this.logger.error('Erro ao obter agendamentos:', error);
         this.agendamentos = [];
         return of([]);
@@ -598,7 +598,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   loadHorariosBase(): void {
     this.configuracoesService.getConfig().subscribe({
-      next: config => {
+      next: (config: ConfiguracaoAgendamento) => {
         const inicioNormalizado = normalizeHora(config.horarioInicio);
         const fimNormalizado = normalizeHora(config.horarioFim);
 
@@ -621,7 +621,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.atualizarHorariosBaseSemana();
         this.cdr.markForCheck();
       },
-      error: err => {
+      error: (err: unknown) => {
         this.logger.error('Erro ao carregar os horários base:', err);
       }
     });
@@ -631,8 +631,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return [...horarios].sort((a, b) => this.toMinutes(normalizeHora(a)) - this.toMinutes(normalizeHora(b)));
   }
 
-  loadHorariosDisponiveis() {
-    this.horariosService.horariosPorDia$.subscribe(horarios => {
+  loadHorariosDisponiveis(): void {
+    this.horariosService.horariosPorDia$.subscribe((horarios: HorariosPorDia) => {
       this.horariosPorDia = horarios;
     });
   }
@@ -933,8 +933,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
 
-  private loadMilitares(categoria: string) {
-    this.militarService.getMilitaresByCategoria(categoria).subscribe(data => {
+  private loadMilitares(categoria: string): void {
+    this.militarService.getMilitaresByCategoria(categoria).subscribe((data: Militar[]) => {
       if (categoria === 'OFICIAL') {
         this.oficiais = data;
       } else if (categoria === 'GRADUADO') {
@@ -1003,20 +1003,20 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private getNomeDeGuerraMilitarLogado(): string {
-    this.userService.userData$.subscribe(data => {
+    this.userService.userData$.subscribe((data: UserData[]) => {
       this.militarLogado = data[0].nomeDeGuerra;
     });
     return this.militarLogado;
   }
 
   private getOmMilitarLogado(): string {
-    this.userService.userData$.subscribe(data => {
+    this.userService.userData$.subscribe((data: UserData[]) => {
       this.omMilitar = data[0].om;
     });
     return this.omMilitar;
   }
 
-  private setDiasSemanaAtual() {
+  private setDiasSemanaAtual(): void {
     const hoje = new Date();
     const diaSemanaAtual = hoje.getDay();
 
@@ -1131,7 +1131,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return dia;
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
     this.horariosService.stopPollingHorarios();
