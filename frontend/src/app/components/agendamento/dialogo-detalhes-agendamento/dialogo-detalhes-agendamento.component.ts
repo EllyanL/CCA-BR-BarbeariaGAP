@@ -21,7 +21,7 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
       </div>
     </div>
     <div mat-dialog-actions class="detalhes-dialog__actions">
-      <button mat-button (click)="fechar()">Cancelar</button>
+      <button mat-button color="warn" (click)="fechar()">Cancelar</button>
       <button *ngIf="podeDesmarcar" mat-button color="warn" (click)="desmarcar()">
         DESMARCAR
       </button>
