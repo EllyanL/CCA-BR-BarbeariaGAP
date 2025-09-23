@@ -1,5 +1,7 @@
 package intraer.ccabr.barbearia_api.controllers;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,6 +45,8 @@ import jakarta.validation.Valid;
 public class AuthenticationController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
+    private static final Duration WEB_SERVICE_SYNC_TTL = Duration.ofDays(1);
 
     private final AuthenticationService authenticationService;
 
@@ -144,16 +148,22 @@ public class AuthenticationController {
                 firstAccess = true;
             } else {
                 Militar existingMilitar = userOpt.get();
+                LocalDateTime referenceTime = LocalDateTime.now();
+                LocalDateTime lastSync = existingMilitar.getLastWebserviceSync();
+                boolean lastSyncRecent = isSyncRecent(lastSync, referenceTime);
                 boolean missingCategoria = existingMilitar.getCategoria() == null;
-                boolean missingSecao = isMissingInfo(existingMilitar.getSecao());
-                boolean missingRamal = isMissingInfo(existingMilitar.getRamal());
-                if (missingCategoria || missingSecao || missingRamal) {
+                boolean missingSecao = isMissingInfo(existingMilitar.getSecao(), lastSync, referenceTime);
+                boolean missingRamal = isMissingInfo(existingMilitar.getRamal(), lastSync, referenceTime);
+                boolean syncStale = !lastSyncRecent;
+                if (missingCategoria || missingSecao || missingRamal || syncStale) {
                     logger.info(
-                        "📡 Sincronização necessária para CPF {} (categoria ausente: {}, secao ausente: {}, ramal ausente: {}).",
+                        "📡 Sincronização necessária para CPF {} (categoria ausente: {}, secao ausente: {}, ramal ausente: {}, sync desatualizado: {}, último sync: {}).",
                         data.cpf(),
                         missingCategoria,
                         missingSecao,
-                        missingRamal
+                        missingRamal,
+                        syncStale,
+                        lastSync
                     );
                     firstAccess = true;
                 }
@@ -264,12 +274,33 @@ public class AuthenticationController {
         return ResponseEntity.ok(dto);
     }
 
-    private boolean isMissingInfo(String value) {
+    private boolean isMissingInfo(String value, LocalDateTime lastSync, LocalDateTime referenceTime) {
         if (value == null) {
             return true;
         }
 
         String trimmed = value.trim();
-        return trimmed.isEmpty() || "Não informado".equalsIgnoreCase(trimmed);
+        if (trimmed.isEmpty()) {
+            return true;
+        }
+
+        if ("Não informado".equalsIgnoreCase(trimmed)) {
+            return !isSyncRecent(lastSync, referenceTime);
+        }
+
+        return false;
+    }
+
+    private boolean isSyncRecent(LocalDateTime lastSync, LocalDateTime referenceTime) {
+        if (lastSync == null) {
+            return false;
+        }
+
+        Duration sinceSync = Duration.between(lastSync, referenceTime);
+        if (sinceSync.isNegative()) {
+            return true;
+        }
+
+        return sinceSync.compareTo(WEB_SERVICE_SYNC_TTL) <= 0;
     }
 }
