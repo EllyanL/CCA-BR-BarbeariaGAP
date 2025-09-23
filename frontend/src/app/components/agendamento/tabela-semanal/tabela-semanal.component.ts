@@ -160,15 +160,23 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private toMinutes(hora: string): number {
-    const [h, m] = hora.split(':').map(Number);
-    return h * 60 + m;
+    const normalizada = normalizeHora(hora);
+    const [hStr = '0', mStr = '0'] = normalizada.split(':');
+    const horas = Number.parseInt(hStr, 10);
+    const minutos = Number.parseInt(mStr, 10);
+    const horasValidas = Number.isFinite(horas) ? horas : 0;
+    const minutosValidos = Number.isFinite(minutos) ? minutos : 0;
+    return horasValidas * 60 + minutosValidos;
   }
 
   private carregarConfiguracao(): void {
     this.configuracoesService.getConfig().subscribe({
       next: ({ horarioInicio, horarioFim }) => {
-        this.inicioJanelaMin = this.toMinutes(horarioInicio);
-        this.fimJanelaMin = this.toMinutes(horarioFim);
+        const inicioNormalizado = normalizeHora(horarioInicio);
+        const fimNormalizado = normalizeHora(horarioFim);
+
+        this.inicioJanelaMin = this.toMinutes(inicioNormalizado);
+        this.fimJanelaMin = this.toMinutes(fimNormalizado);
         this.inicioAgendavelMin = this.inicioJanelaMin;
         this.fimAgendavelMin = this.fimJanelaMin;
         this.aplicarJanelaHorarios();
@@ -213,6 +221,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     const filtrados = Array.from(todosHorarios).filter(h => this.isHoraAgendavel(h));
     this.horariosBaseSemana = this.ordenarHorarios(filtrados);
+    this.cdr.markForCheck();
   }
 
   isHoraAgendavel(hora: string): boolean {
@@ -544,12 +553,16 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   loadHorariosBase(): void {
     this.configuracoesService.getConfig().subscribe({
       next: config => {
-        const [inicioHora, inicioMin] = config.horarioInicio.split(':').map(Number);
-        const [fimHora, fimMin] = config.horarioFim.split(':').map(Number);
+        const inicioNormalizado = normalizeHora(config.horarioInicio);
+        const fimNormalizado = normalizeHora(config.horarioFim);
+
+        const [inicioHora = 0, inicioMin = 0] = inicioNormalizado.split(':').map(v => Number.parseInt(v, 10));
+        const [fimHora = 0, fimMin = 0] = fimNormalizado.split(':').map(v => Number.parseInt(v, 10));
+
         const inicio = new Date();
-        inicio.setHours(inicioHora, inicioMin, 0, 0);
+        inicio.setHours(Number.isFinite(inicioHora) ? inicioHora : 0, Number.isFinite(inicioMin) ? inicioMin : 0, 0, 0);
         const fim = new Date();
-        fim.setHours(fimHora, fimMin, 0, 0);
+        fim.setHours(Number.isFinite(fimHora) ? fimHora : 0, Number.isFinite(fimMin) ? fimMin : 0, 0, 0);
 
         const slots: string[] = [];
         for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
