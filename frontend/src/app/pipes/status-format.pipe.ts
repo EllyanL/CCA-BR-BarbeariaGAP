@@ -24,7 +24,7 @@ export class StatusFormatPipe implements PipeTransform {
 
   private readonly tabelaClassMap: Record<string, string> = {
     DISPONIVEL: 'tabela-botao-disponivel',
-    AGENDADO: 'botao-agendado',
+    AGENDADO: 'botao-agendado-outro',
     INDISPONIVEL: 'tabela-botao-indisponivel',
     REALIZADO: 'tabela-botao-realizado',
     CANCELADO: 'tabela-botao-cancelado',
