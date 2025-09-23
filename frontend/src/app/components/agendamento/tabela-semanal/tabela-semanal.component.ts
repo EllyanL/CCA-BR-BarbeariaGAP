@@ -82,6 +82,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   feedbackMessageTitle: string = '';
   timeOffsetMs: number = 0;
   usuarioCarregado = false;
+  horariosCarregados = false;
   agendamentoBloqueado = false;
   private userDataSubscription?: Subscription;
   private horariosSub?: Subscription;
@@ -89,6 +90,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   private recarregarGradeSub?: Subscription;
   private desbloqueioTimeout?: any;
   private avisoBloqueioMostrado = false;
+
+  private deveIgnorarPrimeiraEmissaoHorarios = true;
 
   private inicioJanelaMin: number = 0;
   private fimJanelaMin: number = 24 * 60;
@@ -143,6 +146,14 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       }
     }
 
+  }
+
+  private isHorariosPayloadValido(payload: HorariosPorDia | null | undefined): payload is HorariosPorDia {
+    if (!payload || typeof payload !== 'object') {
+      return false;
+    }
+
+    return Object.keys(payload).length > 0;
   }
 
   private toMinutes(hora: string): number {
@@ -218,13 +229,25 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       if (cat === this.categoria) {
         this.carregarConfiguracao();
         this.loadHorariosBase();
+        this.horariosCarregados = false;
+        this.cdr.markForCheck();
         this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
           next: h => {
-            this.horariosPorDia = h;
-            this.aplicarJanelaHorarios();
-            this.horariosService.atualizarHorarios(this.horariosPorDia);
+            if (this.isHorariosPayloadValido(h)) {
+              this.horariosPorDia = h;
+              this.aplicarJanelaHorarios();
+              this.horariosService.atualizarHorarios(h);
+              this.horariosCarregados = true;
+            } else {
+              this.horariosCarregados = false;
+            }
+            this.cdr.markForCheck();
           },
-          error: err => this.logger.error('Erro ao recarregar horários:', err)
+          error: err => {
+            this.logger.error('Erro ao recarregar horários:', err);
+            this.horariosCarregados = false;
+            this.cdr.markForCheck();
+          }
         });
       }
     });
@@ -314,24 +337,59 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       this.categoria = 'OFICIAL';
     }
     this.carregarConfiguracao();
-    this.horariosService.startPollingHorarios(this.categoria);
-    this.horariosService
-      .carregarHorariosDaSemana(this.categoria)
-      .subscribe(h => {
-        this.horariosPorDia = h;
-        this.aplicarJanelaHorarios();
-        this.horariosService.atualizarHorarios(h);
-      });
+    this.horariosCarregados = false;
+    this.deveIgnorarPrimeiraEmissaoHorarios = true;
+    this.cdr.markForCheck();
+
+    this.horariosSub?.unsubscribe();
     this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
       next: horarios => {
+        if (this.deveIgnorarPrimeiraEmissaoHorarios) {
+          this.deveIgnorarPrimeiraEmissaoHorarios = false;
+          return;
+        }
+
+        if (!this.isHorariosPayloadValido(horarios)) {
+          this.horariosCarregados = false;
+          this.cdr.markForCheck();
+          return;
+        }
+
         this.horariosPorDia = horarios;
         this.aplicarJanelaHorarios();
         this.logger.log('Horários atualizados:', this.horariosPorDia);
+        this.horariosCarregados = true;
         this.cdr.markForCheck();
       },
-      error: err => this.logger.error('Erro ao atualizar horários:', err)
+      error: err => {
+        this.logger.error('Erro ao atualizar horários:', err);
+        this.horariosCarregados = false;
+        this.cdr.markForCheck();
+      }
     });
-  
+
+    this.horariosService.startPollingHorarios(this.categoria);
+    this.horariosService
+      .carregarHorariosDaSemana(this.categoria)
+      .subscribe({
+        next: h => {
+          if (this.isHorariosPayloadValido(h)) {
+            this.horariosPorDia = h;
+            this.aplicarJanelaHorarios();
+            this.horariosService.atualizarHorarios(h);
+            this.horariosCarregados = true;
+          } else {
+            this.horariosCarregados = false;
+          }
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.logger.error('Erro ao carregar horários da semana:', err);
+          this.horariosCarregados = false;
+          this.cdr.markForCheck();
+        }
+      });
+
     this.desabilitarTodosOsBotoes();
     this.setDiasSemanaAtual();
     this.loadHorariosBase();
@@ -415,7 +473,26 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
         this.saveAgendamentos();
         // Recarrega os horários para refletir o novo agendamento
-        this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe();
+        this.horariosCarregados = false;
+        this.cdr.markForCheck();
+        this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
+          next: h => {
+            if (this.isHorariosPayloadValido(h)) {
+              this.horariosPorDia = h;
+              this.aplicarJanelaHorarios();
+              this.horariosService.atualizarHorarios(h);
+              this.horariosCarregados = true;
+            } else {
+              this.horariosCarregados = false;
+            }
+            this.cdr.markForCheck();
+          },
+          error: err => {
+            this.logger.error('Erro ao recarregar horários após agendamento:', err);
+            this.horariosCarregados = false;
+            this.cdr.markForCheck();
+          }
+        });
       } else if (result && result.sucesso === false) {
         const message = (result as any).mensagem || (result as any).message || 'Falha ao realizar agendamento.';
         this.snackBar.open(message, 'Ciente', { duration: SNACKBAR_DURATION });
@@ -995,6 +1072,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.recarregarGradeSub?.unsubscribe();
     this.horariosService.stopPollingHorarios();
     clearTimeout(this.desbloqueioTimeout);
+    this.horariosCarregados = false;
+    this.deveIgnorarPrimeiraEmissaoHorarios = true;
   }
 
 }

@@ -1,4 +1,4 @@
-<mat-card class="tabela-card" *ngIf="usuarioCarregado">
+<mat-card class="tabela-card" *ngIf="usuarioCarregado && horariosCarregados; else carregandoHorarios">
   <mat-card-content class="tabela-card-content">
     <!-- Mensagem de Feedback -->
     <div *ngIf="feedbackMessageTitle" class="feedback-message">
@@ -47,3 +47,12 @@
 
   </mat-card-content>
 </mat-card>
+
+<ng-template #carregandoHorarios>
+  <mat-card class="tabela-card tabela-loading-card">
+    <mat-card-content class="tabela-loading-content">
+      <mat-spinner diameter="48"></mat-spinner>
+      <span class="tabela-loading-text">Carregando horários...</span>
+    </mat-card-content>
+  </mat-card>
+</ng-template>
