@@ -206,23 +206,30 @@ export class HorariosService {
     this.horariosPorDiaSource.next(normalizeHorariosPorDia(novosHorarios));
   }
 
-  startPollingHorarios(categoria: string): void {
+  startPollingHorarios(categoria: string, onUpdate?: () => void): void {
     this.stopPollingHorarios();
 
     const atualizarHorarios = () => {
-      this.carregarHorariosDaSemana(categoria).subscribe({
-        next: horarios => this.atualizarHorarios(horarios),
-        error: err => this.logger.error('Erro ao atualizar horários via SSE:', err)
-      });
+      if (onUpdate) {
+        onUpdate();
+      } else {
+        this.carregarHorariosDaSemana(categoria).subscribe({
+          next: horarios => this.atualizarHorarios(horarios),
+          error: err => this.logger.error('Erro ao atualizar horários via SSE:', err)
+        });
+      }
     };
 
-    // Realiza um carregamento imediato para garantir que a tabela reflita o estado atual do backend
-    atualizarHorarios();
+    // Realiza um carregamento imediato quando a lógica reativa não foi fornecida pelo componente
+    if (!onUpdate) {
+      atualizarHorarios();
+    }
 
     const source = new EventSource(`${this.apiUrl}/stream`);
     this.eventSource = source;
-    source.addEventListener('horarios-update', () => atualizarHorarios());
-    source.onmessage = () => atualizarHorarios();
+    const handleUpdate = () => atualizarHorarios();
+    source.addEventListener('horarios-update', handleUpdate);
+    source.onmessage = handleUpdate;
     source.onerror = err => {
       this.logger.error('Erro no stream de horários:', err);
     };

@@ -1,13 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { HorariosService } from 'src/app/services/horarios.service';
 import { HorariosPorDia, SlotHorario } from 'src/app/models/slot-horario';
-import { Observable, Subscription, of } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, Subject, combineLatest, merge, of, timer } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { catchError, map, take, tap, timeout } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, filter, map, mergeMap, retryWhen, shareReplay, switchMap, take, takeUntil, tap, timeout, withLatestFrom } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 import { Agendamento } from 'src/app/models/agendamento';
 import { AgendamentoService } from 'src/app/services/agendamento.service';
 import { AuthService } from 'src/app/services/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DialogoAgendamentoComponent } from '../dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoDetalhesAgendamentoComponent } from '../dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
 import { LoggingService } from 'src/app/services/logging.service';
@@ -23,6 +25,7 @@ import { ErrorMessagesService } from 'src/app/services/error-messages.service';
 import { DIA_SEMANA, DIA_LABEL_MAP, normalizeDia, DiaKey } from 'src/app/shared/dias.util';
 import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 import { normalizeHora } from 'src/app/utils/horarios-utils';
+import { UserData } from 'src/app/models/user-data';
 
 
 @Component({
@@ -84,14 +87,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   usuarioCarregado = false;
   horariosCarregados = false;
   agendamentoBloqueado = false;
-  private userDataSubscription?: Subscription;
-  private horariosSub?: Subscription;
   private storageKey: string = '';
-  private recarregarGradeSub?: Subscription;
   private desbloqueioTimeout?: any;
   private avisoBloqueioMostrado = false;
-
-  private deveIgnorarPrimeiraEmissaoHorarios = true;
 
   private inicioJanelaMin: number = 0;
   private fimJanelaMin: number = 24 * 60;
@@ -99,6 +97,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   private fimAgendavelMin: number = 24 * 60;
   private horariosBaseConfiguracao: string[] = [];
   private readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+  private readonly destroy$ = new Subject<void>();
+  private readonly categoriaSubject = new BehaviorSubject<string>('');
+  private readonly reloadHorarios$ = new Subject<void>();
+  private horariosPipelineInitialized = false;
 
   constructor(
     private router: Router,
@@ -224,109 +227,80 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       this.storageKey = `agendamentos-${usuario.cpf}`;
       this.cdr.markForCheck();
     }
+
     this.carregarConfiguracao();
-    this.recarregarGradeSub = this.configuracoesService.recarregarGrade$.subscribe(cat => {
-      if (cat === this.categoria) {
-        this.carregarConfiguracao();
-        this.loadHorariosBase();
-        this.horariosCarregados = false;
-        this.cdr.markForCheck();
-        this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
-          next: h => {
-            if (this.isHorariosPayloadValido(h)) {
-              this.horariosPorDia = h;
-              this.aplicarJanelaHorarios();
-              this.horariosService.atualizarHorarios(h);
-              this.horariosCarregados = true;
-            } else {
-              this.horariosCarregados = false;
-            }
-            this.cdr.markForCheck();
-          },
-          error: err => {
-            this.logger.error('Erro ao recarregar horários:', err);
-            this.horariosCarregados = false;
-            this.cdr.markForCheck();
-          }
-        });
-      }
-    });
-    this.serverTimeService.getServerTime().subscribe({
-      next: (res) => {
-        this.timeOffsetMs = res.timestamp - Date.now();
-        if (Math.abs(this.timeOffsetMs) > 60 * 1000) {
-          this.snackBar.open('Atenção: horário do dispositivo diferente do servidor.', 'Ciente', { duration: 5000 });
+
+    this.configuracoesService.recarregarGrade$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(cat => {
+        if (cat === this.categoria) {
+          this.carregarConfiguracao();
+          this.loadHorariosBase();
+          this.triggerHorariosReload();
         }
-        this.initAfterTime();
-        this.desabilitarTodosOsBotoes();
-      },
-      error: (err) => {
-        this.logger.error('Erro ao obter hora do servidor:', err);
-        this.initAfterTime();
-        this.desabilitarTodosOsBotoes();
-      }
-    });
+      });
+
+    this.serverTimeService.getServerTime()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.timeOffsetMs = res.timestamp - Date.now();
+          if (Math.abs(this.timeOffsetMs) > 60 * 1000) {
+            this.snackBar.open('Atenção: horário do dispositivo diferente do servidor.', 'Ciente', { duration: 5000 });
+          }
+          this.initAfterTime();
+          this.desabilitarTodosOsBotoes();
+        },
+        error: err => {
+          this.logger.error('Erro ao obter hora do servidor:', err);
+          this.initAfterTime();
+          this.desabilitarTodosOsBotoes();
+        }
+      });
   }
 
-  ngOnChanges(_changes: SimpleChanges): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['categoria'] && !changes['categoria'].firstChange) {
+      this.categoriaSubject.next(this.categoria);
+      this.triggerHorariosReload();
+    }
     this.cdr.markForCheck();
   }
 
   // Define a chave de armazenamento baseada no CPF do usuário
   // e carrega os agendamentos salvos para ele.
   private initAfterTime(): void {
-    this.userDataSubscription = this.userService.userData$
+    const fallback = this.authService.getUsuarioAutenticado();
+
+    const usuario$ = this.userService.userData$
       .pipe(
-        take(1),
         timeout(5000),
         catchError(err => {
           this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
-
-          const fallback = this.authService.getUsuarioAutenticado();
-          if (fallback?.id) {
-            this.idMilitarLogado = fallback.id;
-          }
-          if (fallback?.cpf) {
-            this.storageKey = `agendamentos-${fallback.cpf}`;
-            this.loadAgendamentosFromStorage();
-          }
-
-          this.usuarioCarregado = true;
-          this.loadAllData();
-          this.cdr.markForCheck();
-
           return of([]);
-        })
-        
-      )
-      .subscribe(userData => {
-        if (userData && userData.length > 0 && userData[0].saram) {
-          const newKey = `agendamentos-${userData[0].cpf}`;
-          if (this.storageKey && this.storageKey !== newKey) {
-            sessionStorage.removeItem(this.storageKey);
-            this.agendamentos = [];
+        }),
+        map(userData => {
+          if (userData && userData.length > 0) {
+            return userData[0];
           }
-          this.militarLogado = userData[0].nomeDeGuerra;
-          this.omMilitar = userData[0].om;
-          this.cpfMilitarLogado = userData[0].cpf;
-          // this.idMilitarLogado = userData[0].id;
-          this.idMilitarLogado = userData[0].id ?? null;
+          return fallback ?? null;
+        }),
+        tap(usuario => {
+          if (!usuario) {
+            this.logger.warn('Dados de usuário indisponíveis. Usando dados de fallback.');
+          }
+          this.handleUsuarioContext(usuario);
+        }),
+        shareReplay({ bufferSize: 1, refCount: true })
+      ) as Observable<UserData | Militar | null>;
 
-          // 👀 After assigning the user properties we trigger change detection
-          // so that UI elements that depend on these values (e.g. button states)
-          // are updated immediately.
-          this.cdr.markForCheck();
+    this.setupHorariosPipeline(usuario$);
 
-          this.storageKey = newKey;
-          this.loadAgendamentosFromStorage();
-          this.logger.log('🔐 userData carregado. Chamando loadAllData()');
-          this.cdr.markForCheck();
-          this.loadAllData();
-        } else {
-          this.logger.warn('Dados de usuário indisponíveis. Usando dados de fallback.');
-          this.usuarioCarregado = true;
-          this.loadAllData();
-        }
+    usuario$
+      .pipe(take(1))
+      .subscribe(() => {
+        this.logger.log('🔐 userData carregado. Inicializando carregamento reativo.');
+        this.loadAllData();
       });
   }
 
@@ -336,59 +310,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     } else if (this.isCurrentRoute('/oficiais')) {
       this.categoria = 'OFICIAL';
     }
+
+    this.categoriaSubject.next(this.categoria);
     this.carregarConfiguracao();
     this.horariosCarregados = false;
-    this.deveIgnorarPrimeiraEmissaoHorarios = true;
     this.cdr.markForCheck();
 
-    this.horariosSub?.unsubscribe();
-    this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
-      next: horarios => {
-        if (this.deveIgnorarPrimeiraEmissaoHorarios) {
-          this.deveIgnorarPrimeiraEmissaoHorarios = false;
-          return;
-        }
-
-        if (!this.isHorariosPayloadValido(horarios)) {
-          this.horariosCarregados = false;
-          this.cdr.markForCheck();
-          return;
-        }
-
-        this.horariosPorDia = horarios;
-        this.aplicarJanelaHorarios();
-        this.logger.log('Horários atualizados:', this.horariosPorDia);
-        this.horariosCarregados = true;
-        this.cdr.markForCheck();
-      },
-      error: err => {
-        this.logger.error('Erro ao atualizar horários:', err);
-        this.horariosCarregados = false;
-        this.cdr.markForCheck();
-      }
-    });
-
-    this.horariosService.startPollingHorarios(this.categoria);
-    this.horariosService
-      .carregarHorariosDaSemana(this.categoria)
-      .subscribe({
-        next: h => {
-          if (this.isHorariosPayloadValido(h)) {
-            this.horariosPorDia = h;
-            this.aplicarJanelaHorarios();
-            this.horariosService.atualizarHorarios(h);
-            this.horariosCarregados = true;
-          } else {
-            this.horariosCarregados = false;
-          }
-          this.cdr.markForCheck();
-        },
-        error: err => {
-          this.logger.error('Erro ao carregar horários da semana:', err);
-          this.horariosCarregados = false;
-          this.cdr.markForCheck();
-        }
-      });
+    this.horariosService.startPollingHorarios(this.categoria, () => this.triggerHorariosReload());
 
     this.desabilitarTodosOsBotoes();
     this.setDiasSemanaAtual();
@@ -396,7 +324,101 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.loadMilitares(this.categoria);
     this.loadAgendamentos();
   }
-  
+
+  private setupHorariosPipeline(usuario$: Observable<UserData | Militar | null>): void {
+    if (this.horariosPipelineInitialized) {
+      return;
+    }
+    this.horariosPipelineInitialized = true;
+
+    const categoria$ = this.categoriaSubject.asObservable().pipe(
+      filter((categoria): categoria is string => !!categoria),
+      map(categoria => categoria.toUpperCase()),
+      distinctUntilChanged()
+    );
+
+    const parametros$ = combineLatest([categoria$, usuario$]).pipe(
+      tap(() => {
+        this.horariosCarregados = false;
+        this.cdr.markForCheck();
+      }),
+      map(([categoria]) => categoria),
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
+
+    merge(
+      parametros$,
+      this.reloadHorarios$.pipe(withLatestFrom(parametros$), map(([, categoria]) => categoria))
+    )
+      .pipe(
+        switchMap(categoria =>
+          this.horariosService.carregarHorariosDaSemana(categoria).pipe(
+            retryWhen(errors =>
+              errors.pipe(
+                mergeMap((error: HttpErrorResponse, attempt) => {
+                  if ([401, 404].includes(error.status) && attempt < 3) {
+                    this.logger.warn('Falha ao carregar horários, tentando novamente...', error);
+                    return timer(1000 * (attempt + 1));
+                  }
+                  return throwError(() => error);
+                })
+              )
+            ),
+            tap(horarios => this.handleHorariosResponse(horarios)),
+            catchError(error => {
+              this.logger.error('Erro ao carregar horários da semana:', error);
+              this.horariosCarregados = false;
+              this.cdr.markForCheck();
+              return EMPTY;
+            })
+          )
+        ),
+        takeUntil(this.destroy$)
+      )
+      .subscribe();
+  }
+
+  private handleUsuarioContext(usuario: UserData | Militar | null): void {
+    if (usuario?.cpf) {
+      const newKey = `agendamentos-${usuario.cpf}`;
+      if (this.storageKey && this.storageKey !== newKey) {
+        sessionStorage.removeItem(this.storageKey);
+        this.agendamentos = [];
+      }
+      this.storageKey = newKey;
+      this.loadAgendamentosFromStorage();
+    }
+
+    this.militarLogado = usuario?.nomeDeGuerra || '';
+    this.omMilitar = usuario?.om || '';
+    this.cpfMilitarLogado = usuario?.cpf || '';
+    this.idMilitarLogado = usuario?.id ?? null;
+
+    this.usuarioCarregado = true;
+    this.cdr.markForCheck();
+  }
+
+  private triggerHorariosReload(): void {
+    this.horariosCarregados = false;
+    this.cdr.markForCheck();
+    this.reloadHorarios$.next();
+  }
+
+  private handleHorariosResponse(horarios: HorariosPorDia): void {
+    if (!this.isHorariosPayloadValido(horarios)) {
+      this.horariosCarregados = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.horariosPorDia = horarios;
+    this.aplicarJanelaHorarios();
+    this.horariosService.atualizarHorarios(this.horariosPorDia);
+    this.horariosCarregados = true;
+    this.logger.log('Horários atualizados:', this.horariosPorDia);
+    this.cdr.markForCheck();
+  }
+
   getLabelDiaComData(dia: string): string {
     const diaKey = normalizeDia(dia);
     const index = this.diasDaSemana.findIndex(d => d === diaKey);
@@ -473,26 +495,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
         this.saveAgendamentos();
         // Recarrega os horários para refletir o novo agendamento
-        this.horariosCarregados = false;
-        this.cdr.markForCheck();
-        this.horariosService.carregarHorariosDaSemana(this.categoria).subscribe({
-          next: h => {
-            if (this.isHorariosPayloadValido(h)) {
-              this.horariosPorDia = h;
-              this.aplicarJanelaHorarios();
-              this.horariosService.atualizarHorarios(h);
-              this.horariosCarregados = true;
-            } else {
-              this.horariosCarregados = false;
-            }
-            this.cdr.markForCheck();
-          },
-          error: err => {
-            this.logger.error('Erro ao recarregar horários após agendamento:', err);
-            this.horariosCarregados = false;
-            this.cdr.markForCheck();
-          }
-        });
+        this.triggerHorariosReload();
       } else if (result && result.sucesso === false) {
         const message = (result as any).mensagem || (result as any).message || 'Falha ao realizar agendamento.';
         this.snackBar.open(message, 'Ciente', { duration: SNACKBAR_DURATION });
@@ -1067,13 +1070,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
-    this.userDataSubscription?.unsubscribe();
-    this.horariosSub?.unsubscribe();
-    this.recarregarGradeSub?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
     this.horariosService.stopPollingHorarios();
     clearTimeout(this.desbloqueioTimeout);
     this.horariosCarregados = false;
-    this.deveIgnorarPrimeiraEmissaoHorarios = true;
   }
 
 }
