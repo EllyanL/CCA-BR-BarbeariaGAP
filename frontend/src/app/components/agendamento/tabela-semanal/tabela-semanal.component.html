@@ -29,13 +29,13 @@
             <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
               <button
                 mat-raised-button
-                [disabled]="agendamentoBloqueado || slot.status === 'INDISPONIVEL'"
+                [disabled]="!podeInteragirComSlot(slot, dia, hora)"
                 [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
                 [ngClass]="[
                   slot.status | statusFormat : 'tabelaClass',
                   deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : null
                 ]"
-                (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), getLabelDiaComData(dia), hora)"
+                (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
               >
                 {{ slot.status | statusFormat }}
               </button>
