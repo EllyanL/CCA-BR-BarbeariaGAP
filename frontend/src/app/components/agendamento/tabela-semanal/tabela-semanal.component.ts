@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { HorariosService } from 'src/app/services/horarios.service';
 import { HorariosPorDia, SlotHorario } from 'src/app/models/slot-horario';
-import { BehaviorSubject, EMPTY, Observable, Subject, combineLatest, merge, of, timer } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, Subject, combineLatest, merge, of, timer, defer } from 'rxjs';
 import { animate, style, transition, trigger } from '@angular/animations';
-import { catchError, distinctUntilChanged, filter, map, mergeMap, retryWhen, shareReplay, switchMap, take, takeUntil, tap, timeout, withLatestFrom } from 'rxjs/operators';
+import { catchError, distinctUntilChanged, filter, map, mergeMap, retryWhen, shareReplay, startWith, switchMap, take, takeUntil, tap, timeout, withLatestFrom } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 import { Agendamento } from 'src/app/models/agendamento';
@@ -186,20 +186,25 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private carregarConfiguracao(): void {
-    this.configuracoesService.getConfig().subscribe({
-      next: ({ horarioInicio, horarioFim }: ConfiguracaoAgendamento) => {
-        const inicioNormalizado = normalizeHora(horarioInicio);
-        const fimNormalizado = normalizeHora(horarioFim);
+    this.waitForToken()
+      .pipe(
+        switchMap(() => this.configuracoesService.getConfig()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: ({ horarioInicio, horarioFim }: ConfiguracaoAgendamento) => {
+          const inicioNormalizado = normalizeHora(horarioInicio);
+          const fimNormalizado = normalizeHora(horarioFim);
 
-        this.inicioJanelaMin = this.toMinutes(inicioNormalizado);
-        this.fimJanelaMin = this.toMinutes(fimNormalizado);
-        this.inicioAgendavelMin = this.inicioJanelaMin;
-        this.fimAgendavelMin = this.fimJanelaMin;
-        this.aplicarJanelaHorarios();
-        this.desabilitarTodosOsBotoes();
-      },
-      error: (err: unknown) => this.logger.error('Erro ao carregar janela de horários:', err)
-    });
+          this.inicioJanelaMin = this.toMinutes(inicioNormalizado);
+          this.fimJanelaMin = this.toMinutes(fimNormalizado);
+          this.inicioAgendavelMin = this.inicioJanelaMin;
+          this.fimAgendavelMin = this.fimJanelaMin;
+          this.aplicarJanelaHorarios();
+          this.desabilitarTodosOsBotoes();
+        },
+        error: (err: unknown) => this.logger.error('Erro ao carregar janela de horários:', err)
+      });
   }
 
   private aplicarJanelaHorarios(): void {
@@ -276,17 +281,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   public ngOnInit(): void {
-    const usuario = this.authService.getUsuarioAutenticado();
-    this.idMilitarLogado = usuario?.id ?? null;
-    if (usuario?.cpf) {
-      this.storageKey = `agendamentos-${usuario.cpf}`;
-      this.cdr.markForCheck();
-    }
-
-    this.carregarConfiguracao();
-
     this.configuracoesService.recarregarGrade$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((cat: string) =>
+          this.waitForToken().pipe(map(() => cat))
+        )
+      )
       .subscribe((cat: string) => {
         if (cat === this.categoria) {
           this.carregarConfiguracao();
@@ -325,38 +326,61 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   // Define a chave de armazenamento baseada no CPF do usuário
   // e carrega os agendamentos salvos para ele.
   private initAfterTime(): void {
-    const fallback = this.authService.getUsuarioAutenticado();
+    const fallbackUsuario = this.authService.getUsuarioAutenticado();
 
     const usuario$ = this.userService.userData$
       .pipe(
         timeout(5000),
         catchError((err: unknown) => {
           this.logger.error('Erro ou timeout ao obter dados do usuário:', err);
-          return of([]);
+          return of([] as UserData[]);
         }),
+        startWith([] as UserData[]),
         map((userData: UserData[]) => {
           if (userData && userData.length > 0) {
             return userData[0];
           }
-          return fallback ?? null;
+          return this.authService.getUsuarioAutenticado() ?? fallbackUsuario ?? null;
         }),
         tap((usuario: UserData | Militar | null) => {
           if (!usuario) {
-            this.logger.warn('Dados de usuário indisponíveis. Usando dados de fallback.');
+            this.logger.warn('Dados de usuário indisponíveis. Aguardando autenticação.');
           }
+        }),
+        filter((usuario): usuario is UserData | Militar => !!usuario && !!usuario.cpf),
+        distinctUntilChanged((prev, curr) => (prev?.cpf ?? '') === (curr?.cpf ?? '')),
+        tap((usuario: UserData | Militar) => {
           this.handleUsuarioContext(usuario);
         }),
         shareReplay({ bufferSize: 1, refCount: true })
-      ) as Observable<UserData | Militar | null>;
+      );
 
     this.setupHorariosPipeline(usuario$);
 
     usuario$
-      .pipe(take(1))
+      .pipe(
+        switchMap(usuario => this.waitForToken().pipe(map(() => usuario))),
+        take(1)
+      )
       .subscribe(() => {
         this.logger.log('🔐 userData carregado. Inicializando carregamento reativo.');
         this.loadAllData();
       });
+  }
+
+  private waitForToken(): Observable<string> {
+    return defer(() => {
+      const tokenAtual = this.authService.getToken();
+      if (tokenAtual) {
+        return of(tokenAtual);
+      }
+
+      return this.userService.userData$.pipe(
+        map(() => this.authService.getToken()),
+        filter((token): token is string => !!token && token.length > 0),
+        take(1)
+      );
+    });
   }
 
   private loadAllData(): void {  //Chama todos os load*() necessários.
@@ -380,7 +404,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.loadAgendamentos();
   }
 
-  private setupHorariosPipeline(usuario$: Observable<UserData | Militar | null>): void {
+  private setupHorariosPipeline(usuario$: Observable<UserData | Militar>): void {
     if (this.horariosPipelineInitialized) {
       return;
     }
@@ -407,25 +431,29 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     )
       .pipe(
         switchMap((categoria: string) =>
-          this.horariosService.carregarHorariosDaSemana(categoria).pipe(
-            retryWhen((errors: Observable<HttpErrorResponse>) =>
-              errors.pipe(
-                mergeMap((error: HttpErrorResponse, attempt) => {
-                  if ([401, 404].includes(error.status) && attempt < 3) {
-                    this.logger.warn('Falha ao carregar horários, tentando novamente...', error);
-                    return timer(1000 * (attempt + 1));
-                  }
-                  return throwError(() => error);
+          this.waitForToken().pipe(
+            switchMap(() =>
+              this.horariosService.carregarHorariosDaSemana(categoria).pipe(
+                retryWhen((errors: Observable<HttpErrorResponse>) =>
+                  errors.pipe(
+                    mergeMap((error: HttpErrorResponse, attempt) => {
+                      if ([401, 404].includes(error.status) && attempt < 3) {
+                        this.logger.warn('Falha ao carregar horários, tentando novamente...', error);
+                        return timer(1000 * (attempt + 1));
+                      }
+                      return throwError(() => error);
+                    })
+                  )
+                ),
+                tap((horarios: HorariosPorDia) => this.handleHorariosResponse(horarios)),
+                catchError((error: HttpErrorResponse) => {
+                  this.logger.error('Erro ao carregar horários da semana:', error);
+                  this.horariosCarregados = false;
+                  this.cdr.markForCheck();
+                  return EMPTY;
                 })
               )
-            ),
-            tap((horarios: HorariosPorDia) => this.handleHorariosResponse(horarios)),
-            catchError((error: HttpErrorResponse) => {
-              this.logger.error('Erro ao carregar horários da semana:', error);
-              this.horariosCarregados = false;
-              this.cdr.markForCheck();
-              return EMPTY;
-            })
+            )
           )
         ),
         takeUntil(this.destroy$)
@@ -560,73 +588,82 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private loadAgendamentos(): void { //Carrega os agendamentos e associa ao usuário logado.
-    this.agendamentoService.getAgendamentos().pipe(
-      tap((agendamentos: Agendamento[]) => {
-        if (agendamentos && agendamentos.length > 0) {
-          const agendamentosFiltrados = agendamentos.filter((agendamento: Agendamento) =>
-            this.isAgendamentoDoMilitarLogado(agendamento) &&
-            agendamento.status === 'AGENDADO'
-          );
+    this.waitForToken()
+      .pipe(
+        switchMap(() => this.agendamentoService.getAgendamentos()),
+        tap((agendamentos: Agendamento[]) => {
+          if (agendamentos && agendamentos.length > 0) {
+            const agendamentosFiltrados = agendamentos.filter((agendamento: Agendamento) =>
+              this.isAgendamentoDoMilitarLogado(agendamento) &&
+              agendamento.status === 'AGENDADO'
+            );
 
-          this.agendamentos = agendamentosFiltrados.map(agendamento => ({
-            ...agendamento,
-            diaSemana: normalizeDia(agendamento.diaSemana.trim()),
-            hora: agendamento.hora.trim()
-          }));
-          this.saveAgendamentos();
-        } else {
+            this.agendamentos = agendamentosFiltrados.map(agendamento => ({
+              ...agendamento,
+              diaSemana: normalizeDia(agendamento.diaSemana.trim()),
+              hora: agendamento.hora.trim()
+            }));
+            this.saveAgendamentos();
+          } else {
+            this.agendamentos = [];
+            this.saveAgendamentos();
+          }
+        }),
+        catchError((error: unknown) => {
+          this.logger.error('Erro ao obter agendamentos:', error);
           this.agendamentos = [];
+          return of([] as Agendamento[]);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {
           this.saveAgendamentos();
+        },
+        error: () => {
+          this.usuarioCarregado = true;
+        },
+        complete: () => {
+          this.usuarioCarregado = true;
         }
-      }),
-      catchError((error: unknown) => {
-        this.logger.error('Erro ao obter agendamentos:', error);
-        this.agendamentos = [];
-        return of([]);
-      })
-    ).subscribe({
-      next: () => {
-        this.saveAgendamentos();
-      },
-      error: () => {
-        this.usuarioCarregado = true;
-      },
-      complete: () => {
-        this.usuarioCarregado = true;
-      }
-    });
+      });
   }
 
   loadHorariosBase(): void {
-    this.configuracoesService.getConfig().subscribe({
-      next: (config: ConfiguracaoAgendamento) => {
-        const inicioNormalizado = normalizeHora(config.horarioInicio);
-        const fimNormalizado = normalizeHora(config.horarioFim);
+    this.waitForToken()
+      .pipe(
+        switchMap(() => this.configuracoesService.getConfig()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (config: ConfiguracaoAgendamento) => {
+          const inicioNormalizado = normalizeHora(config.horarioInicio);
+          const fimNormalizado = normalizeHora(config.horarioFim);
 
-        const [inicioHora = 0, inicioMin = 0] = inicioNormalizado.split(':').map(v => Number.parseInt(v, 10));
-        const [fimHora = 0, fimMin = 0] = fimNormalizado.split(':').map(v => Number.parseInt(v, 10));
+          const [inicioHora = 0, inicioMin = 0] = inicioNormalizado.split(':').map(v => Number.parseInt(v, 10));
+          const [fimHora = 0, fimMin = 0] = fimNormalizado.split(':').map(v => Number.parseInt(v, 10));
 
-        const inicio = new Date();
-        inicio.setHours(Number.isFinite(inicioHora) ? inicioHora : 0, Number.isFinite(inicioMin) ? inicioMin : 0, 0, 0);
-        const fim = new Date();
-        fim.setHours(Number.isFinite(fimHora) ? fimHora : 0, Number.isFinite(fimMin) ? fimMin : 0, 0, 0);
+          const inicio = new Date();
+          inicio.setHours(Number.isFinite(inicioHora) ? inicioHora : 0, Number.isFinite(inicioMin) ? inicioMin : 0, 0, 0);
+          const fim = new Date();
+          fim.setHours(Number.isFinite(fimHora) ? fimHora : 0, Number.isFinite(fimMin) ? fimMin : 0, 0, 0);
 
-        const slots: string[] = [];
-        for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
-          const hh = t.getHours().toString().padStart(2, '0');
-          const mm = t.getMinutes().toString().padStart(2, '0');
-          slots.push(`${hh}:${mm}`);
+          const slots: string[] = [];
+          for (let t = new Date(inicio); t <= fim; t = new Date(t.getTime() + 30 * 60 * 1000)) {
+            const hh = t.getHours().toString().padStart(2, '0');
+            const mm = t.getMinutes().toString().padStart(2, '0');
+            slots.push(`${hh}:${mm}`);
+          }
+
+          this.horariosBaseConfiguracao = slots.map(h => normalizeHora(h));
+          this.atualizarHorariosBaseSemana();
+          this.emitGradeView();
+          this.cdr.markForCheck();
+        },
+        error: (err: unknown) => {
+          this.logger.error('Erro ao carregar os horários base:', err);
         }
-
-        this.horariosBaseConfiguracao = slots.map(h => normalizeHora(h));
-        this.atualizarHorariosBaseSemana();
-        this.emitGradeView();
-        this.cdr.markForCheck();
-      },
-      error: (err: unknown) => {
-        this.logger.error('Erro ao carregar os horários base:', err);
-      }
-    });
+      });
   }
 
   private ordenarHorarios(horarios: string[]): string[] {
@@ -937,13 +974,21 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
 
   private loadMilitares(categoria: string): void {
-    this.militarService.getMilitaresByCategoria(categoria).subscribe((data: Militar[]) => {
-      if (categoria === 'OFICIAL') {
-        this.oficiais = data;
-      } else if (categoria === 'GRADUADO') {
-        this.graduados = data;
-      }
-    });
+    this.waitForToken()
+      .pipe(
+        switchMap(() => this.militarService.getMilitaresByCategoria(categoria)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (data: Militar[]) => {
+          if (categoria === 'OFICIAL') {
+            this.oficiais = data;
+          } else if (categoria === 'GRADUADO') {
+            this.graduados = data;
+          }
+        },
+        error: (err: unknown) => this.logger.error('Erro ao carregar militares:', err)
+      });
   }
 
   private desabilitarBotoesPorHorario(): boolean {
