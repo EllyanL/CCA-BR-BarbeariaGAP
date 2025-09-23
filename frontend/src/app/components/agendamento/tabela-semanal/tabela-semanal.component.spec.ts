@@ -125,6 +125,36 @@ describe('TabelaSemanalComponent', () => {
     });
   });
 
+  describe('quando o agendamento está bloqueado', () => {
+    beforeEach(() => {
+      component.usuarioCarregado = true;
+      component.diasDaSemana = ['segunda'] as any;
+      component.diasComData = ['01/01'];
+      component.horariosBaseSemana = ['09:00'];
+      component.horariosPorDia = {
+        segunda: [{ horario: '09:00', status: 'DISPONIVEL' }]
+      } as any;
+      component.feedbackMessageTitle = 'Agendamento bloqueado';
+      component.agendamentoBloqueado = true;
+      fixture.detectChanges();
+    });
+
+    it('mantém a tabela visível e exibe mensagem de feedback', () => {
+      const tabela = fixture.debugElement.query(By.css('table.tabela'));
+      expect(tabela).toBeTruthy();
+
+      const feedback = fixture.debugElement.query(By.css('.feedback-message'));
+      expect(feedback).toBeTruthy();
+      expect(feedback.nativeElement.textContent).toContain('Agendamento bloqueado');
+    });
+
+    it('mantém os botões desabilitados quando bloqueado', () => {
+      const botao = fixture.debugElement.query(By.css('button'));
+      expect(botao).toBeTruthy();
+      expect(botao.nativeElement.disabled).toBeTrue();
+    });
+  });
+
   describe('desabilitarBotoesPorHorario', () => {
     afterEach(() => {
       jasmine.clock().uninstall();
