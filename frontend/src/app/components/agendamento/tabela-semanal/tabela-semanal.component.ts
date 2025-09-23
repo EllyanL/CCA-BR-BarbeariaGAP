@@ -360,11 +360,18 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const [horaNum, minutoNum] = hora.slice(0, 5).split(':').map(Number);
     const agendamentoDate = new Date(ano, mes - 1, dia, horaNum, minutoNum);
     const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
-    if (diffMs < 30 * 60 * 1000) {
+    const primeiroHorario = this.getPrimeiroHorarioConfigurado();
+    const horaNormalizada = normalizeHora(hora);
+    const primeiroHorarioNormalizado = primeiroHorario ? normalizeHora(primeiroHorario) : '';
+    const isPrimeiroHorario = primeiroHorarioNormalizado !== '' && horaNormalizada === primeiroHorarioNormalizado;
+    const isSegunda = diaSemanaFormatado === 'segunda';
+    const dentroJanelaAntecedencia = diffMs < 30 * 60 * 1000;
+
+    if (dentroJanelaAntecedencia && !(isSegunda && isPrimeiroHorario)) {
       this.snackBar.open('O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.', 'Ciente', { duration: SNACKBAR_DURATION });
       return;
     }
-  
+
     const dialogRef = this.dialog.open(DialogoAgendamentoComponent, {
       width: '500px',
       data: {
@@ -600,6 +607,22 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return list.find?.((h: SlotHorario) => (h?.horario || '').trim() === hh) || null;
   }
 
+  private getPrimeiroHorarioConfigurado(): string | null {
+    if (this.horariosBaseConfiguracao.length > 0) {
+      return normalizeHora(this.horariosBaseConfiguracao[0]);
+    }
+
+    if (this.horariosBaseSemana.length > 0) {
+      return normalizeHora(this.horariosBaseSemana[0]);
+    }
+
+    if (this.inicioJanelaMin > 0) {
+      return this.formatHora(this.inicioJanelaMin);
+    }
+
+    return null;
+  }
+
 
   private loadMilitares(categoria: string) {
     this.militarService.getMilitaresByCategoria(categoria).subscribe(data => {
@@ -620,11 +643,18 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     const inicioExpediente = this.inicioJanelaMin;
     const fimExpediente = this.fimJanelaMin;
-    const inicioLiberado = Math.max(0, inicioExpediente - 30);
+    const primeiroHorario = this.getPrimeiroHorarioConfigurado();
+    const primeiroHorarioMin = primeiroHorario ? this.toMinutes(primeiroHorario) : inicioExpediente;
+
+    const isSegunda = dayOfWeek === 1;
+    const inicioLiberadoSegunda = Math.max(0, primeiroHorarioMin - 30);
+    const inicioLiberadoGeral = inicioExpediente;
 
     const diaUtil = dayOfWeek >= 1 && dayOfWeek <= 5;
+    const liberacaoSegunda = isSegunda && minutosAtuais >= inicioLiberadoSegunda && minutosAtuais < inicioLiberadoGeral;
+    const liberacaoNormal = minutosAtuais >= inicioLiberadoGeral && minutosAtuais <= fimExpediente;
 
-    if (diaUtil && minutosAtuais >= inicioLiberado && minutosAtuais <= fimExpediente) {
+    if (diaUtil && (liberacaoSegunda || liberacaoNormal)) {
       this.feedbackMessageTitle = '';
       this.agendamentoBloqueado = false;
       this.avisoBloqueioMostrado = false;
@@ -633,11 +663,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.agendamentoBloqueado = true;
 
-    if (minutosAtuais < inicioLiberado) {
-      const hh = Math.floor(inicioLiberado / 60).toString().padStart(2, '0');
-      const mm = (inicioLiberado % 60).toString().padStart(2, '0');
-      this.feedbackMessageTitle = `Agendamentos disponíveis a partir das ${hh}:${mm}.`;
-      const ms = (inicioLiberado - minutosAtuais) * 60 * 1000;
+    const proximoLiberado = isSegunda ? inicioLiberadoSegunda : inicioLiberadoGeral;
+
+    if (minutosAtuais < proximoLiberado) {
+      const hh = Math.floor(proximoLiberado / 60).toString().padStart(2, '0');
+      const mm = (proximoLiberado % 60).toString().padStart(2, '0');
+      this.feedbackMessageTitle = isSegunda
+        ? `Agendamento do primeiro horário de segunda liberado a partir das ${hh}:${mm}.`
+        : `Agendamentos disponíveis a partir das ${hh}:${mm}.`;
+      const ms = (proximoLiberado - minutosAtuais) * 60 * 1000;
       this.desbloqueioTimeout = setTimeout(() => this.desabilitarBotoesPorHorario(), ms);
     } else {
       const inicioStr = this.formatHora(inicioExpediente);
