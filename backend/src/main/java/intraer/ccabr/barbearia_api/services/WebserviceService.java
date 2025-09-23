@@ -1,5 +1,6 @@
 package intraer.ccabr.barbearia_api.services;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ public class WebserviceService {
     private final Clock clock;
     private final AtomicReference<TokenCache> cachedToken = new AtomicReference<>();
 
+    @Autowired
     public WebserviceService(CcabrService ccabrService) {
         this(ccabrService, Clock.systemUTC());
     }
