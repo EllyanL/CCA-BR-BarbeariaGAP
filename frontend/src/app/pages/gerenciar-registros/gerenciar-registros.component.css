@@ -34,6 +34,12 @@
   gap: 0.5rem;
 }
 
+.registros-table-wrapper {
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
 .acoes {
   display: flex;
   flex-direction: column;
