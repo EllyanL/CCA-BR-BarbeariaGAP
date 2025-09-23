@@ -17,8 +17,9 @@
     <p class="confirm-dialog__info"><strong>Ramal:</strong> {{ m.ramal }}</p>
   </div>
 </div>
+
 <div mat-dialog-actions class="confirm-dialog__actions">
-  <button mat-button (click)="dialogRef.close(false)" class="confirm-dialog__button">
+  <button mat-button color="warn" (click)="dialogRef.close(false)" class="confirm-dialog__button">
     CANCELAR
   </button>
   <button mat-button color="warn" (click)="desmarcar()" class="confirm-dialog__button">

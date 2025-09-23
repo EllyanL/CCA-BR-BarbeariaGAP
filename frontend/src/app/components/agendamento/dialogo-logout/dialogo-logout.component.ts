@@ -11,6 +11,7 @@ import { AuthService } from 'src/app/services/auth.service';
   <div class="dialog__actions" mat-dialog-actions>
     <button
       mat-button
+      color="warn"
       class="dialog__button dialog__button--cancel"
       (click)="cancel()"
     >

@@ -28,7 +28,7 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
       </mat-form-field>
     </div>
     <div mat-dialog-actions>
-      <button mat-button (click)="fechar()">Cancelar</button>
+      <button mat-button color="warn" (click)="fechar()">Cancelar</button>
       <button mat-button color="primary" (click)="salvar()">Salvar</button>
     </div>
   `,

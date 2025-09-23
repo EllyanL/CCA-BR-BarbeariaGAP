@@ -24,7 +24,7 @@ export interface DialogData {
   </p>
 </div>
 <div mat-dialog-actions class="confirm-dialog__actions">
-  <button mat-button (click)="onNoClick()" class="confirm-dialog__button">
+  <button mat-button color="warn" (click)="onNoClick()" class="confirm-dialog__button">
     CANCELAR
   </button>
   <button

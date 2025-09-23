@@ -108,7 +108,7 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
     </div>
     <!-- Garantir que mat-dialog-actions aparece apenas uma vez -->
     <div mat-dialog-actions class="agendar-corte-dialog__actions">
-      <button mat-button (click)="onNoClick()" class="agendar-corte-dialog__button">
+      <button mat-button color="warn" (click)="onNoClick()" class="agendar-corte-dialog__button">
         CANCELAR
       </button>
       <button

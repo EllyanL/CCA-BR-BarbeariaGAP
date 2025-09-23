@@ -11,6 +11,11 @@ html, body {
   color: #ffffff;
 }
 
+/* === DIALOG FIXES === */
+.mat-mdc-dialog-surface {
+  color: #000000;
+}
+
 :root {
   --footer-height: 2.3rem;
 }
