@@ -267,6 +267,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.cdr.markForCheck();
 
+  }
+
   isHoraAgendavel(hora: string): boolean {
     const m = this.toMinutes(hora);
     return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
