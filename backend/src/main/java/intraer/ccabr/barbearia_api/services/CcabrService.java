@@ -9,12 +9,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +32,11 @@ public class CcabrService {
 
     private static final Logger logger = LoggerFactory.getLogger(CcabrService.class);
 
+    private static final long DEFAULT_TOKEN_TTL_SECONDS = 300L;
+    private static final Duration EXPIRATION_SAFETY_MARGIN = Duration.ofSeconds(5);
+
     private final WebClient webClient;
+    private final Clock clock;
 
     @Value("${webservice.username}")
     private String username;
@@ -37,7 +45,12 @@ public class CcabrService {
     private String password;
 
     public CcabrService(WebClient webClient) {
+        this(webClient, Clock.systemUTC());
+    }
+
+    CcabrService(WebClient webClient, Clock clock) {
         this.webClient = webClient;
+        this.clock = clock;
     }
 
     public Mono<List<OmsResponse>> buscarOms() {
@@ -59,30 +72,33 @@ public class CcabrService {
      *
      * @return Mono<String> contendo o token Bearer ou erro em caso de falha.
      */
-    public Mono<String> authenticateWebService() {
+    public Mono<AuthToken> authenticateWebService() {
         Map<String, String> credentials = new HashMap<>();
         credentials.put("username", username);
         credentials.put("password", password);
-    
+
         return webClient.post()
                 .uri("/login")
                 .bodyValue(credentials)
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError(), response ->
-                        Mono.error(new RuntimeException("Erro 4xx na autenticação: " + response.statusCode())))
-                .onStatus(status -> status.is5xxServerError(), response ->
-                        Mono.error(new RuntimeException("Erro 5xx na autenticação: " + response.statusCode())))
-                .bodyToMono(new ParameterizedTypeReference<Map<String, String>>() {})
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        response.createException().flatMap(Mono::error))
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        response.createException().flatMap(Mono::error))
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .map(response -> {
-                    String token = response.get("access_token");
+                    Object tokenValue = response.get("access_token");
+                    String token = tokenValue instanceof String ? (String) tokenValue : null;
                     if (token == null) {
                         logger.error("Token não encontrado na resposta: {}", response);
                         throw new RuntimeException("Token (access_token) não retornado pelo webservice");
                     }
-                    return token;
+                    long expiresInSeconds = extractExpiresInSeconds(response);
+                    Instant expiresAt = calculateExpirationInstant(expiresInSeconds);
+                    return new AuthToken(token, expiresAt);
                 })
                 .doOnSubscribe(sub -> logger.info("Iniciando autenticação no webservice"))
-                .doOnSuccess(token -> logger.debug("Token Bearer recebido: {}", token))
+                .doOnSuccess(token -> logger.debug("Token Bearer recebido: {} (expira em: {})", token.token(), token.expiresAt()))
                 .doOnError(error -> logger.error("Erro na autenticação do webservice: {}", error.getMessage()));
     }
 
@@ -98,10 +114,10 @@ public class CcabrService {
                 .uri("/militares/{cpf}", cpf)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken)
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError(), response ->
-                        Mono.error(new RuntimeException("Erro 4xx: " + response.statusCode())))
-                .onStatus(status -> status.is5xxServerError(), response ->
-                        Mono.error(new RuntimeException("Erro 5xx: " + response.statusCode())))
+                .onStatus(HttpStatusCode::is4xxClientError, response ->
+                        response.createException().flatMap(Mono::error))
+                .onStatus(HttpStatusCode::is5xxServerError, response ->
+                        response.createException().flatMap(Mono::error))
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .map(response -> {
                     logger.debug("Resposta completa do webservice para CPF {}: {}", cpf, response);
@@ -142,6 +158,35 @@ public class CcabrService {
                 .doOnSuccess(militar -> logger.debug("Dados do militar recebidos: {}", militar))
                 .doOnError(error -> logger.error("Erro na busca do militar: {}", error.getMessage()));
     }
+
+    private long extractExpiresInSeconds(Map<String, Object> response) {
+        Object expiresIn = response.get("expires_in");
+        if (expiresIn instanceof Number number) {
+            return Math.max(1L, number.longValue());
+        }
+        if (expiresIn instanceof String text) {
+            try {
+                return Math.max(1L, Long.parseLong(text));
+            } catch (NumberFormatException ex) {
+                logger.warn("Valor inválido para expires_in: {}", text);
+            }
+        } else if (expiresIn != null) {
+            logger.warn("Tipo inesperado para expires_in: {}", expiresIn.getClass());
+        } else {
+            logger.warn("Campo expires_in não presente na resposta de autenticação.");
+        }
+        return DEFAULT_TOKEN_TTL_SECONDS;
+    }
+
+    private Instant calculateExpirationInstant(long expiresInSeconds) {
+        Instant base = Instant.now(clock).plusSeconds(expiresInSeconds);
+        if (!EXPIRATION_SAFETY_MARGIN.isNegative() && expiresInSeconds > EXPIRATION_SAFETY_MARGIN.getSeconds()) {
+            return base.minus(EXPIRATION_SAFETY_MARGIN);
+        }
+        return base;
+    }
+
+    public record AuthToken(String token, Instant expiresAt) {}
 
     private String resolveSecao(Object setorData, Object secaoData, String funcao) {
         String secao = extractPrimeiroSetor(setorData);
