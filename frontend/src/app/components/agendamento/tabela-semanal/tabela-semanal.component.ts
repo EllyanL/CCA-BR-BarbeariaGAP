@@ -521,6 +521,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return;
     }
 
+    if (this.temAgendamentoAtivo()) {
+      this.snackBar.open('Você possui agendamentos ativos!', 'Ciente', { duration: SNACKBAR_DURATION });
+      return;
+    }
+
     if (!this.podeAgendarNovamente(diaSemanaFormatado, hora)) {
       this.snackBar.open(this.errorMessages.AGENDAMENTO_INTERVAL_ERROR, 'Ciente', { duration: SNACKBAR_DURATION });
       return;
@@ -734,6 +739,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return;
     }
 
+    if (this.temAgendamentoAtivo()) {
+      this.snackBar.open('Você possui agendamentos ativos!', 'Ciente', { duration: SNACKBAR_DURATION });
+      return;
+    }
+
     if (!this.podeAgendarNovamente(diaKey, hora)) {
       this.snackBar.open(this.errorMessages.AGENDAMENTO_INTERVAL_ERROR, 'Ciente', { duration: SNACKBAR_DURATION });
       return;
@@ -821,7 +831,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     if (slot.status === 'DISPONIVEL') {
-      return this.podeAgendarNovamente(dia, hora);
+      return true;
     }
 
     return false;
@@ -850,6 +860,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     datas.sort((a, b) => b.getTime() - a.getTime());
     return datas[0];
+  }
+
+  private temAgendamentoAtivo(): boolean {
+    return this.agendamentos.some(agendamento => agendamento.status === 'AGENDADO');
   }
 
   private getDataHoraAgendamento(agendamento: Agendamento): Date | null {
