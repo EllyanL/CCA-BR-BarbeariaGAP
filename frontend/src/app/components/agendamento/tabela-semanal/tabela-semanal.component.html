@@ -11,39 +11,41 @@
     </ng-template>
 
     <!-- Tabela Principal -->
-    <table class="tabela">
-      <thead class="tabela-header">
-        <tr>
-          <th>HORÁRIO</th>
-          <th *ngFor="let dia of diasDaSemana; let i = index; trackBy: trackByDia" class="tabela-header-dia">
-            {{ (diaLabelMap[dia] + ' - ' + diasComData[i]) | uppercase }}
-          </th>
-        </tr>
-      </thead>
-      <tbody class="tabela-body">
-        <tr *ngFor="let hora of horariosBaseSemana; trackBy: trackByHora" class="tabela-linha-horario">
-          <td class="tabela-coluna-horario">
-            {{ hora }}
-          </td>
-          <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
-            <ng-container *ngIf="getSlot(dia, hora) as slot; else indisponivel">
-              <button
-                mat-raised-button
-                [disabled]="!podeInteragirComSlot(slot, dia, hora)"
-                [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
-                [ngClass]="[
-                  slot.status | statusFormat : 'tabelaClass',
-                  deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : null
-                ]"
-                (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
-              >
-                {{ slot.status | statusFormat }}
-              </button>
-            </ng-container>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <ng-container *ngIf="horariosGrade$ | async as grade">
+      <table class="tabela">
+        <thead class="tabela-header">
+          <tr>
+            <th>HORÁRIO</th>
+            <th *ngFor="let dia of diasDaSemana; let i = index; trackBy: trackByDia" class="tabela-header-dia">
+              {{ (diaLabelMap[dia] + ' - ' + diasComData[i]) | uppercase }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="tabela-body">
+          <tr *ngFor="let hora of grade.horas; trackBy: trackByHora" class="tabela-linha-horario">
+            <td class="tabela-coluna-horario">
+              {{ hora }}
+            </td>
+            <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
+              <ng-container *ngIf="getSlot(dia, hora, grade.horarios) as slot; else indisponivel">
+                <button
+                  mat-raised-button
+                  [disabled]="!podeInteragirComSlot(slot, dia, hora)"
+                  [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
+                  [ngClass]="[
+                    slot.status | statusFormat : 'tabelaClass',
+                    deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : null
+                  ]"
+                  (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
+                >
+                  {{ slot.status | statusFormat }}
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
 
   </mat-card-content>
 </mat-card>
