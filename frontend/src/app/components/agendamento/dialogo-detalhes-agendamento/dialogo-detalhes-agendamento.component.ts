@@ -10,20 +10,20 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
   selector: 'app-dialogo-detalhes-agendamento',
   template: `
     <h1 mat-dialog-title class="detalhes-dialog__title">Detalhes do Agendamento</h1>
-    <div mat-dialog-content>
-      <p><strong>Data:</strong> {{ agendamento.data | date:'dd/MM/yyyy':'':'pt-BR' }}</p>
-      <p><strong>Hora:</strong> {{ agendamento.hora | slice:0:5 }}</p>
-      <p><strong>Dia:</strong> {{ agendamento.diaSemana | titlecase }}</p>
+    <div mat-dialog-content class="detalhes-dialog__content">
+      <p><strong>Data:</strong> {{ agendamento.data ? (agendamento.data | date:'dd/MM/yyyy':'':'pt-BR') : 'Não informado' }}</p>
+      <p><strong>Hora:</strong> {{ agendamento.hora ? (agendamento.hora | slice:0:5) : 'Não informado' }}</p>
+      <p><strong>Dia:</strong> {{ agendamento.diaSemana ? (agendamento.diaSemana | titlecase) : 'Não informado' }}</p>
       <div *ngIf="agendamento.militar">
-        <p><strong>SARAM:</strong> {{ agendamento.militar.saram }}</p>
+        <p><strong>SARAM:</strong> {{ agendamento.militar.saram || 'Não informado' }}</p>
         <p><strong>Nome:</strong> {{ formatarNome(agendamento.militar.nomeDeGuerra) }}</p>
-        <p><strong>OM:</strong> {{ agendamento.militar.om }}</p>
+        <p><strong>OM:</strong> {{ agendamento.militar.om || 'Não informado' }}</p>
       </div>
     </div>
     <div mat-dialog-actions class="detalhes-dialog__actions">
-      <button mat-button color="warn" (click)="fechar()">Cancelar</button>
-      <button *ngIf="podeDesmarcar" mat-button color="warn" (click)="desmarcar()">
-        DESMARCAR
+      <button mat-flat-button color="primary" (click)="fechar()">Fechar</button>
+      <button *ngIf="podeDesmarcar" mat-stroked-button color="warn" (click)="desmarcar()">
+        Desmarcar
       </button>
     </div>
   `,
@@ -33,9 +33,13 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
       text-align: center;
     }
 
+    .detalhes-dialog__content p {
+      margin: 0 0 8px 0;
+    }
+
     .detalhes-dialog__actions {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       gap: 8px;
     }
   `]
@@ -46,13 +50,13 @@ export class DialogoDetalhesAgendamentoComponent {
 
   constructor(
     public dialogRef: MatDialogRef<DialogoDetalhesAgendamentoComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { agendamento: Agendamento; podeDesmarcar: boolean },
+    @Inject(MAT_DIALOG_DATA) public data: { agendamento: Agendamento; podeDesmarcar?: boolean },
     private agendamentoService: AgendamentoService,
     private snackBar: MatSnackBar,
     private logger: LoggingService
   ) {
     this.agendamento = data.agendamento;
-    this.podeDesmarcar = data.podeDesmarcar;
+    this.podeDesmarcar = !!data.podeDesmarcar;
   }
 
   fechar(): void {
@@ -71,12 +75,15 @@ export class DialogoDetalhesAgendamentoComponent {
       error: (err) => {
         this.logger.error('Erro ao desmarcar agendamento:', err);
         this.snackBar.open('Erro ao desmarcar o agendamento', 'Ciente', { duration: SNACKBAR_DURATION });
-      this.dialogRef.close(false);
-    },
+        this.dialogRef.close(false);
+      },
     });
   }
 
   formatarNome(nome: string): string {
+    if (!nome) {
+      return 'Não informado';
+    }
     return nome
       .toLowerCase()
       .split(' ')

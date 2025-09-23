@@ -15,6 +15,7 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { AuthService } from '../../services/auth.service';
 import { DialogoAgendamentoComponent } from 'src/app/components/agendamento/dialogo-agendamento/dialogo-agendamento.component';
 import { DialogoCancelamentoComponent } from 'src/app/components/agendamento/dialogo-cancelamento/dialogo-cancelamento.component';
+import { DialogoDetalhesAgendamentoComponent } from 'src/app/components/agendamento/dialogo-detalhes-agendamento/dialogo-detalhes-agendamento.component';
 import { ConfirmarToggleDiaComponent } from 'src/app/components/confirmar-toggle-dia/confirmar-toggle-dia.component';
 import { LoggingService } from 'src/app/services/logging.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -1012,21 +1013,12 @@ import { UserService } from 'src/app/services/user.service';
 
 
   abrirModalAgendamento(agendamento: Agendamento) {
-    const selectedDate = agendamento.data || '';
-    const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
+    this.dialog.open(DialogoDetalhesAgendamentoComponent, {
       width: '400px',
       data: {
-        diaSemana: agendamento.diaSemana,
-        hora: agendamento.hora,
-        usuarioId: agendamento.militar?.id,
-        data: selectedDate,
+        agendamento,
+        podeDesmarcar: false
       },
-    });
-
-    dialogRef.afterClosed().subscribe((payload) => {
-      if (payload) {
-        this.desmarcarAgendamento(agendamento);
-      }
     });
   }
 
