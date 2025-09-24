@@ -3,6 +3,7 @@ package intraer.ccabr.barbearia_api.services;
 import intraer.ccabr.barbearia_api.dtos.OmsResponse;
 import intraer.ccabr.barbearia_api.dtos.UserDTO;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.beans.factory.annotation.Autowired;

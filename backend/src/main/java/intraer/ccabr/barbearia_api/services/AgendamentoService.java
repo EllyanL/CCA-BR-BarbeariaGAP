@@ -99,13 +99,7 @@ public class AgendamentoService {
             throw new IllegalStateException("Horário indisponível");
         }
 
-        Agendamento saved = agendamentoRepository.save(agendamento);
-
-        Horario horario = horarioOpt.get();
-        horario.setStatus(HorarioStatus.AGENDADO);
-        horarioRepository.save(horario);
-
-        return saved;
+        return agendamentoRepository.save(agendamento);
     }
 
     public List<Agendamento> findAll() {
@@ -170,7 +164,7 @@ public class AgendamentoService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Militar não encontrado."));
     }
 
-    public void verificarHorarioDisponivel(String dia, LocalTime hora, String categoria) {
+    public void verificarHorarioDisponivel(LocalDate data, String dia, LocalTime hora, String categoria) {
         Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria);
         if (horarioOpt.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado não está disponível para a categoria informada.");
@@ -179,6 +173,17 @@ public class AgendamentoService {
         Horario horario = horarioOpt.get();
         if (horario.getStatus() != HorarioStatus.DISPONIVEL) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado já está ocupado ou indisponível.");
+        }
+
+        boolean ocupado = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+            data,
+            hora,
+            dia,
+            categoria,
+            "CANCELADO"
+        );
+        if (ocupado) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado já está ocupado para esta data.");
         }
     }
 
@@ -314,41 +319,17 @@ public class AgendamentoService {
     }
     
     public void marcarHorarioComoAgendado(Agendamento agendamento) {
-        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
-        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            dia,
-            agendamento.getHora(),
-            agendamento.getCategoria()
-        );
-
-        Horario horario = horarioOpt.orElseGet(() -> new Horario(
-            dia,
-            agendamento.getHora(),
-            agendamento.getCategoria(),
-            HorarioStatus.AGENDADO
-        ));
-
-        horario.setStatus(HorarioStatus.AGENDADO);
-        horarioRepository.save(horario);
+        logger.debug("Horário {} às {} mantido como grade base para o agendamento {}.",
+                agendamento.getDiaSemana(),
+                agendamento.getHora(),
+                agendamento.getId());
     }
 
     public void marcarHorarioComoDisponivel(Agendamento agendamento) {
-        String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
-        Optional<Horario> horarioOpt = horarioRepository.findByDiaAndHorarioAndCategoria(
-            dia,
-            agendamento.getHora(),
-            agendamento.getCategoria()
-        );
-
-        Horario horario = horarioOpt.orElseGet(() -> new Horario(
-            dia,
-            agendamento.getHora(),
-            agendamento.getCategoria(),
-            HorarioStatus.DISPONIVEL
-        ));
-
-        horario.setStatus(HorarioStatus.DISPONIVEL);
-        horarioRepository.save(horario);
+        logger.debug("Horário {} às {} permanece disponível na grade base após atualização do agendamento {}.",
+                agendamento.getDiaSemana(),
+                agendamento.getHora(),
+                agendamento.getId());
     }
 
     public Optional<Agendamento> atualizarAgendamento(Long id, LocalDate novaData, LocalTime novaHora, String novoDia) {
