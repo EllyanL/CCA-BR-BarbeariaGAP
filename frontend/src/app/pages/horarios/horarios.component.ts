@@ -61,6 +61,8 @@ import { UserService } from 'src/app/services/user.service';
     private horariosSub?: Subscription;
     private agendamentoAtualizadoSub?: Subscription;
     private recarregarGradeSub?: Subscription;
+    private carregarHorariosDaSemanaSub?: Subscription;
+    private carregarAgendamentosSub?: Subscription;
     private storageKey: string = '';
 
     private inicioJanelaMin: number = 0;
@@ -115,6 +117,8 @@ import { UserService } from 'src/app/services/user.service';
       if (data) {
         try {
           this.agendamentos = JSON.parse(data);
+          this.sincronizarSlotsComAgendamentos();
+          this.cdr.markForCheck();
         } catch (e) {
           this.logger.error('Erro ao carregar agendamentos do storage:', e);
           this.agendamentos = [];
@@ -177,6 +181,64 @@ import { UserService } from 'src/app/services/user.service';
       const filtrados = Array.from(todosHorarios).filter(h => this.isHoraAgendavel(h));
       this.horariosBaseSemana = this.ordenarHorarios(filtrados);
       this.cdr.markForCheck?.();
+    }
+
+    private sincronizarSlotsComAgendamentos(): void {
+      const agendamentosAtivos = (this.agendamentos ?? []).filter(ag => {
+        if (!ag?.diaSemana || !ag?.hora) {
+          return false;
+        }
+
+        const status = (ag.status ?? '').toUpperCase();
+        return !['CANCELADO', 'ADMIN_CANCELADO'].includes(status);
+      });
+
+      if (agendamentosAtivos.length === 0) {
+        return;
+      }
+
+      const atualizado: HorariosPorDia = { ...this.horariosPorDia };
+      let houveAlteracao = false;
+
+      agendamentosAtivos.forEach(agendamento => {
+        const diaKey = normalizeDia(agendamento.diaSemana);
+        const hora = normalizeHora(agendamento.hora);
+        if (!diaKey || !hora) {
+          return;
+        }
+
+        const slotsDia = atualizado[diaKey] ?? [];
+        const indice = slotsDia.findIndex(slot => normalizeHora(slot.horario) === hora);
+        const usuarioId = agendamento.militar?.id ?? (indice >= 0 ? slotsDia[indice]?.usuarioId ?? null : null);
+
+        if (indice >= 0) {
+          const slotAtual = slotsDia[indice];
+          if (slotAtual.status !== 'AGENDADO' || slotAtual.usuarioId !== usuarioId) {
+            const novosSlots = [...slotsDia];
+            novosSlots[indice] = {
+              ...slotAtual,
+              status: 'AGENDADO',
+              usuarioId
+            };
+            atualizado[diaKey] = novosSlots;
+            houveAlteracao = true;
+          }
+        } else {
+          const novoSlot: SlotHorario = {
+            horario: hora,
+            status: 'AGENDADO',
+            usuarioId
+          };
+          atualizado[diaKey] = [...slotsDia, novoSlot];
+          houveAlteracao = true;
+        }
+      });
+
+      if (houveAlteracao) {
+        this.horariosPorDia = atualizado;
+        this.atualizarHorariosBaseSemana();
+        this.cdr.markForCheck();
+      }
     }
 
     private atualizarBaseCategoria(categoria: string, horarios: string[]): void {
@@ -291,12 +353,13 @@ import { UserService } from 'src/app/services/user.service';
           this.categoriaSelecionada = categoria;
         }
         this.carregarHorariosBase();
-        this.loadHorarios();
+        this.carregarHorariosDaSemana();
         this.horariosService.startPollingHorarios(this.categoriaSelecionada);
         this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
           next: h => {
             this.horariosPorDia = { ...h };
             this.aplicarJanelaHorarios();
+            this.sincronizarSlotsComAgendamentos();
             this.cdr.markForCheck();
           },
           error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
@@ -337,29 +400,26 @@ import { UserService } from 'src/app/services/user.service';
       }
     }
 
-    loadHorarios(): void {
-      this.horariosService
+    carregarHorariosDaSemana(): void {
+      this.carregarHorariosDaSemanaSub?.unsubscribe();
+      this.carregarHorariosDaSemanaSub = this.horariosService
         .carregarHorariosDaSemana(this.categoriaSelecionada)
         .subscribe({
           next: (horarios: HorariosPorDia) => {
-            this.horariosPorDia = { ...horarios };
+            const normalizados = normalizeHorariosPorDia(horarios || {});
+            this.horariosPorDia = { ...normalizados };
             this.aplicarJanelaHorarios();
+            this.sincronizarSlotsComAgendamentos();
             this.cdr.markForCheck();
           },
-          error: (err: any) => this.logger.error('Erro ao carregar horários:', err)
+          error: err => {
+            this.logger.error('Erro ao carregar horários:', err);
+            this.carregarHorariosDaSemanaSub = undefined;
+          },
+          complete: () => {
+            this.carregarHorariosDaSemanaSub = undefined;
+          }
         });
-    }
-
-    carregarHorariosDaSemana(): void {
-      this.horariosService.carregarHorariosDaSemana(this.categoriaSelecionada).subscribe({
-        next: (horarios: HorariosPorDia) => {
-          const normalizados = normalizeHorariosPorDia(horarios || {});
-          this.horariosPorDia = { ...normalizados };
-          this.aplicarJanelaHorarios();
-          this.cdr.markForCheck();
-        },
-        error: err => this.logger.error('Erro ao carregar horários:', err)
-      });
     }
     
     
@@ -385,7 +445,7 @@ import { UserService } from 'src/app/services/user.service';
 
 
     onDiaChange(): void {
-      this.loadHorarios();
+      this.carregarHorariosDaSemana();
     }
 
     onCategoriaChange(): void {
@@ -394,7 +454,7 @@ import { UserService } from 'src/app/services/user.service';
       } else {
         this.carregarHorariosBase();
       }
-      this.loadHorarios();
+      this.carregarHorariosDaSemana();
     }
 
     isHorariosEmpty(): boolean {
@@ -789,7 +849,8 @@ import { UserService } from 'src/app/services/user.service';
       );
     }
     carregarAgendamentos(): void {
-      this.agendamentoService.getAgendamentos().subscribe({
+      this.carregarAgendamentosSub?.unsubscribe();
+      this.carregarAgendamentosSub = this.agendamentoService.getAgendamentos().subscribe({
         next: (agendamentos) => {
           if (Array.isArray(agendamentos)) {
             const agora = Date.now() + this.timeOffsetMs;
@@ -813,6 +874,9 @@ import { UserService } from 'src/app/services/user.service';
             this.agendamentos = [];
             this.saveAgendamentos();
           }
+
+          this.sincronizarSlotsComAgendamentos();
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           this.logger.error('Erro ao carregar agendamentos:', error);
@@ -824,6 +888,10 @@ import { UserService } from 'src/app/services/user.service';
             }
           );
           this.loadAgendamentosFromStorage();
+          this.carregarAgendamentosSub = undefined;
+        },
+        complete: () => {
+          this.carregarAgendamentosSub = undefined;
         }
       });
     }
@@ -890,6 +958,7 @@ import { UserService } from 'src/app/services/user.service';
             this.saveAgendamentos();
           }
 
+          this.sincronizarSlotsComAgendamentos();
           this.horariosService.atualizarHorarios(this.horariosPorDia);
           this.cdr.markForCheck();
         }
@@ -1059,6 +1128,8 @@ import { UserService } from 'src/app/services/user.service';
       this.horariosSub?.unsubscribe();
       this.agendamentoAtualizadoSub?.unsubscribe();
       this.recarregarGradeSub?.unsubscribe();
+      this.carregarHorariosDaSemanaSub?.unsubscribe();
+      this.carregarAgendamentosSub?.unsubscribe();
       this.horariosService.stopPollingHorarios();
     }
 
