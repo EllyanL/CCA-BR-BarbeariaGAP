@@ -61,6 +61,8 @@ import { UserService } from 'src/app/services/user.service';
     private horariosSub?: Subscription;
     private agendamentoAtualizadoSub?: Subscription;
     private recarregarGradeSub?: Subscription;
+    private carregarHorariosDaSemanaSub?: Subscription;
+    private carregarAgendamentosSub?: Subscription;
     private storageKey: string = '';
 
     private inicioJanelaMin: number = 0;
@@ -291,7 +293,7 @@ import { UserService } from 'src/app/services/user.service';
           this.categoriaSelecionada = categoria;
         }
         this.carregarHorariosBase();
-        this.loadHorarios();
+        this.carregarHorariosDaSemana();
         this.horariosService.startPollingHorarios(this.categoriaSelecionada);
         this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
           next: h => {
@@ -337,29 +339,25 @@ import { UserService } from 'src/app/services/user.service';
       }
     }
 
-    loadHorarios(): void {
-      this.horariosService
+    carregarHorariosDaSemana(): void {
+      this.carregarHorariosDaSemanaSub?.unsubscribe();
+      this.carregarHorariosDaSemanaSub = this.horariosService
         .carregarHorariosDaSemana(this.categoriaSelecionada)
         .subscribe({
           next: (horarios: HorariosPorDia) => {
-            this.horariosPorDia = { ...horarios };
+            const normalizados = normalizeHorariosPorDia(horarios || {});
+            this.horariosPorDia = { ...normalizados };
             this.aplicarJanelaHorarios();
             this.cdr.markForCheck();
           },
-          error: (err: any) => this.logger.error('Erro ao carregar horários:', err)
+          error: err => {
+            this.logger.error('Erro ao carregar horários:', err);
+            this.carregarHorariosDaSemanaSub = undefined;
+          },
+          complete: () => {
+            this.carregarHorariosDaSemanaSub = undefined;
+          }
         });
-    }
-
-    carregarHorariosDaSemana(): void {
-      this.horariosService.carregarHorariosDaSemana(this.categoriaSelecionada).subscribe({
-        next: (horarios: HorariosPorDia) => {
-          const normalizados = normalizeHorariosPorDia(horarios || {});
-          this.horariosPorDia = { ...normalizados };
-          this.aplicarJanelaHorarios();
-          this.cdr.markForCheck();
-        },
-        error: err => this.logger.error('Erro ao carregar horários:', err)
-      });
     }
     
     
@@ -385,7 +383,7 @@ import { UserService } from 'src/app/services/user.service';
 
 
     onDiaChange(): void {
-      this.loadHorarios();
+      this.carregarHorariosDaSemana();
     }
 
     onCategoriaChange(): void {
@@ -394,7 +392,7 @@ import { UserService } from 'src/app/services/user.service';
       } else {
         this.carregarHorariosBase();
       }
-      this.loadHorarios();
+      this.carregarHorariosDaSemana();
     }
 
     isHorariosEmpty(): boolean {
@@ -789,7 +787,8 @@ import { UserService } from 'src/app/services/user.service';
       );
     }
     carregarAgendamentos(): void {
-      this.agendamentoService.getAgendamentos().subscribe({
+      this.carregarAgendamentosSub?.unsubscribe();
+      this.carregarAgendamentosSub = this.agendamentoService.getAgendamentos().subscribe({
         next: (agendamentos) => {
           if (Array.isArray(agendamentos)) {
             const agora = Date.now() + this.timeOffsetMs;
@@ -824,6 +823,10 @@ import { UserService } from 'src/app/services/user.service';
             }
           );
           this.loadAgendamentosFromStorage();
+          this.carregarAgendamentosSub = undefined;
+        },
+        complete: () => {
+          this.carregarAgendamentosSub = undefined;
         }
       });
     }
@@ -1059,6 +1062,8 @@ import { UserService } from 'src/app/services/user.service';
       this.horariosSub?.unsubscribe();
       this.agendamentoAtualizadoSub?.unsubscribe();
       this.recarregarGradeSub?.unsubscribe();
+      this.carregarHorariosDaSemanaSub?.unsubscribe();
+      this.carregarAgendamentosSub?.unsubscribe();
       this.horariosService.stopPollingHorarios();
     }
 
