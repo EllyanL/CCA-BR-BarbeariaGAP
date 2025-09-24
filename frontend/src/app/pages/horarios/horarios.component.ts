@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService, AdicionarHorarioBaseResultado } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
+import { Horario } from '../../models/horario';
 import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { SNACKBAR_DURATION } from '../../utils/ui-constants';
@@ -867,15 +868,21 @@ import { UserService } from 'src/app/services/user.service';
           const diaKey = normalizeDia(dia);
           const horariosDoDia = this.horariosPorDia[diaKey] || [];
           const index = horariosDoDia.findIndex(h => h.horario === horario);
+          const statusAtualizado = (r.payload?.status ?? 'AGENDADO') as SlotHorario['status'];
 
-          if (index !== -1) {
-            horariosDoDia[index].status = 'AGENDADO';
-          } else {
-            horariosDoDia.push({ horario, status: 'AGENDADO' });
-          }
+          const horariosAtualizados =
+            index !== -1
+              ? horariosDoDia.map((slot, idx) =>
+                  idx === index
+                    ? { ...slot, status: statusAtualizado }
+                    : slot
+                )
+              : [...horariosDoDia, { horario, status: statusAtualizado }];
 
-          this.horariosPorDia[diaKey] = [...horariosDoDia];
-          this.horariosPorDia = { ...this.horariosPorDia };
+          this.horariosPorDia = {
+            ...this.horariosPorDia,
+            [diaKey]: horariosAtualizados,
+          };
 
           if (novoAgendamento) {
             this.agendamentos.push(novoAgendamento);
@@ -967,7 +974,7 @@ import { UserService } from 'src/app/services/user.service';
       }
 
       this.horariosService.liberarHorario(slotId).subscribe({
-        next: (horarioAtualizado: any) => {
+        next: (horarioAtualizado: Horario) => {
           this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
 
           const diaAtualizado = normalizeDia(horarioAtualizado.dia ?? agendamento.diaSemana);
@@ -975,14 +982,22 @@ import { UserService } from 'src/app/services/user.service';
           const slotsDia = this.horariosPorDia[diaAtualizado] || [];
           const slotIndex = slotsDia.findIndex(s => s.horario === horaAtualizada);
           if (slotIndex !== -1) {
-            slotsDia[slotIndex] = {
-              ...slotsDia[slotIndex],
-              status: 'DISPONIVEL',
-              usuarioId: horarioAtualizado.usuarioId,
-              id: horarioAtualizado.id,
+            const horariosAtualizados = slotsDia.map((slot, idx) =>
+              idx === slotIndex
+                ? {
+                    ...slot,
+                    status: horarioAtualizado.status,
+                    usuarioId: horarioAtualizado.usuarioId,
+                    id: horarioAtualizado.id,
+                  }
+                : slot
+            );
+
+            this.horariosPorDia = {
+              ...this.horariosPorDia,
+              [diaAtualizado]: horariosAtualizados,
             };
-            this.horariosPorDia[diaAtualizado] = [...slotsDia];
-            this.horariosPorDia = { ...this.horariosPorDia };
+            this.horariosService.atualizarHorarios(this.horariosPorDia);
           }
 
           this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
