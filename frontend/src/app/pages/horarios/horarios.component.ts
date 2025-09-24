@@ -117,6 +117,8 @@ import { UserService } from 'src/app/services/user.service';
       if (data) {
         try {
           this.agendamentos = JSON.parse(data);
+          this.sincronizarSlotsComAgendamentos();
+          this.cdr.markForCheck();
         } catch (e) {
           this.logger.error('Erro ao carregar agendamentos do storage:', e);
           this.agendamentos = [];
@@ -179,6 +181,64 @@ import { UserService } from 'src/app/services/user.service';
       const filtrados = Array.from(todosHorarios).filter(h => this.isHoraAgendavel(h));
       this.horariosBaseSemana = this.ordenarHorarios(filtrados);
       this.cdr.markForCheck?.();
+    }
+
+    private sincronizarSlotsComAgendamentos(): void {
+      const agendamentosAtivos = (this.agendamentos ?? []).filter(ag => {
+        if (!ag?.diaSemana || !ag?.hora) {
+          return false;
+        }
+
+        const status = (ag.status ?? '').toUpperCase();
+        return !['CANCELADO', 'ADMIN_CANCELADO'].includes(status);
+      });
+
+      if (agendamentosAtivos.length === 0) {
+        return;
+      }
+
+      const atualizado: HorariosPorDia = { ...this.horariosPorDia };
+      let houveAlteracao = false;
+
+      agendamentosAtivos.forEach(agendamento => {
+        const diaKey = normalizeDia(agendamento.diaSemana);
+        const hora = normalizeHora(agendamento.hora);
+        if (!diaKey || !hora) {
+          return;
+        }
+
+        const slotsDia = atualizado[diaKey] ?? [];
+        const indice = slotsDia.findIndex(slot => normalizeHora(slot.horario) === hora);
+        const usuarioId = agendamento.militar?.id ?? (indice >= 0 ? slotsDia[indice]?.usuarioId ?? null : null);
+
+        if (indice >= 0) {
+          const slotAtual = slotsDia[indice];
+          if (slotAtual.status !== 'AGENDADO' || slotAtual.usuarioId !== usuarioId) {
+            const novosSlots = [...slotsDia];
+            novosSlots[indice] = {
+              ...slotAtual,
+              status: 'AGENDADO',
+              usuarioId
+            };
+            atualizado[diaKey] = novosSlots;
+            houveAlteracao = true;
+          }
+        } else {
+          const novoSlot: SlotHorario = {
+            horario: hora,
+            status: 'AGENDADO',
+            usuarioId
+          };
+          atualizado[diaKey] = [...slotsDia, novoSlot];
+          houveAlteracao = true;
+        }
+      });
+
+      if (houveAlteracao) {
+        this.horariosPorDia = atualizado;
+        this.atualizarHorariosBaseSemana();
+        this.cdr.markForCheck();
+      }
     }
 
     private atualizarBaseCategoria(categoria: string, horarios: string[]): void {
@@ -299,6 +359,7 @@ import { UserService } from 'src/app/services/user.service';
           next: h => {
             this.horariosPorDia = { ...h };
             this.aplicarJanelaHorarios();
+            this.sincronizarSlotsComAgendamentos();
             this.cdr.markForCheck();
           },
           error: (err: any) => this.logger.error('Erro ao atualizar horários:', err)
@@ -348,6 +409,7 @@ import { UserService } from 'src/app/services/user.service';
             const normalizados = normalizeHorariosPorDia(horarios || {});
             this.horariosPorDia = { ...normalizados };
             this.aplicarJanelaHorarios();
+            this.sincronizarSlotsComAgendamentos();
             this.cdr.markForCheck();
           },
           error: err => {
@@ -812,6 +874,9 @@ import { UserService } from 'src/app/services/user.service';
             this.agendamentos = [];
             this.saveAgendamentos();
           }
+
+          this.sincronizarSlotsComAgendamentos();
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           this.logger.error('Erro ao carregar agendamentos:', error);
@@ -893,6 +958,7 @@ import { UserService } from 'src/app/services/user.service';
             this.saveAgendamentos();
           }
 
+          this.sincronizarSlotsComAgendamentos();
           this.horariosService.atualizarHorarios(this.horariosPorDia);
           this.cdr.markForCheck();
         }
