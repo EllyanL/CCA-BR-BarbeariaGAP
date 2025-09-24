@@ -1,0 +1,151 @@
+package intraer.ccabr.barbearia_api.services;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Optional;
+
+import intraer.ccabr.barbearia_api.enums.DiaSemana;
+import intraer.ccabr.barbearia_api.enums.HorarioStatus;
+import intraer.ccabr.barbearia_api.models.Agendamento;
+import intraer.ccabr.barbearia_api.models.Horario;
+import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
+import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
+import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+@ExtendWith(MockitoExtension.class)
+class AgendamentoServiceTest {
+
+    @Mock
+    private AgendamentoRepository agendamentoRepository;
+
+    @Mock
+    private HorarioRepository horarioRepository;
+
+    @Mock
+    private ConfiguracaoAgendamentoService configuracaoAgendamentoService;
+
+    @Mock
+    private MilitarRepository militarRepository;
+
+    @InjectMocks
+    private AgendamentoService agendamentoService;
+
+    @BeforeEach
+    void setUp() {
+        when(agendamentoRepository.save(any(Agendamento.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    @Test
+    void criarAgendamentoNaoAlteraHorarioBase() {
+        LocalDate data = LocalDate.of(2024, 7, 1);
+        LocalTime hora = LocalTime.of(10, 0);
+        String dia = DiaSemana.SEGUNDA.getValor();
+        String categoria = "GRADUADO";
+
+        Agendamento agendamento = new Agendamento();
+        agendamento.setData(data);
+        agendamento.setHora(hora);
+        agendamento.setDiaSemana(dia);
+        agendamento.setCategoria(categoria);
+
+        Horario horario = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
+
+        when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
+                .thenReturn(Optional.of(horario));
+        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO"))
+                .thenReturn(false);
+
+        Agendamento resultado = agendamentoService.criarAgendamentoTransactional(agendamento);
+
+        assertSame(agendamento, resultado);
+        assertEquals(HorarioStatus.DISPONIVEL, horario.getStatus());
+        verify(horarioRepository, never()).save(any(Horario.class));
+    }
+
+    @Test
+    void permiteAgendamentosEmDatasDistintasParaMesmoHorario() {
+        LocalTime hora = LocalTime.of(10, 0);
+        String dia = DiaSemana.SEGUNDA.getValor();
+        String categoria = "GRADUADO";
+
+        Horario horario = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
+
+        when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
+                .thenReturn(Optional.of(horario));
+        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+                any(LocalDate.class), eq(hora), eq(dia), eq(categoria), eq("CANCELADO")))
+                .thenReturn(false);
+
+        Agendamento primeiro = new Agendamento();
+        primeiro.setData(LocalDate.of(2024, 7, 1));
+        primeiro.setHora(hora);
+        primeiro.setDiaSemana(dia);
+        primeiro.setCategoria(categoria);
+
+        Agendamento segundo = new Agendamento();
+        segundo.setData(LocalDate.of(2024, 7, 8));
+        segundo.setHora(hora);
+        segundo.setDiaSemana(dia);
+        segundo.setCategoria(categoria);
+
+        assertDoesNotThrow(() -> agendamentoService.criarAgendamentoTransactional(primeiro));
+        assertDoesNotThrow(() -> agendamentoService.criarAgendamentoTransactional(segundo));
+
+        verify(agendamentoRepository, times(2)).save(any(Agendamento.class));
+        verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+                primeiro.getData(), hora, dia, categoria, "CANCELADO");
+        verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+                segundo.getData(), hora, dia, categoria, "CANCELADO");
+        assertEquals(HorarioStatus.DISPONIVEL, horario.getStatus());
+    }
+
+    @Test
+    void verificarHorarioDisponivelDetectaConflitoNaMesmaData() {
+        LocalDate data = LocalDate.of(2024, 7, 1);
+        LocalTime hora = LocalTime.of(10, 0);
+        String dia = DiaSemana.SEGUNDA.getValor();
+        String categoria = "GRADUADO";
+
+        Horario horario = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
+
+        when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
+                .thenReturn(Optional.of(horario));
+        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO"))
+                .thenReturn(true);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                agendamentoService.verificarHorarioDisponivel(data, dia, hora, categoria));
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+    }
+
+    @Test
+    void verificarHorarioDisponivelPermiteQuandoNaoHaConflito() {
+        LocalDate data = LocalDate.of(2024, 7, 1);
+        LocalTime hora = LocalTime.of(11, 0);
+        String dia = DiaSemana.SEGUNDA.getValor();
+        String categoria = "GRADUADO";
+
+        Horario horario = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
+
+        when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
+                .thenReturn(Optional.of(horario));
+        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO"))
+                .thenReturn(false);
+
+        assertDoesNotThrow(() -> agendamentoService.verificarHorarioDisponivel(data, dia, hora, categoria));
+        verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO");
+    }
+}

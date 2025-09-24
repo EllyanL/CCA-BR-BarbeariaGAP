@@ -70,7 +70,7 @@ public class AgendamentoController {
         agendamento.setDiaSemana(dia);
         agendamento.setCategoria(dto.getCategoria());
 
-        agendamentoService.verificarHorarioDisponivel(dia, agendamento.getHora(), agendamento.getCategoria());
+        agendamentoService.verificarHorarioDisponivel(agendamento.getData(), dia, agendamento.getHora(), agendamento.getCategoria());
         agendamentoService.checarDuplicidade(agendamento.getData(), agendamento.getHora(), dia, agendamento.getCategoria());
 
         agendamento.setMilitar(militar);
