@@ -5,6 +5,8 @@ import intraer.ccabr.barbearia_api.dtos.UserDTO;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -44,6 +46,7 @@ public class CcabrService {
     @Value("${webservice.password}")
     private String password;
 
+    @Autowired
     public CcabrService(WebClient webClient) {
         this(webClient, Clock.systemUTC());
     }
