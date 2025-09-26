@@ -4,11 +4,11 @@ spring:
 
   datasource:
     username: ${DB_USERNAME:postgres}
-    url: ${DB_URL:jdbc:postgresql://172.16.44.208:5432/barbearia}
-    password: ${DB_PASSWORD:123}
-    # url: ${DB_URL:jdbc:postgresql://localhost/barbearia}
     driver-class-name: ${DB_DRIVER_CLASS:org.postgresql.Driver}
-    # password: ${DB_PASSWORD:root}
+    # url: ${DB_URL:jdbc:postgresql://172.16.44.208:5432/barbearia}
+    # password: ${DB_PASSWORD:123}
+    url: ${DB_URL:jdbc:postgresql://localhost/barbearia}
+    password: ${DB_PASSWORD:root}
   jpa:
     show-sql: true
     hibernate:
@@ -27,8 +27,8 @@ spring:
     enabled: true
 
   ldap:
-    # urls: ${LDAP_URL:ldap://10.228.64.168:389}
-    urls: ${LDAP_URL:ldap://172.16.38.168:389}
+    urls: ${LDAP_URL:ldap://10.228.64.168:389}
+    # urls: ${LDAP_URL:ldap://172.16.38.168:389}
     base: ${LDAP_BASE:ou=contas,dc=fab,dc=intraer}
 
 api:
@@ -41,5 +41,5 @@ webservice:
   username: ${WEBSERVICE_USERNAME:barbearia}
   password: "${WEBSERVICE_PASSWORD:B@rber$h0p}"
 
-server:
-  port: ${SERVER_PORT:8081}
+# server:
+#   port: ${SERVER_PORT:8081}

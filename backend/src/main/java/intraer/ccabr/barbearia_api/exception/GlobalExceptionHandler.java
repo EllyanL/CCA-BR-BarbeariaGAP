@@ -37,8 +37,8 @@ public class GlobalExceptionHandler {
     private String resolveMessage(String code) {
         return switch (code) {
             case "FORA_DA_JANELA_PERMITIDA" ->
-                "Agendamentos são permitidos entre (Início + 10 min) e (Fim − 30 min), " +
-                "exceto o primeiro horário do dia, liberado 15 minutos antes do início configurado.";
+                "Agendamentos são permitidos somente com 30 min de antecedencia " +
+                "exceto o primeiro horário do dia.";
             case "JANELA_CONFLITO_AGENDAMENTOS" -> "Não é possível realizar alteração com agendamentos ativos.";
             default -> code;
         };
