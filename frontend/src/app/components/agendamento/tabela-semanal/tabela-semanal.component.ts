@@ -198,7 +198,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
           this.inicioJanelaMin = this.toMinutes(inicioNormalizado);
           this.fimJanelaMin = this.toMinutes(fimNormalizado);
-          this.inicioAgendavelMin = this.inicioJanelaMin;
+          this.inicioAgendavelMin = Math.max(0, this.inicioJanelaMin - 30);
           this.fimAgendavelMin = this.fimJanelaMin;
           this.aplicarJanelaHorarios();
           this.desabilitarTodosOsBotoes();
@@ -277,7 +277,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
   public isHoraAgendavel(hora: string): boolean {
     const m = this.toMinutes(hora);
-    return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
+    return m >= this.inicioAgendavelMin && m <= this.fimAgendavelMin;
   }
 
   public ngOnInit(): void {
@@ -648,8 +648,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           const [inicioHora = 0, inicioMin = 0] = inicioNormalizado.split(':').map(v => Number.parseInt(v, 10));
           const [fimHora = 0, fimMin = 0] = fimNormalizado.split(':').map(v => Number.parseInt(v, 10));
 
+          const inicioPermitidoMin = Math.max(0, (Number.isFinite(inicioHora) ? inicioHora : 0) * 60 + (Number.isFinite(inicioMin) ? inicioMin : 0) - 30);
           const inicio = new Date();
-          inicio.setHours(Number.isFinite(inicioHora) ? inicioHora : 0, Number.isFinite(inicioMin) ? inicioMin : 0, 0, 0);
+          inicio.setHours(Math.floor(inicioPermitidoMin / 60), inicioPermitidoMin % 60, 0, 0);
           const fim = new Date();
           fim.setHours(Number.isFinite(fimHora) ? fimHora : 0, Number.isFinite(fimMin) ? fimMin : 0, 0, 0);
 
@@ -1013,19 +1014,13 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const minutosAtuais = now.getHours() * 60 + now.getMinutes();
 
     const inicioExpediente = this.inicioJanelaMin;
-    const fimExpediente = this.fimJanelaMin;
-    const primeiroHorario = this.getPrimeiroHorarioConfigurado();
-    const primeiroHorarioMin = primeiroHorario ? this.toMinutes(primeiroHorario) : inicioExpediente;
-
-    const isSegunda = dayOfWeek === 1;
-    const inicioLiberadoSegunda = Math.max(0, primeiroHorarioMin - 30);
-    const inicioLiberadoGeral = inicioExpediente;
+    const fimExpediente = this.fimAgendavelMin;
+    const inicioLiberado = this.inicioAgendavelMin;
 
     const diaUtil = dayOfWeek >= 1 && dayOfWeek <= 5;
-    const liberacaoSegunda = isSegunda && minutosAtuais >= inicioLiberadoSegunda && minutosAtuais < inicioLiberadoGeral;
-    const liberacaoNormal = minutosAtuais >= inicioLiberadoGeral && minutosAtuais <= fimExpediente;
+    const liberacaoNormal = minutosAtuais >= inicioLiberado && minutosAtuais <= fimExpediente;
 
-    if (diaUtil && (liberacaoSegunda || liberacaoNormal)) {
+    if (diaUtil && liberacaoNormal) {
       this.feedbackMessageTitle = '';
       this.agendamentoBloqueado = false;
       this.avisoBloqueioMostrado = false;
@@ -1034,14 +1029,12 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.agendamentoBloqueado = true;
 
-    const proximoLiberado = isSegunda ? inicioLiberadoSegunda : inicioLiberadoGeral;
+    const proximoLiberado = inicioLiberado;
 
     if (minutosAtuais < proximoLiberado) {
       const hh = Math.floor(proximoLiberado / 60).toString().padStart(2, '0');
       const mm = (proximoLiberado % 60).toString().padStart(2, '0');
-      this.feedbackMessageTitle = isSegunda
-        ? `Agendamento do primeiro horário de segunda liberado a partir das ${hh}:${mm}.`
-        : `Agendamentos disponíveis a partir das ${hh}:${mm}.`;
+      this.feedbackMessageTitle = `Agendamentos disponíveis a partir das ${hh}:${mm}.`;
       const ms = (proximoLiberado - minutosAtuais) * 60 * 1000;
       this.desbloqueioTimeout = setTimeout(() => this.desabilitarBotoesPorHorario(), ms);
     } else {
