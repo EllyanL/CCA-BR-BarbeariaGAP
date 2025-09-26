@@ -659,7 +659,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           const [inicioHora = 0, inicioMin = 0] = inicioNormalizado.split(':').map(v => Number.parseInt(v, 10));
           const [fimHora = 0, fimMin = 0] = fimNormalizado.split(':').map(v => Number.parseInt(v, 10));
 
-          const inicioPermitidoMin = Math.max(0, (Number.isFinite(inicioHora) ? inicioHora : 0) * 60 + (Number.isFinite(inicioMin) ? inicioMin : 0) - 30);
+          const inicioPermitidoMin = Math.max(
+            0,
+            (Number.isFinite(inicioHora) ? inicioHora : 0) * 60 + (Number.isFinite(inicioMin) ? inicioMin : 0)
+          );
           const inicio = new Date();
           inicio.setHours(Math.floor(inicioPermitidoMin / 60), inicioPermitidoMin % 60, 0, 0);
           const fim = new Date();
