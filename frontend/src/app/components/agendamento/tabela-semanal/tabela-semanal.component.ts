@@ -27,6 +27,11 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 import { normalizeHora } from 'src/app/utils/horarios-utils';
 import { UserData } from 'src/app/models/user-data';
 
+const ANTECEDENCIA_PADRAO_MINUTOS = 30;
+const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
+const MSG_ANTECEDENCIA_PADRAO = 'O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.';
+const MSG_PRIMEIRO_HORARIO = 'O primeiro horário do dia fica disponível 15 minutos antes do início configurado.';
+
 type HorariosGradeView = {
   horas: string[];
   horarios: HorariosPorDia;
@@ -198,7 +203,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
 
           this.inicioJanelaMin = this.toMinutes(inicioNormalizado);
           this.fimJanelaMin = this.toMinutes(fimNormalizado);
-          this.inicioAgendavelMin = Math.max(0, this.inicioJanelaMin - 30);
+          this.inicioAgendavelMin = Math.max(0, this.inicioJanelaMin - ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
           this.fimAgendavelMin = this.fimJanelaMin;
           this.aplicarJanelaHorarios();
           this.desabilitarTodosOsBotoes();
@@ -535,16 +540,22 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const [dia, mes, ano] = dataStr.split('/').map(Number);
     const [horaNum, minutoNum] = hora.slice(0, 5).split(':').map(Number);
     const agendamentoDate = new Date(ano, mes - 1, dia, horaNum, minutoNum);
-    const diffMs = agendamentoDate.getTime() - (Date.now() + this.timeOffsetMs);
+    const agoraAjustado = new Date(Date.now() + this.timeOffsetMs);
+    const diffMs = agendamentoDate.getTime() - agoraAjustado.getTime();
+    const diffMin = diffMs / (60 * 1000);
     const primeiroHorario = this.getPrimeiroHorarioConfigurado();
     const horaNormalizada = normalizeHora(hora);
     const primeiroHorarioNormalizado = primeiroHorario ? normalizeHora(primeiroHorario) : '';
     const isPrimeiroHorario = primeiroHorarioNormalizado !== '' && horaNormalizada === primeiroHorarioNormalizado;
-    const isSegunda = diaSemanaFormatado === 'segunda';
-    const dentroJanelaAntecedencia = diffMs < 30 * 60 * 1000;
+    const isMesmoDia = agendamentoDate.toDateString() === agoraAjustado.toDateString();
 
-    if (dentroJanelaAntecedencia && !(isSegunda && isPrimeiroHorario)) {
-      this.snackBar.open('O agendamento precisa ser feito com no mínimo 30 minutos de antecedência.', 'Ciente', { duration: SNACKBAR_DURATION });
+    if (isPrimeiroHorario && isMesmoDia) {
+      if (diffMin > ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS) {
+        this.snackBar.open(MSG_PRIMEIRO_HORARIO, 'Ciente', { duration: SNACKBAR_DURATION });
+        return;
+      }
+    } else if (diffMin < ANTECEDENCIA_PADRAO_MINUTOS) {
+      this.snackBar.open(MSG_ANTECEDENCIA_PADRAO, 'Ciente', { duration: SNACKBAR_DURATION });
       return;
     }
 

@@ -58,6 +58,12 @@ public class AgendamentoService {
     }
 
     private static final ZoneId ZONE_ID_SAO_PAULO = ZoneId.of("America/Sao_Paulo");
+    private static final long ANTECEDENCIA_PADRAO_MINUTOS = 30L;
+    private static final long ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15L;
+    private static final String MSG_ANTECEDENCIA_PADRAO =
+        "O agendamento deve ser feito com pelo menos 30 minutos de antecedência.";
+    private static final String MSG_ANTECEDENCIA_PRIMEIRO_HORARIO =
+        "O primeiro horário do dia fica disponível 15 minutos antes do início configurado.";
 
     protected ZonedDateTime agora() {
         return ZonedDateTime.now(ZONE_ID_SAO_PAULO);
@@ -224,7 +230,28 @@ public class AgendamentoService {
         ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
         boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao);
 
-        if (!excecaoPrimeiroHorarioDoDia && agendamentoDateTime.minusMinutes(30).isBefore(agora)) {
+        long antecedenciaMinutos = excecaoPrimeiroHorarioDoDia
+            ? ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS
+            : ANTECEDENCIA_PADRAO_MINUTOS;
+
+        LocalDateTime limiteAntecedencia = agendamentoDateTime.minusMinutes(antecedenciaMinutos);
+        boolean mesmoDia = agendamentoDateTime.toLocalDate().isEqual(agora.toLocalDate());
+
+        if (excecaoPrimeiroHorarioDoDia && mesmoDia) {
+            if (agora.isBefore(limiteAntecedencia)) {
+                logger.debug(
+                    "⏳ Primeiro horário ainda não liberado: limite {} | agora {}",
+                    limiteAntecedencia,
+                    agora
+                );
+                return false;
+            }
+        } else if (agora.isAfter(limiteAntecedencia)) {
+            logger.debug(
+                "⏳ Antecedência mínima não respeitada: limite {} | agora {}",
+                limiteAntecedencia,
+                agora
+            );
             return false;
         }
 
@@ -396,7 +423,7 @@ public class AgendamentoService {
         );
 
         if (agoraDateTime.isBefore(inicioDaSemana)) {
-            LocalDateTime limiteExcecao = inicioDaSemana.minusMinutes(30);
+            LocalDateTime limiteExcecao = inicioDaSemana.minusMinutes(ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
             boolean dentroDaJanelaExcecao = excecaoPrimeiroHorarioDoDia && !agoraDateTime.isBefore(limiteExcecao);
 
             if (!dentroDaJanelaExcecao) {
@@ -441,19 +468,18 @@ public class AgendamentoService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar horários passados.");
             }
 
-            if (!excecaoPrimeiroHorarioDoDia) {
-                throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "O agendamento deve ser feito com pelo menos 30 minutos de antecedência."
-                );
+            if (excecaoPrimeiroHorarioDoDia) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ANTECEDENCIA_PRIMEIRO_HORARIO);
             }
+
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ANTECEDENCIA_PADRAO);
         }
 
         if (!excecaoPrimeiroHorarioDoDia
-            && agendamentoDateTime.isBefore(agoraDateTime.plusMinutes(30))) {
+            && agendamentoDateTime.isBefore(agoraDateTime.plusMinutes(ANTECEDENCIA_PADRAO_MINUTOS))) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
-                "O agendamento deve ser feito com pelo menos 30 minutos de antecedência."
+                MSG_ANTECEDENCIA_PADRAO
             );
         }
     
