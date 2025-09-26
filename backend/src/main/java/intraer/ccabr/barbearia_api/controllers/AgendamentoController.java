@@ -85,7 +85,10 @@ public class AgendamentoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AgendamentoDTO>> findAll(Authentication authentication) {
+    public ResponseEntity<List<AgendamentoDTO>> findAll(
+            Authentication authentication,
+            @RequestParam(required = false) String categoria
+    ) {
         if (authentication == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -96,7 +99,11 @@ public class AgendamentoController {
 
         List<Agendamento> agendamentos;
         if (isAdmin) {
-            agendamentos = agendamentoService.findAll();
+            boolean possuiFiltroCategoria = categoria != null && !categoria.isBlank();
+            String categoriaFiltro = possuiFiltroCategoria ? categoria.toUpperCase() : null;
+            agendamentos = categoriaFiltro != null
+                    ? agendamentoService.findByCategoriaAndPeriodo(categoriaFiltro, null, null)
+                    : agendamentoService.findAll();
         } else {
             String categoriaUsuario = determineCategoriaUsuario(authentication);
             if (categoriaUsuario == null) {

@@ -347,14 +347,23 @@ import { UserService } from 'src/app/services/user.service';
           }
         });
 
-      this.route.queryParams.subscribe((params) => {
-        const categoria = params['categoria'];
-        if (categoria && ['GRADUADO', 'OFICIAL'].includes(categoria)) {
-          this.categoriaSelecionada = categoria;
+      this.route.queryParams.subscribe(params => {
+        const categoriaParam = typeof params['categoria'] === 'string'
+          ? params['categoria'].toUpperCase()
+          : '';
+
+        if (['GRADUADO', 'OFICIAL'].includes(categoriaParam)) {
+          this.categoriaSelecionada = categoriaParam;
+        } else {
+          this.categoriaSelecionada = 'GRADUADO';
         }
+
         this.carregarHorariosBase();
         this.carregarHorariosDaSemana();
+        this.carregarAgendamentos();
         this.horariosService.startPollingHorarios(this.categoriaSelecionada);
+
+        this.horariosSub?.unsubscribe();
         this.horariosSub = this.horariosService.horariosPorDia$.subscribe({
           next: h => {
             this.horariosPorDia = { ...h };
@@ -853,11 +862,14 @@ import { UserService } from 'src/app/services/user.service';
     }
     carregarAgendamentos(): void {
       this.carregarAgendamentosSub?.unsubscribe();
-      this.carregarAgendamentosSub = this.agendamentoService.getAgendamentos().subscribe({
+      const categoriaFiltro = this.isAdmin ? this.categoriaSelecionada.toUpperCase() : undefined;
+      this.carregarAgendamentosSub = this.agendamentoService
+        .getAgendamentos(categoriaFiltro)
+        .subscribe({
         next: (agendamentos) => {
           if (Array.isArray(agendamentos)) {
             const agora = Date.now() + this.timeOffsetMs;
-            this.agendamentos = agendamentos
+            const normalizados = agendamentos
               .map(a => ({
                 ...a,
                 diaSemana: normalizeDia(a.diaSemana.trim()),
@@ -867,6 +879,10 @@ import { UserService } from 'src/app/services/user.service';
                 if (a.timestamp == null) return true;
                 return a.timestamp >= agora;
               });
+
+            this.agendamentos = categoriaFiltro
+              ? normalizados.filter(a => (a.categoria ?? '').toUpperCase() === categoriaFiltro)
+              : normalizados;
 
             if (this.agendamentos.length === 0) {
               this.saveAgendamentos();
