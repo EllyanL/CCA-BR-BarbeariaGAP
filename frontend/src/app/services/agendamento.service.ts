@@ -23,8 +23,9 @@ export class AgendamentoService {
     private logger: LoggingService
   ) {}
 
-  getAgendamentos(): Observable<Agendamento[]> {
-    return this.http.get<Agendamento[] | null>(this.apiUrl).pipe(
+  getAgendamentos(categoria?: string): Observable<Agendamento[]> {
+    const options = categoria ? { params: { categoria } } : undefined;
+    return this.http.get<Agendamento[] | null>(this.apiUrl, options).pipe(
       map(response =>
         (response ?? []).map(ag => ({
           ...ag,
