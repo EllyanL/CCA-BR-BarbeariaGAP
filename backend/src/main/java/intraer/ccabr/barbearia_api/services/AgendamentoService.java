@@ -223,30 +223,37 @@ public class AgendamentoService {
             .withSecond(0)
             .withNano(0)
             .toLocalDateTime();
+
         logger.debug("🌍 Zone ID do backend: {}", ZONE_ID_SAO_PAULO);
         logger.debug("⏱️ [DEBUG] Data/Hora do agendamento: {}", agendamentoDateTime);
         logger.debug("⏱️ [DEBUG] Data/Hora atual (ajustada): {}", agora);
 
+        if (agendamentoDateTime.isBefore(agora)) {
+            logger.debug("⛔ Horário de agendamento já passou: {}", agendamentoDateTime);
+            return false;
+        }
+
         ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
         boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao);
 
-        long antecedenciaMinutos = excecaoPrimeiroHorarioDoDia
-            ? ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS
-            : ANTECEDENCIA_PADRAO_MINUTOS;
-
-        LocalDateTime limiteAntecedencia = agendamentoDateTime.minusMinutes(antecedenciaMinutos);
-        boolean mesmoDia = agendamentoDateTime.toLocalDate().isEqual(agora.toLocalDate());
-
-        if (excecaoPrimeiroHorarioDoDia && mesmoDia) {
-            if (agora.isBefore(limiteAntecedencia)) {
-                logger.debug(
-                    "⏳ Primeiro horário ainda não liberado: limite {} | agora {}",
-                    limiteAntecedencia,
-                    agora
-                );
-                return false;
+        if (excecaoPrimeiroHorarioDoDia) {
+            boolean mesmoDia = agendamentoDateTime.toLocalDate().isEqual(agora.toLocalDate());
+            if (mesmoDia) {
+                LocalDateTime aberturaPrimeiroHorario = agendamentoDateTime.minusMinutes(ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
+                if (agora.isBefore(aberturaPrimeiroHorario)) {
+                    logger.debug(
+                        "⏳ Primeiro horário ainda não liberado: abertura {} | agora {}",
+                        aberturaPrimeiroHorario,
+                        agora
+                    );
+                    return false;
+                }
             }
-        } else if (agora.isAfter(limiteAntecedencia)) {
+            return true;
+        }
+
+        LocalDateTime limiteAntecedencia = agendamentoDateTime.minusMinutes(ANTECEDENCIA_PADRAO_MINUTOS);
+        if (agora.isAfter(limiteAntecedencia)) {
             logger.debug(
                 "⏳ Antecedência mínima não respeitada: limite {} | agora {}",
                 limiteAntecedencia,
@@ -255,7 +262,7 @@ public class AgendamentoService {
             return false;
         }
 
-        return !agendamentoDateTime.isBefore(agora);
+        return true;
     }
 
     private boolean isPrimeiroHorarioDoDia(LocalDate data, LocalTime hora, ConfiguracaoAgendamento configuracao) {
