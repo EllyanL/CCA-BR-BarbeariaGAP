@@ -136,7 +136,7 @@ import { UserService } from 'src/app/services/user.service';
         next: ({ horarioInicio, horarioFim }) => {
           this.inicioJanelaMin = this.toMinutes(horarioInicio);
           this.fimJanelaMin = this.toMinutes(horarioFim);
-          this.inicioAgendavelMin = this.inicioJanelaMin;
+          this.inicioAgendavelMin = Math.max(0, this.inicioJanelaMin - 30);
           this.fimAgendavelMin = this.fimJanelaMin;
           this.aplicarJanelaHorarios();
         },
@@ -276,7 +276,7 @@ import { UserService } from 'src/app/services/user.service';
 
     isHoraAgendavel(hora: string): boolean {
     const m = this.toMinutes(hora);
-    return m >= this.inicioJanelaMin && m <= this.fimJanelaMin;
+    return m >= this.inicioAgendavelMin && m <= this.fimAgendavelMin;
     }
 
 //---------------🔰Inicialização e Logout--------------------    
@@ -478,8 +478,11 @@ import { UserService } from 'src/app/services/user.service';
               this.configuracao = config;
               const [inicioHora, inicioMin] = (config.horarioInicio ?? '08:00').split(':').map(Number);
               const [fimHora, fimMin] = (config.horarioFim ?? '18:00').split(':').map(Number);
+              const inicioHoraValido = Number.isFinite(inicioHora) ? inicioHora : 0;
+              const inicioMinValido = Number.isFinite(inicioMin) ? inicioMin : 0;
+              const inicioPermitidoMin = Math.max(0, inicioHoraValido * 60 + inicioMinValido - 30);
               const inicio = new Date();
-              inicio.setHours(inicioHora, inicioMin, 0, 0);
+              inicio.setHours(Math.floor(inicioPermitidoMin / 60), inicioPermitidoMin % 60, 0, 0);
               const fim = new Date();
               fim.setHours(fimHora, fimMin, 0, 0);
 

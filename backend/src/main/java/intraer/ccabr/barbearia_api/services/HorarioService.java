@@ -46,9 +46,21 @@ public class HorarioService {
         this.agendamentoService = agendamentoService;
     }
 
+    private LocalTime calcularHorarioInicioPermitido(ConfiguracaoAgendamento config) {
+        LocalTime inicio = config.getHorarioInicio();
+        if (inicio == null) {
+            return LocalTime.MIN;
+        }
+
+        int minutosInicio = inicio.getHour() * 60 + inicio.getMinute();
+        int minutosComMargem = Math.max(0, minutosInicio - 30);
+        return LocalTime.of(minutosComMargem / 60, minutosComMargem % 60);
+    }
+
     private void validarHorarioDentroIntervalo(LocalTime hora) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
-        if (hora.isBefore(config.getHorarioInicio()) || hora.isAfter(config.getHorarioFim())) {
+        LocalTime inicioPermitido = calcularHorarioInicioPermitido(config);
+        if (hora.isBefore(inicioPermitido) || hora.isAfter(config.getHorarioFim())) {
             throw new IllegalArgumentException("Horário fora do intervalo permitido.");
         }
     }
@@ -60,7 +72,8 @@ public class HorarioService {
     }
 
     private boolean horarioDentroIntervalo(LocalTime hora, ConfiguracaoAgendamento config) {
-        return !hora.isBefore(config.getHorarioInicio()) && !hora.isAfter(config.getHorarioFim());
+        LocalTime inicioPermitido = calcularHorarioInicioPermitido(config);
+        return !hora.isBefore(inicioPermitido) && !hora.isAfter(config.getHorarioFim());
     }
 
 
@@ -116,7 +129,9 @@ public class HorarioService {
 
         // Horários gerados a partir da configuração (intervalos de 30 minutos)
         List<String> gerados = new ArrayList<>();
-        for (LocalTime t = config.getHorarioInicio(); !t.isAfter(config.getHorarioFim()); t = t.plusMinutes(30)) {
+        LocalTime inicioPermitido = calcularHorarioInicioPermitido(config);
+
+        for (LocalTime t = inicioPermitido; !t.isAfter(config.getHorarioFim()); t = t.plusMinutes(30)) {
             gerados.add(HoraUtil.format(t));
         }
 
