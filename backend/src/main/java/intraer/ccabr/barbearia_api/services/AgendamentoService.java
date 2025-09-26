@@ -217,7 +217,7 @@ public class AgendamentoService {
                 .orElse(true);
     }
 
-    public boolean podeAgendarDataHora(LocalDate data, LocalTime hora) {
+    public boolean podeAgendarDataHora(LocalDate data, LocalTime hora, String categoria) {
         LocalDateTime agendamentoDateTime = LocalDateTime.of(data, hora);
         LocalDateTime agora = agora()
             .withSecond(0)
@@ -234,7 +234,7 @@ public class AgendamentoService {
         }
 
         ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
-        boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao);
+        boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao, categoria);
 
         if (excecaoPrimeiroHorarioDoDia) {
             boolean mesmoDia = agendamentoDateTime.toLocalDate().isEqual(agora.toLocalDate());
@@ -265,13 +265,34 @@ public class AgendamentoService {
         return true;
     }
 
-    private boolean isPrimeiroHorarioDoDia(LocalDate data, LocalTime hora, ConfiguracaoAgendamento configuracao) {
-        if (data == null || hora == null || configuracao == null || configuracao.getHorarioInicio() == null) {
+    private boolean isPrimeiroHorarioDoDia(
+        LocalDate data,
+        LocalTime hora,
+        ConfiguracaoAgendamento configuracao,
+        String categoria
+    ) {
+        if (data == null || hora == null) {
+            return false;
+        }
+
+        LocalTime horarioReferencia = configuracao != null ? configuracao.getHorarioInicio() : null;
+
+        if (categoria != null && !categoria.isBlank()) {
+            DiaSemana diaSemana = DiaSemana.from(data.getDayOfWeek());
+            horarioReferencia = horarioRepository
+                .findByDiaAndCategoriaOrderByHorarioAsc(diaSemana.getValor(), categoria)
+                .stream()
+                .map(Horario::getHorario)
+                .findFirst()
+                .orElse(horarioReferencia);
+        }
+
+        if (horarioReferencia == null) {
             return false;
         }
 
         return hora.truncatedTo(ChronoUnit.MINUTES)
-            .equals(configuracao.getHorarioInicio().truncatedTo(ChronoUnit.MINUTES));
+            .equals(horarioReferencia.truncatedTo(ChronoUnit.MINUTES));
     }
 
     public boolean isAgendamentoPassado(Agendamento agendamento) {
@@ -426,7 +447,8 @@ public class AgendamentoService {
         boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(
             agendamento.getData(),
             agendamento.getHora(),
-            config
+            config,
+            agendamento.getCategoria()
         );
 
         if (agoraDateTime.isBefore(inicioDaSemana)) {
@@ -467,7 +489,11 @@ public class AgendamentoService {
         }
 
         // bloqueia agendamentos em datas/horas já passadas
-        boolean podeAgendar = podeAgendarDataHora(agendamento.getData(), agendamento.getHora());
+        boolean podeAgendar = podeAgendarDataHora(
+            agendamento.getData(),
+            agendamento.getHora(),
+            agendamento.getCategoria()
+        );
         LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
 
         if (!podeAgendar) {

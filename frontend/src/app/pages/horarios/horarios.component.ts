@@ -25,6 +25,8 @@ import { Militar } from '../../models/militar';
 import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 
+const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
+
 @Component({
     selector: 'app-horarios',
     templateUrl: './horarios.component.html',
@@ -136,7 +138,7 @@ import { UserService } from 'src/app/services/user.service';
         next: ({ horarioInicio, horarioFim }) => {
           this.inicioJanelaMin = this.toMinutes(horarioInicio);
           this.fimJanelaMin = this.toMinutes(horarioFim);
-          this.inicioAgendavelMin = Math.max(0, this.inicioJanelaMin - 30);
+          this.inicioAgendavelMin = Math.max(0, this.inicioJanelaMin - ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
           this.fimAgendavelMin = this.fimJanelaMin;
           this.aplicarJanelaHorarios();
         },
@@ -489,7 +491,7 @@ import { UserService } from 'src/app/services/user.service';
               const [fimHora, fimMin] = (config.horarioFim ?? '18:00').split(':').map(Number);
               const inicioHoraValido = Number.isFinite(inicioHora) ? inicioHora : 0;
               const inicioMinValido = Number.isFinite(inicioMin) ? inicioMin : 0;
-              const inicioPermitidoMin = Math.max(0, inicioHoraValido * 60 + inicioMinValido - 30);
+              const inicioPermitidoMin = Math.max(0, inicioHoraValido * 60 + inicioMinValido);
               const inicio = new Date();
               inicio.setHours(Math.floor(inicioPermitidoMin / 60), inicioPermitidoMin % 60, 0, 0);
               const fim = new Date();
