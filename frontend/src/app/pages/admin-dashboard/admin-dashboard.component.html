@@ -23,44 +23,115 @@
       </mat-form-field>
     </div>
 
-    <table mat-table *ngIf="dataSource" [dataSource]="dataSource" matSort class="mat-elevation-z8 dashboard-table">
-      <ng-container matColumnDef="data">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
-        <td mat-cell *matCellDef="let a">{{ a.data | date: 'dd/MM/yyyy':'':'pt-BR' }}</td>
-      </ng-container>
-      <ng-container matColumnDef="hora">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
-        <td mat-cell *matCellDef="let a">{{ formatHora(a.hora) }}</td>
-      </ng-container>
-      <ng-container matColumnDef="saram">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Saram</th>
-        <td mat-cell *matCellDef="let a">{{ a.militar?.saram || 'Não informado' }}</td>
-      </ng-container>
-      <ng-container matColumnDef="postoGrad">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Posto/Grad</th>
-        <td mat-cell *matCellDef="let a">{{ a.militar?.postoGrad || 'Não informado' }}</td>
-      </ng-container>
-      <ng-container matColumnDef="nomeDeGuerra">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome de Guerra</th>
-        <td mat-cell *matCellDef="let a">
-          {{ formatarNome(a.militar?.nomeDeGuerra) }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="categoria">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
-        <td mat-cell *matCellDef="let a">
-          {{ formatarCategoria(a.militar?.categoria) }}
-        </td>
-      </ng-container>
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>Ações</th>
-        <td mat-cell *matCellDef="let a">
-          <button mat-icon-button color="warn" (click)="cancelarAgendamento(a)"><mat-icon>delete</mat-icon></button>
-        </td>
-      </ng-container>
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
+    <section class="tables-grid">
+      <div class="table-section">
+        <h2>Agendamentos - Graduados</h2>
+        <table
+          mat-table
+          *ngIf="dataSourceGraduados"
+          [dataSource]="dataSourceGraduados"
+          matSort
+          #graduadosSort="matSort"
+          class="mat-elevation-z8 dashboard-table"
+        >
+          <ng-container matColumnDef="data">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
+            <td mat-cell *matCellDef="let g">{{ g.data | date: 'dd/MM/yyyy':'':'pt-BR' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="hora">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
+            <td mat-cell *matCellDef="let g">{{ formatHora(g.hora) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="saram">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Saram</th>
+            <td mat-cell *matCellDef="let g">{{ g.militar?.saram || 'Não informado' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="postoGrad">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Posto/Grad</th>
+            <td mat-cell *matCellDef="let g">{{ g.militar?.postoGrad || 'Não informado' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="nomeDeGuerra">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome de Guerra</th>
+            <td mat-cell *matCellDef="let g">
+              {{ formatarNome(g.militar?.nomeDeGuerra) }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="categoria">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
+            <td mat-cell *matCellDef="let g">
+              {{ formatarCategoria(g.militar?.categoria || g.categoria) }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let g">
+              <button mat-icon-button color="warn" (click)="cancelarAgendamento(g)"><mat-icon>delete</mat-icon></button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+        <mat-paginator
+          #graduadosPaginator
+          [pageSize]="5"
+          [pageSizeOptions]="[5, 10, 20]"
+          showFirstLastButtons
+        ></mat-paginator>
+      </div>
 
-    <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      <div class="table-section">
+        <h2>Agendamentos - Oficiais</h2>
+        <table
+          mat-table
+          *ngIf="dataSourceOficiais"
+          [dataSource]="dataSourceOficiais"
+          matSort
+          #oficiaisSort="matSort"
+          class="mat-elevation-z8 dashboard-table"
+        >
+          <ng-container matColumnDef="data">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Data</th>
+            <td mat-cell *matCellDef="let o">{{ o.data | date: 'dd/MM/yyyy':'':'pt-BR' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="hora">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Hora</th>
+            <td mat-cell *matCellDef="let o">{{ formatHora(o.hora) }}</td>
+          </ng-container>
+          <ng-container matColumnDef="saram">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Saram</th>
+            <td mat-cell *matCellDef="let o">{{ o.militar?.saram || 'Não informado' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="postoGrad">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Posto/Grad</th>
+            <td mat-cell *matCellDef="let o">{{ o.militar?.postoGrad || 'Não informado' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="nomeDeGuerra">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome de Guerra</th>
+            <td mat-cell *matCellDef="let o">
+              {{ formatarNome(o.militar?.nomeDeGuerra) }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="categoria">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoria</th>
+            <td mat-cell *matCellDef="let o">
+              {{ formatarCategoria(o.militar?.categoria || o.categoria) }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <td mat-cell *matCellDef="let o">
+              <button mat-icon-button color="warn" (click)="cancelarAgendamento(o)"><mat-icon>delete</mat-icon></button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+        <mat-paginator
+          #oficiaisPaginator
+          [pageSize]="5"
+          [pageSizeOptions]="[5, 10, 20]"
+          showFirstLastButtons
+        ></mat-paginator>
+      </div>
+    </section>
 </app-admin-navbar>

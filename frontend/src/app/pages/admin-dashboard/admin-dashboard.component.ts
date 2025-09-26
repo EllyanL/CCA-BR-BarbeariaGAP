@@ -26,13 +26,18 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   stats?: DashboardStats;
   recent: Agendamento[] = [];
-  dataSource = new MatTableDataSource<Agendamento>([]);
+  recentGraduados: Agendamento[] = [];
+  recentOficiais: Agendamento[] = [];
+  dataSourceGraduados = new MatTableDataSource<Agendamento>([]);
+  dataSourceOficiais = new MatTableDataSource<Agendamento>([]);
   searchTerm = '';
   weekly: WeeklyCount[] = [];
   displayedColumns = ['data', 'hora', 'saram', 'postoGrad', 'nomeDeGuerra', 'categoria', 'actions'];
   @ViewChild('weeklyChart') weeklyChart?: ElementRef<HTMLCanvasElement>;
-  @ViewChild(MatPaginator) paginator?: MatPaginator;
-  @ViewChild(MatSort) sort?: MatSort;
+  @ViewChild('graduadosPaginator') graduadosPaginator?: MatPaginator;
+  @ViewChild('oficiaisPaginator') oficiaisPaginator?: MatPaginator;
+  @ViewChild('graduadosSort') graduadosSort?: MatSort;
+  @ViewChild('oficiaisSort') oficiaisSort?: MatSort;
   weeklyChartInstance?: Chart;
 
   constructor(
@@ -55,11 +60,21 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit(): void {
     this.renderWeeklyChart();
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
+    this.configureTableHelpers();
+  }
+
+  private configureTableHelpers(): void {
+    if (this.graduadosPaginator) {
+      this.dataSourceGraduados.paginator = this.graduadosPaginator;
     }
-    if (this.sort) {
-      this.dataSource.sort = this.sort;
+    if (this.oficiaisPaginator) {
+      this.dataSourceOficiais.paginator = this.oficiaisPaginator;
+    }
+    if (this.graduadosSort) {
+      this.dataSourceGraduados.sort = this.graduadosSort;
+    }
+    if (this.oficiaisSort) {
+      this.dataSourceOficiais.sort = this.oficiaisSort;
     }
   }
 
@@ -82,7 +97,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       next: data => {
         this.logger.log('Dados recentes recebidos:', data);
         this.recent = data.filter(a => a.status === 'AGENDADO');
-        this.dataSource.data = this.recent;
+        this.updateCategoryDataSources();
+        this.configureTableHelpers();
         this.applyFilters();
       },
       error: err => this.logger.error('Erro ao carregar recentes', err)
@@ -123,7 +139,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     const sanitize = (value?: string | null) =>
       (value ?? '').toLowerCase().trim().replace(/\s+/g, ' ');
 
-    this.dataSource.filterPredicate = (ag: Agendamento, filter: string): boolean => {
+    const predicate = (ag: Agendamento, filter: string): boolean => {
       if (!filter) { return true; }
       const f = sanitize(filter);
 
@@ -137,10 +153,32 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       return [hora, saram, postoGrad, nomeDeGuerra, categoria, ...datas].some(v => v.includes(f));
     };
 
-    this.dataSource.filter = this.searchTerm;
-    if (this.paginator) {
-      this.paginator.firstPage();
+    this.dataSourceGraduados.filterPredicate = predicate;
+    this.dataSourceOficiais.filterPredicate = predicate;
+
+    this.dataSourceGraduados.filter = this.searchTerm;
+    this.dataSourceOficiais.filter = this.searchTerm;
+
+    if (this.graduadosPaginator) {
+      this.graduadosPaginator.firstPage();
     }
+    if (this.oficiaisPaginator) {
+      this.oficiaisPaginator.firstPage();
+    }
+  }
+
+  private updateCategoryDataSources(): void {
+    const normalizeCategoria = (categoria?: string | null) => (categoria ?? '').toUpperCase();
+
+    this.recentGraduados = this.recent.filter(ag =>
+      normalizeCategoria(ag.militar?.categoria || ag.categoria) === 'GRADUADO'
+    );
+    this.recentOficiais = this.recent.filter(ag =>
+      normalizeCategoria(ag.militar?.categoria || ag.categoria) === 'OFICIAL'
+    );
+
+    this.dataSourceGraduados.data = this.recentGraduados;
+    this.dataSourceOficiais.data = this.recentOficiais;
   }
 
   private normalizeDateFormats(dateStr?: string): string[] {
@@ -165,7 +203,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
           const idx = this.recent.findIndex(r => r.id === a.id);
           if (idx !== -1) {
             this.recent.splice(idx, 1);
-            this.dataSource.data = this.recent;
+            this.updateCategoryDataSources();
             this.applyFilters();
           }
           this.horariosService.disponibilizarHorario(a.diaSemana, a.hora.slice(0,5), a.categoria)
