@@ -222,23 +222,22 @@ public class AgendamentoService {
         logger.debug("⏱️ [DEBUG] Data/Hora atual (ajustada): {}", agora);
 
         ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
-        boolean excecaoPrimeiroHorarioSegunda = isPrimeiroHorarioSegunda(data, hora, configuracao);
+        boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao);
 
-        if (!excecaoPrimeiroHorarioSegunda && agendamentoDateTime.minusMinutes(30).isBefore(agora)) {
+        if (!excecaoPrimeiroHorarioDoDia && agendamentoDateTime.minusMinutes(30).isBefore(agora)) {
             return false;
         }
 
         return !agendamentoDateTime.isBefore(agora);
     }
 
-    private boolean isPrimeiroHorarioSegunda(LocalDate data, LocalTime hora, ConfiguracaoAgendamento configuracao) {
+    private boolean isPrimeiroHorarioDoDia(LocalDate data, LocalTime hora, ConfiguracaoAgendamento configuracao) {
         if (data == null || hora == null || configuracao == null || configuracao.getHorarioInicio() == null) {
             return false;
         }
 
-        return data.getDayOfWeek() == DayOfWeek.MONDAY
-            && hora.truncatedTo(ChronoUnit.MINUTES)
-                .equals(configuracao.getHorarioInicio().truncatedTo(ChronoUnit.MINUTES));
+        return hora.truncatedTo(ChronoUnit.MINUTES)
+            .equals(configuracao.getHorarioInicio().truncatedTo(ChronoUnit.MINUTES));
     }
 
     public boolean isAgendamentoPassado(Agendamento agendamento) {
@@ -390,7 +389,7 @@ public class AgendamentoService {
         LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getHorarioInicio());
         LocalDateTime agoraDateTime = agoraZoned.toLocalDateTime();
 
-        boolean excecaoPrimeiroHorarioSegunda = isPrimeiroHorarioSegunda(
+        boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(
             agendamento.getData(),
             agendamento.getHora(),
             config
@@ -398,7 +397,7 @@ public class AgendamentoService {
 
         if (agoraDateTime.isBefore(inicioDaSemana)) {
             LocalDateTime limiteExcecao = inicioDaSemana.minusMinutes(30);
-            boolean dentroDaJanelaExcecao = excecaoPrimeiroHorarioSegunda && !agoraDateTime.isBefore(limiteExcecao);
+            boolean dentroDaJanelaExcecao = excecaoPrimeiroHorarioDoDia && !agoraDateTime.isBefore(limiteExcecao);
 
             if (!dentroDaJanelaExcecao) {
                 throw new ResponseStatusException(
@@ -429,7 +428,7 @@ public class AgendamentoService {
         boolean antesDoInicio = hora.isBefore(limiteInicial);
         boolean depoisDoFim = hora.isAfter(limiteFinal);
 
-        if ((antesDoInicio && !(excecaoPrimeiroHorarioSegunda && hora.equals(inicio))) || depoisDoFim) {
+        if ((antesDoInicio && !(excecaoPrimeiroHorarioDoDia && hora.equals(inicio))) || depoisDoFim) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "FORA_DA_JANELA_PERMITIDA");
         }
 
@@ -442,7 +441,7 @@ public class AgendamentoService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar horários passados.");
             }
 
-            if (!excecaoPrimeiroHorarioSegunda) {
+            if (!excecaoPrimeiroHorarioDoDia) {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "O agendamento deve ser feito com pelo menos 30 minutos de antecedência."
@@ -450,7 +449,7 @@ public class AgendamentoService {
             }
         }
 
-        if (!excecaoPrimeiroHorarioSegunda
+        if (!excecaoPrimeiroHorarioDoDia
             && agendamentoDateTime.isBefore(agoraDateTime.plusMinutes(30))) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
