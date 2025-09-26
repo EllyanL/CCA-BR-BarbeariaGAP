@@ -252,6 +252,12 @@ public class AgendamentoService {
             return true;
         }
 
+        boolean diaAgendamentoEhSegunda = agendamentoDateTime.getDayOfWeek() == DayOfWeek.MONDAY;
+        if (diaAgendamentoEhSegunda) {
+            logger.debug("✅ Segunda-feira: antecedência padrão desconsiderada para {}", agendamentoDateTime);
+            return true;
+        }
+
         LocalDateTime limiteAntecedencia = agendamentoDateTime.minusMinutes(ANTECEDENCIA_PADRAO_MINUTOS);
         if (agora.isAfter(limiteAntecedencia)) {
             logger.debug(
