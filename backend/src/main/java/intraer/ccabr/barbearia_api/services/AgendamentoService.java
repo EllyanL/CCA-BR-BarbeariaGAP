@@ -234,6 +234,7 @@ public class AgendamentoService {
         }
 
         ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
+        boolean diaAgendamentoEhSegunda = agendamentoDateTime.getDayOfWeek() == DayOfWeek.MONDAY;
         boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao, categoria);
 
         if (excecaoPrimeiroHorarioDoDia) {
@@ -249,12 +250,12 @@ public class AgendamentoService {
                     return false;
                 }
             }
-            return true;
-        }
-
-        boolean diaAgendamentoEhSegunda = agendamentoDateTime.getDayOfWeek() == DayOfWeek.MONDAY;
-        if (diaAgendamentoEhSegunda) {
-            logger.debug("✅ Segunda-feira: antecedência padrão desconsiderada para {}", agendamentoDateTime);
+            if (diaAgendamentoEhSegunda) {
+                logger.debug(
+                    "✅ Segunda-feira e primeiro horário: antecedência padrão desconsiderada para {}",
+                    agendamentoDateTime
+                );
+            }
             return true;
         }
 
