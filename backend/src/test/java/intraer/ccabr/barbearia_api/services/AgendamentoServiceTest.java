@@ -42,7 +42,7 @@ class AgendamentoServiceTest {
     private AgendamentoService agendamentoService;
 
     @Test
-    void criarAgendamentoMarcaHorarioComoIndisponivel() {
+    void criarAgendamentoMarcaHorarioComoAgendado() {
         when(agendamentoRepository.save(any(Agendamento.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
         when(horarioRepository.save(any(Horario.class)))
@@ -72,50 +72,33 @@ class AgendamentoServiceTest {
 
         ArgumentCaptor<Horario> horarioCaptor = ArgumentCaptor.forClass(Horario.class);
         verify(horarioRepository).save(horarioCaptor.capture());
-        assertEquals(HorarioStatus.INDISPONIVEL, horarioCaptor.getValue().getStatus());
+        assertEquals(HorarioStatus.AGENDADO, horarioCaptor.getValue().getStatus());
     }
 
     @Test
-    void naoPermiteNovoAgendamentoQuandoHorarioFicaIndisponivel() {
-        when(agendamentoRepository.save(any(Agendamento.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-        when(horarioRepository.save(any(Horario.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
+    void naoPermiteNovoAgendamentoQuandoHorarioJaEstaIndisponivel() {
         LocalTime hora = LocalTime.of(10, 0);
         String dia = DiaSemana.SEGUNDA.getValor();
         String categoria = "GRADUADO";
 
-        Horario horario = new Horario(dia, hora, categoria, HorarioStatus.DISPONIVEL);
+        Horario horario = new Horario(dia, hora, categoria, HorarioStatus.INDISPONIVEL);
 
         when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
                 .thenReturn(Optional.of(horario));
-        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-                any(LocalDate.class), eq(hora), eq(dia), eq(categoria), eq("CANCELADO")))
-                .thenReturn(false);
 
-        Agendamento primeiro = new Agendamento();
-        primeiro.setData(LocalDate.of(2024, 7, 1));
-        primeiro.setHora(hora);
-        primeiro.setDiaSemana(dia);
-        primeiro.setCategoria(categoria);
-
-        Agendamento segundo = new Agendamento();
-        segundo.setData(LocalDate.of(2024, 7, 8));
-        segundo.setHora(hora);
-        segundo.setDiaSemana(dia);
-        segundo.setCategoria(categoria);
-
-        assertDoesNotThrow(() -> agendamentoService.criarAgendamentoTransactional(primeiro));
+        Agendamento agendamento = new Agendamento();
+        agendamento.setData(LocalDate.of(2024, 7, 1));
+        agendamento.setHora(hora);
+        agendamento.setDiaSemana(dia);
+        agendamento.setCategoria(categoria);
 
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> agendamentoService.criarAgendamentoTransactional(segundo));
+                () -> agendamentoService.criarAgendamentoTransactional(agendamento));
 
         assertEquals("Horário indisponível", exception.getMessage());
 
-        ArgumentCaptor<Horario> horarioCaptor = ArgumentCaptor.forClass(Horario.class);
-        verify(horarioRepository).save(horarioCaptor.capture());
-        assertEquals(HorarioStatus.INDISPONIVEL, horarioCaptor.getValue().getStatus());
+        verify(horarioRepository, never()).save(any(Horario.class));
+        verify(agendamentoRepository, never()).save(any(Agendamento.class));
     }
 
     @Test
