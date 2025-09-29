@@ -16,6 +16,7 @@ import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,8 +42,10 @@ class AgendamentoServiceTest {
     private AgendamentoService agendamentoService;
 
     @Test
-    void criarAgendamentoNaoAlteraHorarioBase() {
+    void criarAgendamentoMarcaHorarioComoIndisponivel() {
         when(agendamentoRepository.save(any(Agendamento.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(horarioRepository.save(any(Horario.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         LocalDate data = LocalDate.of(2024, 7, 1);
@@ -66,13 +69,17 @@ class AgendamentoServiceTest {
         Agendamento resultado = agendamentoService.criarAgendamentoTransactional(agendamento);
 
         assertSame(agendamento, resultado);
-        assertEquals(HorarioStatus.DISPONIVEL, horario.getStatus());
-        verify(horarioRepository, never()).save(any(Horario.class));
+
+        ArgumentCaptor<Horario> horarioCaptor = ArgumentCaptor.forClass(Horario.class);
+        verify(horarioRepository).save(horarioCaptor.capture());
+        assertEquals(HorarioStatus.INDISPONIVEL, horarioCaptor.getValue().getStatus());
     }
 
     @Test
-    void permiteAgendamentosEmDatasDistintasParaMesmoHorario() {
+    void naoPermiteNovoAgendamentoQuandoHorarioFicaIndisponivel() {
         when(agendamentoRepository.save(any(Agendamento.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(horarioRepository.save(any(Horario.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         LocalTime hora = LocalTime.of(10, 0);
@@ -100,14 +107,15 @@ class AgendamentoServiceTest {
         segundo.setCategoria(categoria);
 
         assertDoesNotThrow(() -> agendamentoService.criarAgendamentoTransactional(primeiro));
-        assertDoesNotThrow(() -> agendamentoService.criarAgendamentoTransactional(segundo));
 
-        verify(agendamentoRepository, times(2)).save(any(Agendamento.class));
-        verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-                primeiro.getData(), hora, dia, categoria, "CANCELADO");
-        verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-                segundo.getData(), hora, dia, categoria, "CANCELADO");
-        assertEquals(HorarioStatus.DISPONIVEL, horario.getStatus());
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> agendamentoService.criarAgendamentoTransactional(segundo));
+
+        assertEquals("Horário indisponível", exception.getMessage());
+
+        ArgumentCaptor<Horario> horarioCaptor = ArgumentCaptor.forClass(Horario.class);
+        verify(horarioRepository).save(horarioCaptor.capture());
+        assertEquals(HorarioStatus.INDISPONIVEL, horarioCaptor.getValue().getStatus());
     }
 
     @Test

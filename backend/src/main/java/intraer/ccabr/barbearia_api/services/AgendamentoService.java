@@ -105,7 +105,9 @@ public class AgendamentoService {
             throw new IllegalStateException("Horário indisponível");
         }
 
-        return agendamentoRepository.save(agendamento);
+        Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+        marcarHorarioComoIndisponivel(agendamentoSalvo);
+        return agendamentoSalvo;
     }
 
     public List<Agendamento> findAll() {
