@@ -548,8 +548,10 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const primeiroHorarioNormalizado = primeiroHorario ? normalizeHora(primeiroHorario) : '';
     const isPrimeiroHorario = primeiroHorarioNormalizado !== '' && horaNormalizada === primeiroHorarioNormalizado;
     const isMesmoDia = agendamentoDate.toDateString() === agoraAjustado.toDateString();
+    const isSegunda = agendamentoDate.getDay() === 1;
+    const isPrimeiroHorarioSegunda = isPrimeiroHorario && isSegunda;
 
-    if (isPrimeiroHorario && isMesmoDia) {
+    if (isPrimeiroHorarioSegunda && isMesmoDia) {
       if (diffMin > ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS) {
         this.snackBar.open(MSG_PRIMEIRO_HORARIO, 'Ciente', { duration: SNACKBAR_DURATION });
         return;

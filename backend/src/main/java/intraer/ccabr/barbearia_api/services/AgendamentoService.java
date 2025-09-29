@@ -235,27 +235,27 @@ public class AgendamentoService {
 
         ConfiguracaoAgendamento configuracao = configuracaoAgendamentoService.buscarConfiguracao();
         boolean diaAgendamentoEhSegunda = agendamentoDateTime.getDayOfWeek() == DayOfWeek.MONDAY;
-        boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao, categoria);
+        boolean primeiroHorarioDoDia = isPrimeiroHorarioDoDia(data, hora, configuracao, categoria);
+        boolean primeiroHorarioSegunda = primeiroHorarioDoDia && diaAgendamentoEhSegunda;
 
-        if (excecaoPrimeiroHorarioDoDia) {
+        if (primeiroHorarioSegunda) {
             boolean mesmoDia = agendamentoDateTime.toLocalDate().isEqual(agora.toLocalDate());
             if (mesmoDia) {
                 LocalDateTime aberturaPrimeiroHorario = agendamentoDateTime.minusMinutes(ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
                 if (agora.isBefore(aberturaPrimeiroHorario)) {
                     logger.debug(
-                        "⏳ Primeiro horário ainda não liberado: abertura {} | agora {}",
+                        "⏳ Primeiro horário da segunda ainda não liberado: abertura {} | agora {}",
                         aberturaPrimeiroHorario,
                         agora
                     );
                     return false;
                 }
             }
-            if (diaAgendamentoEhSegunda) {
-                logger.debug(
-                    "✅ Segunda-feira e primeiro horário: antecedência padrão desconsiderada para {}",
-                    agendamentoDateTime
-                );
-            }
+
+            logger.debug(
+                "✅ Segunda-feira e primeiro horário: antecedência padrão desconsiderada para {}",
+                agendamentoDateTime
+            );
             return true;
         }
 
@@ -441,18 +441,20 @@ public class AgendamentoService {
         LocalDateTime inicioDaSemana = LocalDateTime.of(segundaDaSemana, config.getHorarioInicio());
         LocalDateTime agoraDateTime = agoraZoned.toLocalDateTime();
 
-        boolean excecaoPrimeiroHorarioDoDia = isPrimeiroHorarioDoDia(
+        DayOfWeek diaSemana = agendamento.getData().getDayOfWeek();
+        boolean primeiroHorarioDoDia = isPrimeiroHorarioDoDia(
             agendamento.getData(),
             agendamento.getHora(),
             config,
             agendamento.getCategoria()
         );
+        boolean primeiroHorarioSegunda = primeiroHorarioDoDia && diaSemana == DayOfWeek.MONDAY;
 
         if (agoraDateTime.isBefore(inicioDaSemana)) {
-            LocalDateTime limiteExcecao = inicioDaSemana.minusMinutes(ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
-            boolean dentroDaJanelaExcecao = excecaoPrimeiroHorarioDoDia && !agoraDateTime.isBefore(limiteExcecao);
+            LocalDateTime limiteLiberacao = inicioDaSemana.minusMinutes(ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS);
+            boolean dentroDaJanelaLiberada = !agoraDateTime.isBefore(limiteLiberacao);
 
-            if (!dentroDaJanelaExcecao) {
+            if (!dentroDaJanelaLiberada) {
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Agendamentos só são permitidos a partir de segunda às " +
@@ -462,7 +464,6 @@ public class AgendamentoService {
         }
 
         // 2. Horários válidos somente de segunda a sexta entre horárioInicio e horárioFim configurados
-        DayOfWeek diaSemana = agendamento.getData().getDayOfWeek();
         LocalTime hora = agendamento.getHora();
         LocalTime inicio = config.getHorarioInicio();
         LocalTime fim = config.getHorarioFim();
@@ -481,7 +482,7 @@ public class AgendamentoService {
         boolean antesDoInicio = hora.isBefore(limiteInicial);
         boolean depoisDoFim = hora.isAfter(limiteFinal);
 
-        if ((antesDoInicio && !(excecaoPrimeiroHorarioDoDia && hora.equals(inicio))) || depoisDoFim) {
+        if ((antesDoInicio && !(primeiroHorarioDoDia && hora.equals(inicio))) || depoisDoFim) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "FORA_DA_JANELA_PERMITIDA");
         }
 
@@ -498,14 +499,14 @@ public class AgendamentoService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não é possível agendar horários passados.");
             }
 
-            if (excecaoPrimeiroHorarioDoDia) {
+            if (primeiroHorarioSegunda) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ANTECEDENCIA_PRIMEIRO_HORARIO);
             }
 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, MSG_ANTECEDENCIA_PADRAO);
         }
 
-        if (!excecaoPrimeiroHorarioDoDia
+        if (!primeiroHorarioSegunda
             && agendamentoDateTime.isBefore(agoraDateTime.plusMinutes(ANTECEDENCIA_PADRAO_MINUTOS))) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
