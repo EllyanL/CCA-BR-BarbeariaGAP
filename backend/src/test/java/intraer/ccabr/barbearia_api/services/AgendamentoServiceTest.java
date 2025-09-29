@@ -76,7 +76,9 @@ class AgendamentoServiceTest {
     }
 
     @Test
+
     void naoPermiteNovoAgendamentoQuandoHorarioJaEstaIndisponivel() {
+
         LocalTime hora = LocalTime.of(10, 0);
         String dia = DiaSemana.SEGUNDA.getValor();
         String categoria = "GRADUADO";
@@ -88,6 +90,7 @@ class AgendamentoServiceTest {
 
         Agendamento agendamento = new Agendamento();
         agendamento.setData(LocalDate.of(2024, 7, 1));
+
         agendamento.setHora(hora);
         agendamento.setDiaSemana(dia);
         agendamento.setCategoria(categoria);
@@ -96,9 +99,11 @@ class AgendamentoServiceTest {
                 () -> agendamentoService.criarAgendamentoTransactional(agendamento));
 
         assertEquals("Horário indisponível", exception.getMessage());
+    }
 
         verify(horarioRepository, never()).save(any(Horario.class));
         verify(agendamentoRepository, never()).save(any(Agendamento.class));
+
     }
 
     @Test
