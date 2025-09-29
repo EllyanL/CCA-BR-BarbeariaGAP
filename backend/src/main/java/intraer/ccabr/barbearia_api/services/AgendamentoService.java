@@ -284,16 +284,6 @@ public class AgendamentoService {
 
         LocalTime horarioReferencia = configuracao != null ? configuracao.getHorarioInicio() : null;
 
-        if (categoria != null && !categoria.isBlank()) {
-            DiaSemana diaSemana = DiaSemana.from(data.getDayOfWeek());
-            horarioReferencia = horarioRepository
-                .findByDiaAndCategoriaOrderByHorarioAsc(diaSemana.getValor(), categoria)
-                .stream()
-                .map(Horario::getHorario)
-                .findFirst()
-                .orElse(horarioReferencia);
-        }
-
         if (horarioReferencia == null) {
             return false;
         }
