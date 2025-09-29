@@ -90,7 +90,12 @@ public class AgendamentoService {
             agendamento.getCategoria()
         );
 
-        if (horarioOpt.isEmpty() || horarioOpt.get().getStatus() != HorarioStatus.DISPONIVEL) {
+        if (horarioOpt.isEmpty()) {
+            throw new IllegalStateException("Horário indisponível");
+        }
+
+        HorarioStatus statusHorario = horarioOpt.get().getStatus();
+        if (statusHorario == HorarioStatus.INDISPONIVEL) {
             throw new IllegalStateException("Horário indisponível");
         }
 
