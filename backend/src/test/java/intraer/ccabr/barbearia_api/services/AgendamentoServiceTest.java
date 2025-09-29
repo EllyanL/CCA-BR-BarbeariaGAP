@@ -14,7 +14,6 @@ import intraer.ccabr.barbearia_api.models.Horario;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.HorarioRepository;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,14 +40,11 @@ class AgendamentoServiceTest {
     @InjectMocks
     private AgendamentoService agendamentoService;
 
-    @BeforeEach
-    void setUp() {
-        when(agendamentoRepository.save(any(Agendamento.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-    }
-
     @Test
     void criarAgendamentoNaoAlteraHorarioBase() {
+        when(agendamentoRepository.save(any(Agendamento.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         LocalDate data = LocalDate.of(2024, 7, 1);
         LocalTime hora = LocalTime.of(10, 0);
         String dia = DiaSemana.SEGUNDA.getValor();
@@ -76,6 +72,9 @@ class AgendamentoServiceTest {
 
     @Test
     void permiteAgendamentosEmDatasDistintasParaMesmoHorario() {
+        when(agendamentoRepository.save(any(Agendamento.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         LocalTime hora = LocalTime.of(10, 0);
         String dia = DiaSemana.SEGUNDA.getValor();
         String categoria = "GRADUADO";

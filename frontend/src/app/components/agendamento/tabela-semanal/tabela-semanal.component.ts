@@ -986,16 +986,16 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private getPrimeiroHorarioConfigurado(): string | null {
+    if (Number.isFinite(this.inicioJanelaMin) && this.inicioJanelaMin >= 0) {
+      return this.formatHora(this.inicioJanelaMin);
+    }
+
     if (this.horariosBaseConfiguracao.length > 0) {
       return normalizeHora(this.horariosBaseConfiguracao[0]);
     }
 
     if (this.horariosBaseSemana.length > 0) {
       return normalizeHora(this.horariosBaseSemana[0]);
-    }
-
-    if (this.inicioJanelaMin > 0) {
-      return this.formatHora(this.inicioJanelaMin);
     }
 
     return null;
