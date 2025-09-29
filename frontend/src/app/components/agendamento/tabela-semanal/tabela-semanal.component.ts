@@ -621,15 +621,21 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
               diaSemana: normalizeDia(agendamento.diaSemana.trim()),
               hora: agendamento.hora.trim()
             }));
+            this.emitGradeView();
+            this.cdr.markForCheck();
             this.saveAgendamentos();
           } else {
             this.agendamentos = [];
+            this.emitGradeView();
+            this.cdr.markForCheck();
             this.saveAgendamentos();
           }
         }),
         catchError((error: unknown) => {
           this.logger.error('Erro ao obter agendamentos:', error);
           this.agendamentos = [];
+          this.emitGradeView();
+          this.cdr.markForCheck();
           return of([] as Agendamento[]);
         }),
         takeUntil(this.destroy$)
