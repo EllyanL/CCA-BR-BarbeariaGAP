@@ -5,35 +5,35 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.dao.DataAccessException;
-import jakarta.persistence.PersistenceException;
+
+import jakarta.validation.Valid;
 
 import intraer.ccabr.barbearia_api.dtos.AuthenticationDTO;
 import intraer.ccabr.barbearia_api.dtos.LoginResponseDTO;
 import intraer.ccabr.barbearia_api.dtos.UserDTO;
-import intraer.ccabr.barbearia_api.dtos.CcabrUserDto;
 import intraer.ccabr.barbearia_api.enums.UserRole;
 import intraer.ccabr.barbearia_api.infra.security.TokenService;
 import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import intraer.ccabr.barbearia_api.services.AuthenticationService;
-import intraer.ccabr.barbearia_api.services.WebserviceService;
 import intraer.ccabr.barbearia_api.services.LdapService;
-import jakarta.validation.Valid;
+import intraer.ccabr.barbearia_api.services.WebserviceSyncService;
 
 /**
  * Controlador REST responsável por gerenciar as operações de autenticação dos
@@ -52,28 +52,28 @@ public class AuthenticationController {
 
     private final LdapService ldapService;
 
-    private final WebserviceService webserviceService;
-
     private final MilitarRepository militarRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     private final TokenService tokenService;
 
+    private final WebserviceSyncService webserviceSyncService;
+
     public AuthenticationController(
         AuthenticationService authenticationService,
         LdapService ldapService,
-        WebserviceService webserviceService,
         MilitarRepository militarRepository,
         PasswordEncoder passwordEncoder,
-        TokenService tokenService
+        TokenService tokenService,
+        WebserviceSyncService webserviceSyncService
     ) {
         this.authenticationService = authenticationService;
         this.ldapService = ldapService;
-        this.webserviceService = webserviceService;
         this.militarRepository = militarRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.webserviceSyncService = webserviceSyncService;
     }
 
     /**
@@ -170,24 +170,29 @@ public class AuthenticationController {
             }
         }
 
+        Optional<Militar> resolvedUserOpt = userOpt.isPresent()
+            ? userOpt
+            : militarRepository.findByCpf(data.cpf());
+
+        militar = resolvedUserOpt
+            .orElseThrow(() -> new UsernameNotFoundException("Usuário com CPF " + data.cpf() + " não encontrado."));
+
         if (firstAccess) {
-            CcabrUserDto militarData = webserviceService.fetchMilitarByCpf(data.cpf());
-            logger.debug("📡 Dados do WebService recebidos: {}", militarData);
-            if (militarData == null) {
-                logger.error("❌ WebService não retornou dados para o CPF: {}", data.cpf());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            String cpf = militar.getCpf();
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        logger.info("📡 Disparando sincronização assíncrona com WebService para CPF {}", cpf);
+                        webserviceSyncService.refreshMilitarAsync(cpf);
+                    }
+                });
+                logger.info("✅ Primeiro acesso para CPF {}. Sincronização assíncrona será executada após o commit.", cpf);
+            } else {
+                logger.warn("⚠️ Sem sincronização de transação ativa para CPF {}. Executando sincronização imediatamente.", cpf);
+                webserviceSyncService.refreshMilitarAsync(cpf);
             }
-
-            try {
-                militar = authenticationService.createFromWebserviceData(militarData);
-                logger.info("✅ Militar sincronizado com WebService.");
-            } catch (DataAccessException | PersistenceException e) {
-                logger.error("Erro ao persistir militar para CPF {}: {}", data.cpf(), e.getMessage(), e);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            }
-
         } else {
-            militar = userOpt.get();
             logger.info("⏳ Usando dados locais para CPF: {}", militar.getCpf());
         }
 
