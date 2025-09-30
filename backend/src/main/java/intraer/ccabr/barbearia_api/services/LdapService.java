@@ -36,6 +36,9 @@ public class LdapService {
 
     private final AuthenticationService authenticationService;
 
+    @Value("${spring.ldap.pool.timeout:300000}")
+    private String ldapPoolTimeout;
+
     public LdapService(MilitarRepository militarRepository, AuthenticationService authenticationService) {
         this.militarRepository = militarRepository;
         this.authenticationService = authenticationService;
@@ -142,6 +145,14 @@ public class LdapService {
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.SECURITY_PRINCIPAL, "uid=" + data.cpf() + "," + this.ldapBase);
         env.put(Context.SECURITY_CREDENTIALS, data.senha());
+        env.put("com.sun.jndi.ldap.connect.pool", "true");
+
+        if (ldapPoolTimeout != null && !ldapPoolTimeout.isBlank()) {
+            env.put("com.sun.jndi.ldap.connect.pool.timeout", ldapPoolTimeout);
+        }
+
+        String protocol = (this.ldapHost != null && this.ldapHost.toLowerCase().startsWith("ldaps")) ? "ssl" : "plain";
+        env.put("com.sun.jndi.ldap.connect.pool.protocol", protocol);
         return new InitialDirContext(env);
     }
 
