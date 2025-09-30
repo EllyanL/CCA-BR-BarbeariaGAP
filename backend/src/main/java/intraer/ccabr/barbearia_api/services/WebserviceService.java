@@ -56,6 +56,14 @@ public class WebserviceService {
         return mapToDto(data);
     }
 
+    /**
+     * Prepara o cache do token garantindo que um token válido esteja disponível.
+     * A chamada é idempotente, pois reutiliza o token em cache quando ainda válido.
+     */
+    public void prepareTokenCache() {
+        obterTokenValido().block();
+    }
+
     private Mono<UserDTO> buscarMilitarComTokenRenovado(String cpf) {
         return obterTokenValido()
                 .flatMap(token -> ccabrService.buscarMilitar(cpf, token)
