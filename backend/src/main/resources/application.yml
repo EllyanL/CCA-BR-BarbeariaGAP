@@ -41,5 +41,11 @@ webservice:
   username: ${WEBSERVICE_USERNAME:barbearia}
   password: "${WEBSERVICE_PASSWORD:B@rber$h0p}"
 
+# O fator de custo do BCrypt controla o equilíbrio entre desempenho (logins mais rápidos)
+# e segurança (hashes mais resistentes a ataques de força bruta). Ajuste conforme a necessidade.
+security:
+  bcrypt:
+    strength: ${SECURITY_BCRYPT_STRENGTH:10}
+
 # server:
 #   port: ${SERVER_PORT:8081}
