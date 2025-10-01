@@ -118,6 +118,19 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Agendamento> findByMilitarId(@Param("id") Long id);
 
     @Query("""
+            SELECT a FROM Agendamento a
+            JOIN FETCH a.militar
+            WHERE a.categoria = :categoria
+              AND a.data >= :dataAtual
+              AND a.status = 'AGENDADO'
+            ORDER BY a.data ASC, a.hora ASC
+            """)
+    List<Agendamento> findFuturosByCategoria(
+            @Param("categoria") String categoria,
+            @Param("dataAtual") LocalDate dataAtual
+    );
+
+    @Query("""
             SELECT COUNT(a) > 0 FROM Agendamento a
             WHERE a.categoria = :categoria
               AND ((a.status = 'AGENDADO' AND a.data >= :dataAtual)

@@ -9,7 +9,7 @@ export interface Agendamento {
   hora: string;
   diaSemana: DiaKey;
   categoria: string;
-  militar?: Militar | null; // ← agora opcional
+  militar?: Partial<Militar> | null; // aceita resumos vindos do backend
   usuarioSaram?: string;
   disponivel?: boolean;
   timestamp?: number;

@@ -864,9 +864,12 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     }
     carregarAgendamentos(): void {
       this.carregarAgendamentosSub?.unsubscribe();
-      const categoriaFiltro = this.isAdmin ? this.categoriaSelecionada.toUpperCase() : undefined;
-      this.carregarAgendamentosSub = this.agendamentoService
-        .getAgendamentos(categoriaFiltro)
+      const categoriaFiltro = this.categoriaSelecionada.toUpperCase();
+      const origem$ = this.isAdmin
+        ? this.agendamentoService.getAgendamentos(categoriaFiltro)
+        : this.agendamentoService.getAgendamentosPorCategoria(categoriaFiltro);
+
+      this.carregarAgendamentosSub = origem$
         .subscribe({
         next: (agendamentos) => {
           if (Array.isArray(agendamentos)) {
@@ -882,7 +885,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
                 return a.timestamp >= agora;
               });
 
-            this.agendamentos = categoriaFiltro
+            this.agendamentos = this.isAdmin
               ? normalizados.filter(a => (a.categoria ?? '').toUpperCase() === categoriaFiltro)
               : normalizados;
 
