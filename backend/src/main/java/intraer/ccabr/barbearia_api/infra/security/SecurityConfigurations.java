@@ -38,6 +38,7 @@ public class SecurityConfigurations {
                     .requestMatchers(HttpMethod.POST, "/api/auth/ldap-data").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/user-data").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/api/configuracoes/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/horarios/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/horarios/**").hasAnyRole("GRADUADO", "OFICIAL")
                     .requestMatchers("/api/militares/**").hasRole("ADMIN")

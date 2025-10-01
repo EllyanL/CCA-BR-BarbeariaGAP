@@ -6,6 +6,7 @@ import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
 import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +25,7 @@ public class ConfiguracaoAgendamentoController {
         return ResponseEntity.ok(new ConfiguracaoAgendamentoResponse(configuracao));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping({"", "/agendamento"})
     public ResponseEntity<ConfiguracaoAgendamentoResponse> atualizar(
             @Valid @RequestBody ConfiguracaoAgendamentoRequest request) {
