@@ -141,6 +141,7 @@ export class AgendamentoService {
       : null;
 
     return {
+      id: resumo.id,
       data: diaIso,
       hora: horaNormalizada,
       diaSemana,
