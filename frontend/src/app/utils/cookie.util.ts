@@ -5,7 +5,12 @@ export function setCookie(name: string, value: string, days?: number): void {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     expires = '; expires=' + date.toUTCString();
   }
-  document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/`;
+
+  const isSecureContext = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const secureAttribute = isSecureContext ? '; Secure' : '';
+  const sameSiteAttribute = '; SameSite=Strict';
+
+  document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/${sameSiteAttribute}${secureAttribute}`;
 }
 
 export function getCookie(name: string): string | null {
@@ -14,5 +19,9 @@ export function getCookie(name: string): string | null {
 }
 
 export function deleteCookie(name: string): void {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+  const isSecureContext = typeof window !== 'undefined' && window.location.protocol === 'https:';
+  const secureAttribute = isSecureContext ? '; Secure' : '';
+  const sameSiteAttribute = '; SameSite=Strict';
+
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${sameSiteAttribute}${secureAttribute}`;
 }
