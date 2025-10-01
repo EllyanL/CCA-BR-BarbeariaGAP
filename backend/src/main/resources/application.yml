@@ -46,6 +46,8 @@ webservice:
 security:
   bcrypt:
     strength: ${SECURITY_BCRYPT_STRENGTH:10}
+  jwt:
+    ttl: ${SECURITY_JWT_TTL:PT1H}
 
 # server:
 #   port: ${SERVER_PORT:8081}

@@ -80,6 +80,7 @@ Defina no sistema as seguintes variáveis antes de rodar o backend:
 | `WEBSERVICE_API_URL`  | URL base do WebService CCABR            | Não          |
 | `WEBSERVICE_USERNAME` | Usuário para autenticação no WebService | Não          |
 | `WEBSERVICE_PASSWORD` | Senha para autenticação no WebService   | Sim          |
+| `SECURITY_JWT_TTL`    | Tempo de vida dos tokens JWT (ex.: PT1H) | Não          |
 
 Valores padrão (definidos em `application.yml`):
 
@@ -91,6 +92,7 @@ Valores padrão (definidos em `application.yml`):
 - `LDAP_URL`: `ldap://10.228.64.168:389`
 - `WEBSERVICE_API_URL`: `http://webservice.ccabr.intraer/api/`
 - `WEBSERVICE_USERNAME`: `barbearia`
+- `SECURITY_JWT_TTL`: `PT1H`
 
 As variáveis `DB_PASSWORD`, `JWT_SECRET` e `WEBSERVICE_PASSWORD` são
 obrigatórias e devem ser definidas no ambiente; para `JWT_SECRET`, o
