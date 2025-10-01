@@ -157,13 +157,16 @@ public class AgendamentoService {
     public void cancelarAgendamento(Long id, String canceladoPor) {
         agendamentoRepository.findById(id).ifPresent(agendamento -> {
             LocalDateTime agendamentoDateTime = LocalDateTime.of(agendamento.getData(), agendamento.getHora());
+            ZonedDateTime agora = agora();
+            LocalDate hoje = agora.toLocalDate();
             boolean isAdmin = "ADMIN".equalsIgnoreCase(canceladoPor);
 
             if (!isAdmin) {
-                LocalDateTime limiteCancelamento = agora()
+                LocalDateTime limiteCancelamento = agora
                     .plusMinutes(30)
                     .toLocalDateTime();
-                if (agendamentoDateTime.isBefore(limiteCancelamento)) {
+                if (agendamento.getData().isEqual(hoje)
+                    && agendamentoDateTime.isBefore(limiteCancelamento)) {
                     throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "Desmarcação só permitida com 30 min de antecedência."
