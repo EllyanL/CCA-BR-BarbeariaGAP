@@ -3,12 +3,16 @@ package intraer.ccabr.barbearia_api.infra.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import intraer.ccabr.barbearia_api.models.Militar;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class TokenService {
@@ -18,11 +22,15 @@ public class TokenService {
     @Value("${api.secret.token.secret}")
     private String secret;
 
+    @Value("${security.jwt.ttl}")
+    private Duration tokenTtl;
+
     // Método original que aceita um objeto Militar
     public String generateToken(Militar user) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             logger.debug("ROLE QUE VEM NO AGENDAMENTO >>>>>>>>>>>>>>>>>>>>>{}", user.getCategoria().name());
+            Instant expiration = Instant.now().plus(tokenTtl);
             return JWT.create()
                     .withIssuer("barbearia-api")
                     .withSubject(user.getCpf())
@@ -33,6 +41,7 @@ public class TokenService {
                     .withClaim("om", user.getOm())               // 👈 Adicionado
                     .withClaim("nomeCompleto", user.getNomeCompleto()) // 👈 Novos claims
                     .withClaim("email", user.getEmail())
+                    .withExpiresAt(expiration)
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
             throw new RuntimeException("Erro ao gerar o token", exception);
@@ -62,7 +71,7 @@ public class TokenService {
                     .build()
                     .verify(token)
                     .getSubject();
-        } catch (JWTCreationException exception) {
+        } catch (JWTVerificationException exception) {
             throw new RuntimeException("Token inválido ou expirado", exception);
         }
     }
