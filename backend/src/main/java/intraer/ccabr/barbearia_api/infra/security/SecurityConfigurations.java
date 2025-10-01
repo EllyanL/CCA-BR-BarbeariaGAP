@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfigurations {
 
     @Autowired
@@ -38,6 +40,7 @@ public class SecurityConfigurations {
                     .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                     .requestMatchers(HttpMethod.POST, "/api/horarios/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/horarios/**").hasAnyRole("GRADUADO", "OFICIAL")
+                    .requestMatchers("/api/militares/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/**", "/assets.images/**", "/main*.js", "/runtime*.js", "/polyfills*.js", "/scripts*.js", "/styles*.css").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/agendamentos").hasAnyRole("ADMIN", "GRADUADO", "OFICIAL")
                     .requestMatchers(HttpMethod.DELETE, "/api/horarios/**").hasRole("ADMIN")
