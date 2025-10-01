@@ -41,8 +41,26 @@ public class SecurityConfigurations {
                     .requestMatchers(HttpMethod.POST, "/api/horarios/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/horarios/**").hasAnyRole("GRADUADO", "OFICIAL")
                     .requestMatchers("/api/militares/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, "/**", "/assets.images/**", "/main*.js", "/runtime*.js", "/polyfills*.js", "/scripts*.js", "/styles*.css").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/agendamentos").hasAnyRole("ADMIN", "GRADUADO", "OFICIAL")
+                    .requestMatchers(
+                            HttpMethod.GET,
+                            "/",
+                            "/index.html",
+                            "/favicon.ico",
+                            "/manifest.webmanifest",
+                            "/assets/**",
+                            "/main*.js",
+                            "/runtime*.js",
+                            "/polyfills*.js",
+                            "/scripts*.js",
+                            "/styles*.css",
+                            "/3rdpartylicenses.txt",
+                            "/barber*.png",
+                            "/456*.js",
+                            "/665*.js",
+                            "/896*.js")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/**").authenticated()
                     .requestMatchers(HttpMethod.DELETE, "/api/horarios/**").hasRole("ADMIN")
                     .anyRequest().authenticated()
                 )
