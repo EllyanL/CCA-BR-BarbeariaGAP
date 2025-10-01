@@ -8,12 +8,14 @@ import lombok.Data;
 
 @Data
 public class AgendamentoResumoDTO {
+    private Long id;
     private LocalDate dia;
     private LocalTime hora;
     private String categoria;
     private MilitarResumo militar;
 
     public AgendamentoResumoDTO(Agendamento agendamento) {
+        this.id = agendamento.getId();
         this.dia = agendamento.getData();
         this.hora = agendamento.getHora();
         this.categoria = agendamento.getCategoria();
