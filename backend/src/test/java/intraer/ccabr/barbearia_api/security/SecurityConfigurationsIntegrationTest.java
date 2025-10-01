@@ -1,20 +1,31 @@
 package intraer.ccabr.barbearia_api.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.LocalTime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.security.test.context.support.WithMockUser;
+
+import intraer.ccabr.barbearia_api.models.ConfiguracaoAgendamento;
+import intraer.ccabr.barbearia_api.services.ConfiguracaoAgendamentoService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,6 +43,9 @@ class SecurityConfigurationsIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private ConfiguracaoAgendamentoService configuracaoAgendamentoService;
 
     private final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
@@ -54,6 +68,29 @@ class SecurityConfigurationsIntegrationTest {
         assertThat(bundles).isNotEmpty();
         String mainBundleName = bundles[0].getFilename();
         mockMvc.perform(get("/" + mainBundleName)).andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "GRADUADO")
+    @DisplayName("Deve retornar 403 ao tentar atualizar configuração sem ser ADMIN")
+    void whenNonAdminUpdatesConfiguration_thenForbidden() throws Exception {
+        mockMvc.perform(put("/api/configuracoes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"horarioInicio\":\"08:00\",\"horarioFim\":\"18:00\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("Deve permitir que ADMIN atualize configuração")
+    void whenAdminUpdatesConfiguration_thenOk() throws Exception {
+        when(configuracaoAgendamentoService.atualizar(any(LocalTime.class), any(LocalTime.class)))
+                .thenReturn(new ConfiguracaoAgendamento(1L, LocalTime.of(8, 0), LocalTime.of(18, 0), null));
+
+        mockMvc.perform(put("/api/configuracoes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"horarioInicio\":\"08:00\",\"horarioFim\":\"18:00\"}"))
+                .andExpect(status().isOk());
     }
 
     private void assertUnauthorizedOrForbidden(MvcResult result) {
