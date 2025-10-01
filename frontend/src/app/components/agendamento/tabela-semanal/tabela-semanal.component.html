@@ -28,18 +28,26 @@
             </td>
             <td *ngFor="let dia of diasDaSemana; trackBy: trackByDia" class="tabela-coluna-dia">
               <ng-container *ngIf="getSlot(dia, hora, grade.horarios) as slot; else indisponivel">
-                <button
-                  mat-raised-button
-                  [disabled]="!podeInteragirComSlot(slot, dia, hora)"
-                  [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
-                  [ngClass]="[
-                    slot.status | statusFormat : 'tabelaClass',
-                    deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : ''
-                  ]"
-                  (click)="handleClick(getAgendamentoParaDiaHora(dia, hora), dia, hora)"
-                >
-                  {{ slot.status | statusFormat }}
-                </button>
+                <ng-container *ngIf="{ agendamento: getAgendamentoParaDiaHora(dia, hora) } as contexto">
+                  <button
+                    mat-raised-button
+                    [disabled]="!podeInteragirComSlot(slot, dia, hora)"
+                    [color]="slot.status === 'DISPONIVEL' ? 'primary' : undefined"
+                    [ngClass]="[
+                      slot.status | statusFormat : 'tabelaClass',
+                      deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : ''
+                    ]"
+                    [matTooltip]="slot.status === 'AGENDADO' ? getTextTooltip(contexto.agendamento) : undefined"
+                    (click)="handleClick(contexto.agendamento, dia, hora)"
+                  >
+                    <ng-container *ngIf="slot.status === 'AGENDADO'; else statusPadrao">
+                      {{ formatarMilitar(contexto.agendamento) }}
+                    </ng-container>
+                    <ng-template #statusPadrao>
+                      {{ slot.status | statusFormat }}
+                    </ng-template>
+                  </button>
+                </ng-container>
               </ng-container>
             </td>
           </tr>
