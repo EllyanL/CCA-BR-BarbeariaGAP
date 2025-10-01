@@ -102,7 +102,8 @@ export class AgendamentoService {
   
 
   cancelarAgendamento(id: number): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}/cancelar`, {}).pipe(
+    const headers = this.getAuthHeaders();
+    return this.http.put<void>(`${this.apiUrl}/${id}/cancelar`, {}, { headers }).pipe(
       tap(() => this.agendamentoAtualizadoSource.next()),
       catchError(error => throwError(() => error))
     );
