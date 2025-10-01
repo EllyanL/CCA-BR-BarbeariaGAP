@@ -811,6 +811,22 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
            `Ramal: ${agendamento.militar?.ramal || 'Não informado'}`;
   }
 
+  formatarMilitar(agendamento?: Agendamento | null): string {
+    const postoGrad = agendamento?.militar?.postoGrad;
+    const nomeDeGuerra = agendamento?.militar?.nomeDeGuerra;
+
+    if (!postoGrad || !nomeDeGuerra) {
+      return 'Agendado';
+    }
+
+    return `${postoGrad} ${nomeDeGuerra}`
+      .toLowerCase()
+      .split(' ')
+      .filter(parte => parte.trim().length > 0)
+      .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
+      .join(' ');
+  }
+
 
   desabilitarTodosOsBotoes(): boolean {
     const desabilitadoPorHorario = this.desabilitarBotoesPorHorario();
