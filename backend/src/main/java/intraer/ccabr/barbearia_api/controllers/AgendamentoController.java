@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import intraer.ccabr.barbearia_api.dtos.AgendamentoDTO;
+import intraer.ccabr.barbearia_api.dtos.AgendamentoResumoDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoAdminDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoCreateDTO;
@@ -124,6 +125,33 @@ public class AgendamentoController {
             .toList();
 
         return new ResponseEntity<>(agendamentoDTOs, HttpStatus.OK);
+    }
+
+    @GetMapping("/categoria/{categoria}")
+    public ResponseEntity<List<AgendamentoResumoDTO>> listarPorCategoria(
+            @PathVariable String categoria,
+            Authentication authentication
+    ) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String categoriaSolicitada = categoria.toUpperCase();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!isAdmin) {
+            String categoriaUsuario = determineCategoriaUsuario(authentication);
+            agendamentoService.validarCategoriaSolicitadaParaPerfil(categoriaSolicitada, categoriaUsuario);
+        }
+
+        List<AgendamentoResumoDTO> agendamentos = agendamentoService.buscarAgendamentosFuturosPorCategoria(categoriaSolicitada);
+        if (agendamentos.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        // TODO: Revisar UX/segurança com a equipe antes de liberar em produção.
+        return ResponseEntity.ok(agendamentos);
     }
 
     @GetMapping("/meus")

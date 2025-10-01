@@ -8,6 +8,8 @@ import { LoggingService } from './logging.service';
 import { environment } from 'src/environments/environment';
 import { normalizeDia, DiaKey } from '../shared/dias.util';
 import { getCookie } from '../utils/cookie.util';
+import { AgendamentoResumo } from '../models/agendamento-resumo';
+import { normalizeHora } from '../utils/horarios-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -37,6 +39,19 @@ export class AgendamentoService {
         return throwError(() => error);
       })
     );
+  }
+
+  getAgendamentosPorCategoria(categoria: string): Observable<Agendamento[]> {
+    const categoriaNormalizada = (categoria || '').toUpperCase();
+    return this.http
+      .get<AgendamentoResumo[] | null>(`${this.apiUrl}/categoria/${categoriaNormalizada}`)
+      .pipe(
+        map(response => (response ?? []).map(resumo => this.mapResumoParaAgendamento(resumo))),
+        catchError(error => {
+          this.logger.error('Erro ao obter agendamentos por categoria:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   listarAgendamentosAdmin(
@@ -111,6 +126,67 @@ export class AgendamentoService {
       'Content-Type': 'application/json',
       'Authorization': token ? `Bearer ${token}` : ''
       });
+  }
+
+  private mapResumoParaAgendamento(resumo: AgendamentoResumo): Agendamento {
+    const diaIso = resumo.dia;
+    const horaNormalizada = normalizeHora(resumo.hora);
+    const diaSemana = this.diaIsoParaDiaKey(diaIso);
+    const timestamp = this.calcularTimestamp(diaIso, horaNormalizada);
+    const militarResumo = resumo.militar
+      ? {
+          postoGrad: resumo.militar.postoGrad ?? undefined,
+          nomeDeGuerra: resumo.militar.nomeDeGuerra ?? undefined,
+        }
+      : null;
+
+    return {
+      data: diaIso,
+      hora: horaNormalizada,
+      diaSemana,
+      categoria: resumo.categoria,
+      status: 'AGENDADO',
+      timestamp,
+      militar: militarResumo ?? undefined,
+    } as Agendamento;
+  }
+
+  private diaIsoParaDiaKey(diaIso: string): DiaKey {
+    try {
+      const [ano, mes, dia] = diaIso.split('-').map(Number);
+      const data = new Date(ano, (mes ?? 1) - 1, dia ?? 1);
+      const mapa: Record<number, DiaKey> = {
+        1: 'segunda',
+        2: 'terca',
+        3: 'quarta',
+        4: 'quinta',
+        5: 'sexta',
+      };
+      return mapa[data.getDay()] ?? 'segunda';
+    } catch {
+      return 'segunda';
+    }
+  }
+
+  private calcularTimestamp(diaIso: string, hora: string): number | undefined {
+    if (!diaIso || !hora) {
+      return undefined;
+    }
+
+    const [ano, mes, dia] = diaIso.split('-').map(Number);
+    if ([ano, mes, dia].some(n => Number.isNaN(n))) {
+      return undefined;
+    }
+
+    const [horaStr, minutoStr] = hora.split(':');
+    const horaNum = Number(horaStr);
+    const minutoNum = Number(minutoStr);
+    if ([horaNum, minutoNum].some(n => Number.isNaN(n))) {
+      return undefined;
+    }
+
+    const data = new Date(ano, (mes ?? 1) - 1, dia ?? 1, horaNum, minutoNum, 0, 0);
+    return data.getTime();
   }
 
   getMeusAgendamentos(): Observable<Agendamento[]> {

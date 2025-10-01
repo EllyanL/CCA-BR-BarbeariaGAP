@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import intraer.ccabr.barbearia_api.dtos.AgendamentoResumoDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
@@ -130,8 +131,26 @@ public class AgendamentoService {
         return agendamentoRepository.findByCategoriaAndPeriodo(categoria, dataInicio, dataFim);
     }
 
+    @Transactional(readOnly = true)
+    public List<AgendamentoResumoDTO> buscarAgendamentosFuturosPorCategoria(String categoria) {
+        List<Agendamento> agendamentos = agendamentoRepository.findFuturosByCategoria(
+                categoria != null ? categoria.toUpperCase() : null,
+                LocalDate.now()
+        );
+        return agendamentos.stream().map(AgendamentoResumoDTO::new).toList();
+    }
+
     public Optional<Agendamento> findById(Long id) {
         return agendamentoRepository.findByIdWithMilitar(id);
+    }
+
+    public void validarCategoriaSolicitadaParaPerfil(String categoriaSolicitada, String categoriaUsuario) {
+        if (categoriaUsuario != null && !categoriaUsuario.equalsIgnoreCase(categoriaSolicitada)) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Você só pode consultar agendamentos da sua própria categoria."
+            );
+        }
     }
 
     @Transactional
