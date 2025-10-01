@@ -249,7 +249,9 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
           (response: Agendamento) => {
             this.logger.log('Agendamento criado:', response);
             this.errorMessage = "";
-            this.militar = response.militar || this.militar;
+            if (response.militar) {
+              this.militar = { ...this.militar, ...response.militar };
+            }
             this.snackBar.open('Agendamento realizado', 'Ciente', { duration: SNACKBAR_DURATION });
             this.dialogRef.close({ sucesso: true, payload: response });
           },
