@@ -37,7 +37,7 @@
                       slot.status | statusFormat : 'tabelaClass',
                       deveDestacarSlot(slot, dia, hora) ? 'botao-agendado-proprio' : ''
                     ]"
-                    [matTooltip]="slot.status === 'AGENDADO' ? getTextTooltip(contexto.agendamento) : undefined"
+                    [matTooltip]="slot.status === 'AGENDADO' ? getTextTooltip(contexto.agendamento) : ''"
                     (click)="handleClick(contexto.agendamento, dia, hora)"
                   >
                     <ng-container *ngIf="slot.status === 'AGENDADO'; else statusPadrao">
