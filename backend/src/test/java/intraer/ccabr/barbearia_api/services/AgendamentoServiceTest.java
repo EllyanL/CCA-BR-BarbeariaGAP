@@ -5,6 +5,8 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
@@ -136,5 +138,54 @@ class AgendamentoServiceTest {
 
         assertDoesNotThrow(() -> agendamentoService.verificarHorarioDisponivel(data, dia, hora, categoria));
         verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO");
+    }
+
+    @Test
+    void cancelarAgendamentoUsuarioMesmoDiaDentroDe30MinutosLancaExcecao() {
+        Long agendamentoId = 1L;
+        Agendamento agendamento = new Agendamento();
+        agendamento.setId(agendamentoId);
+        agendamento.setData(LocalDate.of(2024, 7, 1));
+        agendamento.setHora(LocalTime.of(10, 0));
+        agendamento.setDiaSemana(DiaSemana.SEGUNDA.getValor());
+        agendamento.setCategoria("GRADUADO");
+
+        when(agendamentoRepository.findById(agendamentoId)).thenReturn(Optional.of(agendamento));
+
+        AgendamentoService spyService = spy(agendamentoService);
+        ZonedDateTime agora = ZonedDateTime.of(2024, 7, 1, 9, 45, 0, 0, ZoneId.of("America/Sao_Paulo"));
+        doReturn(agora).when(spyService).agora();
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> spyService.cancelarAgendamento(agendamentoId, "USUARIO"));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        verify(agendamentoRepository, never()).save(any(Agendamento.class));
+    }
+
+    @Test
+    void cancelarAgendamentoUsuarioDiaSeguinteDentroDe30MinutosPermitido() {
+        Long agendamentoId = 2L;
+        Agendamento agendamento = new Agendamento();
+        agendamento.setId(agendamentoId);
+        agendamento.setData(LocalDate.of(2024, 7, 2));
+        agendamento.setHora(LocalTime.of(0, 10));
+        agendamento.setDiaSemana(DiaSemana.TERCA.getValor());
+        agendamento.setCategoria("GRADUADO");
+
+        when(agendamentoRepository.findById(agendamentoId)).thenReturn(Optional.of(agendamento));
+        when(agendamentoRepository.save(agendamento)).thenReturn(agendamento);
+        when(horarioRepository.findByDiaAndHorarioAndCategoria(anyString(), any(), anyString()))
+                .thenReturn(Optional.empty());
+
+        AgendamentoService spyService = spy(agendamentoService);
+        ZonedDateTime agora = ZonedDateTime.of(2024, 7, 1, 23, 45, 0, 0, ZoneId.of("America/Sao_Paulo"));
+        doReturn(agora).when(spyService).agora();
+
+        assertDoesNotThrow(() -> spyService.cancelarAgendamento(agendamentoId, "USUARIO"));
+
+        assertEquals("CANCELADO", agendamento.getStatus());
+        assertEquals("USUARIO", agendamento.getCanceladoPor());
+        verify(agendamentoRepository).save(agendamento);
     }
 }
