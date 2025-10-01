@@ -80,7 +80,7 @@ export class DialogoDetalhesAgendamentoComponent {
     });
   }
 
-  formatarNome(nome: string): string {
+  formatarNome(nome?: string): string {
     if (!nome) {
       return 'Não informado';
     }
