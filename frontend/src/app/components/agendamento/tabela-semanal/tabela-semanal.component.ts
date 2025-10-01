@@ -86,6 +86,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   graduacoes = ['S2', 'S1', 'CB', '3S', '2S', '1S', 'SO'];
 
   agendamentos: Agendamento[] = [];
+  private agendamentosPorSlot: Map<string, Agendamento> = new Map();
   inicioDaSemana!: Date;
   fimDaSemana!: Date;
   readonly diaLabelMap: Record<DiaKey, string> = DIA_LABEL_MAP;
@@ -150,6 +151,25 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
+  private buildSlotKey(dia: string | DiaKey | undefined, hora: string | undefined): string {
+    const diaNormalizado = normalizeDia((dia || '').split(' - ')[0]);
+    const horaNormalizada = normalizeHora((hora || '').slice(0, 5));
+    return `${diaNormalizado}|${horaNormalizada}`;
+  }
+
+  private atualizarMapaAgendamentos(): void {
+    this.agendamentosPorSlot.clear();
+    for (const agendamento of this.agendamentos) {
+      if (!agendamento) {
+        continue;
+      }
+      const chave = this.buildSlotKey(agendamento.diaSemana, agendamento.hora);
+      if (chave) {
+        this.agendamentosPorSlot.set(chave, agendamento);
+      }
+    }
+  }
+
   // Carrega do sessionStorage os agendamentos associados ao usuário atual.
   // A chave é definida em initAfterTime() e dados anteriores são limpos
   // quando ocorre troca de usuário.
@@ -159,6 +179,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       if (data) {
         try {
           this.agendamentos = JSON.parse(data);
+          this.atualizarMapaAgendamentos();
           this.logger.log(
             `Agendamentos carregados da chave ${this.storageKey}:`,
             this.agendamentos.length
@@ -166,7 +187,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         } catch (e) {
           this.logger.error('Erro ao carregar agendamentos do storage:', e);
           this.agendamentos = [];
+          this.atualizarMapaAgendamentos();
         }
+      } else {
+        this.agendamentos = [];
+        this.atualizarMapaAgendamentos();
       }
     }
 
@@ -472,6 +497,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       if (this.storageKey && this.storageKey !== newKey) {
         sessionStorage.removeItem(this.storageKey);
         this.agendamentos = [];
+        this.atualizarMapaAgendamentos();
       }
       this.storageKey = newKey;
       this.loadAgendamentosFromStorage();
@@ -583,6 +609,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
         this.logger.log('Dados recebidos do diálogo:', agendamento);
         this.agendamentos.push(agendamento);
         this.agendamentos = [...this.agendamentos];
+        this.atualizarMapaAgendamentos();
         this.logger.log('Agendamentos atualizados:', this.agendamentos);
 
         if (this.horariosPorDia[diaSemanaFormatado]) {
@@ -608,32 +635,34 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   private loadAgendamentos(): void { //Carrega os agendamentos e associa ao usuário logado.
     this.waitForToken()
       .pipe(
-        switchMap(() => this.agendamentoService.getAgendamentos()),
+        switchMap(() => {
+          const categoriaAtual = (this.categoria || '').trim();
+          if (!categoriaAtual) {
+            return of([] as Agendamento[]);
+          }
+          return this.agendamentoService.getAgendamentosPorCategoria(categoriaAtual);
+        }),
         tap((agendamentos: Agendamento[]) => {
           if (agendamentos && agendamentos.length > 0) {
-            const agendamentosFiltrados = agendamentos.filter((agendamento: Agendamento) =>
-              this.isAgendamentoDoMilitarLogado(agendamento) &&
-              agendamento.status === 'AGENDADO'
-            );
-
-            this.agendamentos = agendamentosFiltrados.map(agendamento => ({
-              ...agendamento,
-              diaSemana: normalizeDia(agendamento.diaSemana.trim()),
-              hora: agendamento.hora.trim()
-            }));
-            this.emitGradeView();
-            this.cdr.markForCheck();
-            this.saveAgendamentos();
+            this.agendamentos = agendamentos
+              .filter((agendamento: Agendamento) => agendamento?.status === 'AGENDADO')
+              .map(agendamento => ({
+                ...agendamento,
+                diaSemana: normalizeDia((agendamento.diaSemana || '').trim()),
+                hora: normalizeHora(agendamento.hora)
+              }));
           } else {
             this.agendamentos = [];
-            this.emitGradeView();
-            this.cdr.markForCheck();
-            this.saveAgendamentos();
           }
+          this.atualizarMapaAgendamentos();
+          this.emitGradeView();
+          this.cdr.markForCheck();
+          this.saveAgendamentos();
         }),
         catchError((error: unknown) => {
           this.logger.error('Erro ao obter agendamentos:', error);
           this.agendamentos = [];
+          this.atualizarMapaAgendamentos();
           this.emitGradeView();
           this.cdr.markForCheck();
           return of([] as Agendamento[]);
@@ -725,6 +754,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           if (index !== -1) {
             this.agendamentos[index] = resultado;
             this.agendamentos = [...this.agendamentos];
+            this.atualizarMapaAgendamentos();
           }
           const diaFormatoAntigo: DiaKey = normalizeDia(agendamento.diaSemana);
           const horaAntiga = agendamento.hora.slice(0,5);
@@ -745,6 +775,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
           this.saveAgendamentos();
         } else if (resultado === true && agendamento.id) {
           this.agendamentos = this.agendamentos.filter(a => a.id !== agendamento.id);
+          this.atualizarMapaAgendamentos();
           const diaSemanaFormatado: DiaKey = normalizeDia(agendamento.diaSemana);
           if (this.horariosPorDia[diaSemanaFormatado]) {
             const horaFormatada = agendamento.hora.slice(0, 5);
@@ -834,15 +865,19 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined { //Retorna agendamento para dia/hora específicos.
+    const chave = this.buildSlotKey(dia, hora);
+    const agendamentoDoMapa = this.agendamentosPorSlot.get(chave);
+    if (agendamentoDoMapa) {
+      return agendamentoDoMapa;
+    }
+
     const diaSemana = normalizeDia(dia.split(' - ')[0]);
-    const horaFormatada = hora.slice(0, 5);
-    const agendamento = this.agendamentos.find((agendamento) => {
+    const horaFormatada = normalizeHora(hora);
+    return this.agendamentos.find((agendamento) => {
       const diaMatch = normalizeDia(agendamento.diaSemana) === diaSemana;
-      const horaAgendamentoFormatada = agendamento.hora.slice(0, 5);
-      const horaMatch = horaAgendamentoFormatada === horaFormatada;
-      return diaMatch && horaMatch;
+      const horaAgendamentoFormatada = normalizeHora(agendamento.hora);
+      return diaMatch && horaAgendamentoFormatada === horaFormatada;
     });
-    return agendamento;
   }
 
   getSlot(dia: DiaKey, hora: string, source?: HorariosPorDia): SlotHorario | null {
@@ -885,11 +920,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private getUltimaDataAgendada(): Date | null {
-    if (!this.agendamentos || this.agendamentos.length === 0) {
+    const agendamentosUsuario = (this.agendamentos || []).filter(agendamento =>
+      this.isAgendamentoDoMilitarLogado(agendamento)
+    );
+
+    if (agendamentosUsuario.length === 0) {
       return null;
     }
 
-    const datas = this.agendamentos
+    const datas = agendamentosUsuario
       .map(agendamento => this.getDataHoraAgendamento(agendamento))
       .filter((data): data is Date => data instanceof Date);
 
@@ -902,7 +941,9 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private temAgendamentoAtivo(): boolean {
-    return this.agendamentos.some(agendamento => agendamento.status === 'AGENDADO');
+    return this.agendamentos.some(agendamento =>
+      agendamento.status === 'AGENDADO' && this.isAgendamentoDoMilitarLogado(agendamento)
+    );
   }
 
   private getDataHoraAgendamento(agendamento: Agendamento): Date | null {
