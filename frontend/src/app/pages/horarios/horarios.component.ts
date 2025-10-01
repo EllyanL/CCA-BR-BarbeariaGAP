@@ -1127,6 +1127,22 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     });
   }
 
+  formatarMilitar(agendamento: Agendamento): string {
+    const postoGrad = agendamento?.militar?.postoGrad;
+    const nomeDeGuerra = agendamento?.militar?.nomeDeGuerra;
+
+    if (!postoGrad || !nomeDeGuerra) {
+      return 'Agendado';
+    }
+
+    return `${postoGrad} ${nomeDeGuerra}`
+      .toLowerCase()
+      .split(' ')
+      .filter(parte => parte.trim().length > 0)
+      .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
+      .join(' ');
+  }
+
   formatarStatus(texto: string): string {
     if (!texto) return '';
     const lower = texto.toLowerCase();
