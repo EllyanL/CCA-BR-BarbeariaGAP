@@ -40,7 +40,7 @@ public class SecurityConfigurations {
                     .requestMatchers(HttpMethod.GET, "/api/auth/me").authenticated()
                     .requestMatchers(HttpMethod.PUT, "/api/configuracoes/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/horarios/**").hasRole("ADMIN")
-                    .requestMatchers(HttpMethod.GET, "/api/horarios/**").hasAnyRole("GRADUADO", "OFICIAL")
+                    .requestMatchers(HttpMethod.GET, "/api/horarios/**").hasAnyRole("ADMIN", "GRADUADO", "OFICIAL", "USER")
                     .requestMatchers("/api/militares/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET, "/api/agendamentos").hasAnyRole("ADMIN", "GRADUADO", "OFICIAL")
                     .requestMatchers(
