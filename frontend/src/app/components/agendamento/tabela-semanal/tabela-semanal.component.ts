@@ -975,23 +975,56 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     );
   }
 
-  private getDataHoraAgendamento(agendamento: Agendamento): Date | null {
-    if (agendamento.timestamp) {
-      return new Date(agendamento.timestamp);
+  private getDataHoraAgendamento(
+    agendamento?: Agendamento,
+    dia?: string,
+    hora?: string
+  ): Date | null {
+    if (agendamento) {
+      if (agendamento.timestamp) {
+        return new Date(agendamento.timestamp);
+      }
+
+      const dataBase = this.parseDataString(agendamento.data);
+      if (dataBase) {
+        const horaNormalizada = normalizeHora(agendamento.hora);
+        if (horaNormalizada) {
+          const [horaAgendamento, minutoAgendamento] = horaNormalizada.split(':').map(Number);
+          if (!Number.isNaN(horaAgendamento) && !Number.isNaN(minutoAgendamento)) {
+            dataBase.setHours(horaAgendamento, minutoAgendamento, 0, 0);
+            return dataBase;
+          }
+        }
+
+        return dataBase;
+      }
     }
 
-    const dataBase = this.parseDataString(agendamento.data);
-    if (!dataBase) {
+    if (!dia || !hora) {
       return null;
     }
 
-    const horaNormalizada = normalizeHora(agendamento.hora);
-    if (horaNormalizada) {
-      const [hora, minuto] = horaNormalizada.split(':').map(Number);
-      dataBase.setHours(hora, minuto, 0, 0);
+    const dataStr = this.getDataFromDiaSemana(dia);
+    if (!dataStr) {
+      return null;
     }
 
-    return dataBase;
+    const [diaNum, mesNum, anoNum] = dataStr.split('/').map(part => Number(part));
+    const horaFormatada = normalizeHora(hora).substring(0, 5);
+    const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
+
+    if (
+      Number.isNaN(diaNum) ||
+      Number.isNaN(mesNum) ||
+      Number.isNaN(anoNum) ||
+      Number.isNaN(horaNum) ||
+      Number.isNaN(minutoNum)
+    ) {
+      return null;
+    }
+
+    const dataCalculada = new Date(anoNum, mesNum - 1, diaNum, horaNum, minutoNum);
+    return Number.isNaN(dataCalculada.getTime()) ? null : dataCalculada;
   }
 
   private parseDataString(data?: string | null): Date | null {
@@ -1208,24 +1241,21 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const agendamentoReferencia =
       agendamento ?? (dia && hora ? this.getAgendamentoParaDiaHora(dia, hora) : undefined);
 
-let pertenceAoUsuario = false;
-if (agendamentoReferencia) {
-  pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
-} else if (dia && hora) {
-  const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
-  const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
-  pertenceAoUsuario =
-    slotUsuarioId != null && this.idMilitarLogado != null && slotUsuarioId === this.idMilitarLogado;
-}
+    let pertenceAoUsuario = false;
+    if (agendamentoReferencia) {
+      pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
+    } else if (dia && hora) {
+      const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
+      const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
+      pertenceAoUsuario =
+        slotUsuarioId != null && this.idMilitarLogado != null && slotUsuarioId === this.idMilitarLogado;
+    }
 
-if (!pertenceAoUsuario) {
-  return false;
-}
-
+    if (!pertenceAoUsuario) {
       return false;
     }
 
-    const dataAgendamento = this.obterDataHoraAgendamento(agendamentoReferencia, dia, hora);
+    const dataAgendamento = this.getDataHoraAgendamento(agendamentoReferencia, dia, hora);
     if (!dataAgendamento) {
       return false;
     }
@@ -1234,45 +1264,6 @@ if (!pertenceAoUsuario) {
     return diffMinutos >= 15;
   }
 
-  private obterDataHoraAgendamento(
-    agendamento?: Agendamento,
-    dia?: string,
-    hora?: string
-  ): Date | null {
-    if (agendamento) {
-      const dataComAgendamento = this.getDataHoraAgendamento(agendamento);
-      if (dataComAgendamento) {
-        return dataComAgendamento;
-      }
-    }
-
-    if (!dia || !hora) {
-      return null;
-    }
-
-    const dataStr = this.getDataFromDiaSemana(dia);
-    if (!dataStr) {
-      return null;
-    }
-
-    const [diaNum, mesNum, anoNum] = dataStr.split('/').map(part => Number(part));
-    const horaFormatada = normalizeHora(hora).substring(0, 5);
-    const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
-
-    if (
-      Number.isNaN(diaNum) ||
-      Number.isNaN(mesNum) ||
-      Number.isNaN(anoNum) ||
-      Number.isNaN(horaNum) ||
-      Number.isNaN(minutoNum)
-    ) {
-      return null;
-    }
-
-    const dataCalculada = new Date(anoNum, mesNum - 1, diaNum, horaNum, minutoNum);
-    return Number.isNaN(dataCalculada.getTime()) ? null : dataCalculada;
-  }
-  
   abrirModalAgendamento(agendamento: Agendamento): void {
     this.dialog.open(DialogoAgendamentoComponent, {
       width: '500px',
