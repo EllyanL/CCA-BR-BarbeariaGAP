@@ -1022,27 +1022,48 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
         return true;
       }
 
-      let timestamp: number | null = agendamento.timestamp ?? null;
+      const agora = new Date(Date.now() + this.timeOffsetMs);
+      let dataAgendamento: Date | null = null;
 
-      if (!timestamp) {
-        if (!agendamento.data || !agendamento.hora) {
-          return true;
-        }
-
+      if (typeof agendamento.timestamp === 'number') {
+        dataAgendamento = new Date(agendamento.timestamp);
+      } else if (agendamento.data && agendamento.hora) {
         const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
-        let dia: number, mes: number, ano: number;
+        const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
+
+        let dia: number | undefined;
+        let mes: number | undefined;
+        let ano: number | undefined;
 
         if (agendamento.data.includes('-')) {
-          [ano, mes, dia] = agendamento.data.split('-').map(Number);
+          [ano, mes, dia] = agendamento.data.split('-').map(part => Number(part));
         } else {
-          [dia, mes, ano] = agendamento.data.split('/').map(Number);
+          [dia, mes, ano] = agendamento.data.split('/').map(part => Number(part));
         }
 
-        const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
-        timestamp = new Date(ano, mes - 1, dia, horaNum, minutoNum).getTime();
+        if (
+          dia !== undefined && !Number.isNaN(dia) &&
+          mes !== undefined && !Number.isNaN(mes) &&
+          ano !== undefined && !Number.isNaN(ano)
+        ) {
+          dataAgendamento = new Date(ano, mes - 1, dia, horaNum, minutoNum);
+        }
       }
 
-      const diffMs = timestamp - (Date.now() + this.timeOffsetMs);
+      if (!dataAgendamento || Number.isNaN(dataAgendamento.getTime())) {
+        return true;
+      }
+
+      const diffMs = dataAgendamento.getTime() - agora.getTime();
+      const mesmoDia =
+        dataAgendamento.getFullYear() === agora.getFullYear() &&
+        dataAgendamento.getMonth() === agora.getMonth() &&
+        dataAgendamento.getDate() === agora.getDate();
+
+      if (!mesmoDia) {
+        return diffMs > 0;
+      }
+
       return diffMs >= 30 * 60 * 1000;
     }
 
