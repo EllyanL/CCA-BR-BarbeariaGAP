@@ -1261,7 +1261,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     const diffMinutos = (dataAgendamento.getTime() - agora.getTime()) / 60000;
-    return diffMinutos >= 15;
+    return diffMinutos >= ANTECEDENCIA_PADRAO_MINUTOS;
   }
 
   abrirModalAgendamento(agendamento: Agendamento): void {
