@@ -1208,7 +1208,20 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const agendamentoReferencia =
       agendamento ?? (dia && hora ? this.getAgendamentoParaDiaHora(dia, hora) : undefined);
 
-    if (!agendamentoReferencia || !this.isAgendamentoDoMilitarLogado(agendamentoReferencia)) {
+let pertenceAoUsuario = false;
+if (agendamentoReferencia) {
+  pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
+} else if (dia && hora) {
+  const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
+  const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
+  pertenceAoUsuario =
+    slotUsuarioId != null && this.idMilitarLogado != null && slotUsuarioId === this.idMilitarLogado;
+}
+
+if (!pertenceAoUsuario) {
+  return false;
+}
+
       return false;
     }
 
