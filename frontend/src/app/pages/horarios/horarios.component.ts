@@ -26,6 +26,7 @@ import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 
 const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
+const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
 
 @Component({
     selector: 'app-horarios',
@@ -39,6 +40,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     militarLogado: string = '';
     omMilitar: string = '';
     usuarioLogado: Militar | null = null;
+    private usuarioIdLogado: number | null = null;
 
     /** Mapa de chaves normalizadas para labels com acento */
   readonly diaLabelMap: Record<DiaKey, string> = DIA_LABEL_MAP;
@@ -88,6 +90,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     ) {
       const usuario = this.authService.getUsuarioAutenticado();
       this.usuarioLogado = usuario;
+      this.usuarioIdLogado = usuario?.id ?? null;
       this.saramUsuario = usuario?.saram || '';
     }
 
@@ -314,6 +317,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
 
     private initAfterTime(): void {
       const fallback = this.authService.getUsuarioAutenticado();
+      this.usuarioIdLogado = fallback?.id ?? this.usuarioIdLogado;
       this.saramUsuario = fallback?.saram || '';
       if (fallback?.cpf) {
         this.cpfUsuario = fallback.cpf;
@@ -337,6 +341,21 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
           if (userData && userData.length > 0) {
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
+            this.usuarioIdLogado = userData[0].id ?? this.usuarioIdLogado;
+            if (this.usuarioLogado) {
+              this.usuarioLogado = {
+                ...this.usuarioLogado,
+                id: this.usuarioIdLogado ?? this.usuarioLogado.id,
+                cpf: this.cpfUsuario || this.usuarioLogado.cpf,
+                saram: this.saramUsuario || this.usuarioLogado.saram,
+              };
+            } else {
+              this.usuarioLogado = {
+                id: this.usuarioIdLogado ?? undefined,
+                cpf: this.cpfUsuario,
+                saram: this.saramUsuario,
+              } as Militar;
+            }
             const newKey = `agendamentos-${this.cpfUsuario}`;
             if (newKey !== this.storageKey) {
               this.storageKey = newKey;
@@ -992,24 +1011,35 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     
     
     handleClick(agendamento: Agendamento): void {
-      if (this.isAgendamentoDoMilitarLogado(agendamento)) {
-        const selectedDate = agendamento.data || '';
-        const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
-          width: '400px',
-          data: {
-            diaSemana: agendamento.diaSemana,
-            hora: agendamento.hora,
-            usuarioId: agendamento.militar?.id,
-            data: selectedDate,
-          },
-        });
-
-        dialogRef.afterClosed().subscribe((payload) => {
-          if (payload) {
-            this.desmarcarAgendamento(agendamento);
-          }
-        });
+      if (!this.isAgendamentoDoMilitarLogado(agendamento)) {
+        return;
       }
+
+      if (!this.isAgendamentoDesmarcavel(agendamento)) {
+        this.snackBar.open(
+          `Você só pode desmarcar até ${ANTECEDENCIA_CANCELAMENTO_MINUTOS} minutos antes do horário agendado.`,
+          'Ciente',
+          { duration: SNACKBAR_DURATION }
+        );
+        return;
+      }
+
+      const selectedDate = agendamento.data || '';
+      const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
+        width: '400px',
+        data: {
+          diaSemana: agendamento.diaSemana,
+          hora: agendamento.hora,
+          usuarioId: agendamento.militar?.id,
+          data: selectedDate,
+        },
+      });
+
+      dialogRef.afterClosed().subscribe((payload) => {
+        if (payload) {
+          this.desmarcarAgendamento(agendamento);
+        }
+      });
     }
 
     isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
@@ -1020,16 +1050,25 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
       const usuarioAtual = this.usuarioLogado;
       const saramUsuarioAtual = usuarioAtual?.saram || this.saramUsuario || '';
       const cpfUsuarioAtual = usuarioAtual?.cpf || this.cpfUsuario || '';
+      const usuarioIdAtual = this.usuarioIdLogado ?? usuarioAtual?.id ?? null;
 
       const saramAgendamento =
         agendamento.saramUsuario ?? agendamento.usuarioSaram ?? agendamento.militar?.saram;
       const cpfAgendamento = agendamento.cpfUsuario ?? agendamento.militar?.cpf;
+      const idAgendamento = agendamento.militar?.id ?? null;
+
+      const slotRelacionado = this.getSlot(agendamento.diaSemana, agendamento.hora);
+      const idSlot = slotRelacionado?.usuarioId ?? null;
 
       const mesmoSaram =
         !!saramUsuarioAtual && !!saramAgendamento && saramAgendamento === saramUsuarioAtual;
       const mesmoCpf = !!cpfUsuarioAtual && !!cpfAgendamento && cpfAgendamento === cpfUsuarioAtual;
+      const mesmoIdAgendamento =
+        usuarioIdAtual != null && idAgendamento != null && Number(idAgendamento) === Number(usuarioIdAtual);
+      const mesmoIdSlot =
+        usuarioIdAtual != null && idSlot != null && Number(idSlot) === Number(usuarioIdAtual);
 
-      return mesmoSaram || mesmoCpf;
+      return mesmoSaram || mesmoCpf || mesmoIdAgendamento || mesmoIdSlot;
     }
 
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
@@ -1045,7 +1084,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
       const agora = new Date(Date.now() + this.timeOffsetMs);
       const diferencaMinutos = (dataAgendamento.getTime() - agora.getTime()) / 60000;
 
-      return diferencaMinutos >= 15;
+      return diferencaMinutos >= ANTECEDENCIA_CANCELAMENTO_MINUTOS;
     }
 
     private obterDataHoraAgendamento(agendamento: Agendamento): Date | null {
