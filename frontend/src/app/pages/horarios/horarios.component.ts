@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { ConfiguracaoAgendamento, ConfiguracoesAgendamentoService } from '../../services/configuracoes-agendamento.service';
 import { HorariosService, AdicionarHorarioBaseResultado } from '../../services/horarios.service';
 import { HorariosPorDia, SlotHorario } from '../../models/slot-horario';
-import { Horario } from '../../models/horario';
 import { HorarioDTO } from '../../models/horario-dto';
 import { normalizeHora, normalizeHorariosPorDia } from '../../utils/horarios-utils';
 import { SNACKBAR_DURATION } from '../../utils/ui-constants';
@@ -1143,35 +1142,27 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
 
       const dia = normalizeDia(agendamento.diaSemana);
       const hora = normalizeHora(agendamento.hora);
-      const slot = (this.horariosPorDia[dia] || []).find(s => s.horario === hora);
-      const slotId = slot?.id;
-      if (!slotId) {
-        return;
-      }
+      const slotsDia = this.horariosPorDia[dia] || [];
+      const slotIndex = slotsDia.findIndex(s => s.horario === hora);
 
-      this.horariosService.liberarHorario(slotId).subscribe({
-        next: (horarioAtualizado: Horario) => {
-          this.snackBar.open('Agendamento desmarcado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
+      this.agendamentoService.cancelarAgendamento(agendamento.id).subscribe({
+        next: () => {
+          this.snackBar.open('Agendamento cancelado com sucesso.', 'Ciente', { duration: SNACKBAR_DURATION });
 
-          const diaAtualizado = normalizeDia(horarioAtualizado.dia ?? agendamento.diaSemana);
-          const horaAtualizada = normalizeHora(horarioAtualizado.horario ?? agendamento.hora);
-          const slotsDia = this.horariosPorDia[diaAtualizado] || [];
-          const slotIndex = slotsDia.findIndex(s => s.horario === horaAtualizada);
           if (slotIndex !== -1) {
             const horariosAtualizados = slotsDia.map((slot, idx) =>
               idx === slotIndex
                 ? {
                     ...slot,
-                    status: horarioAtualizado.status,
-                    usuarioId: horarioAtualizado.usuarioId,
-                    id: horarioAtualizado.id,
+                    status: 'DISPONIVEL',
+                    usuarioId: undefined,
                   }
                 : slot
             );
 
             this.horariosPorDia = {
               ...this.horariosPorDia,
-              [diaAtualizado]: horariosAtualizados,
+              [dia]: horariosAtualizados,
             };
             this.horariosService.atualizarHorarios(this.horariosPorDia);
           }
@@ -1184,8 +1175,8 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
           this.cdr.markForCheck();
         },
         error: (error: any) => {
-          this.logger.error('Erro ao desmarcar agendamento:', error);
-          const message = error?.error?.message || 'Não foi possível desmarcar o agendamento. Tente novamente.';
+          this.logger.error('Erro ao cancelar agendamento:', error);
+          const message = error?.error?.message || 'Não foi possível cancelar o agendamento. Tente novamente.';
           this.snackBar.open(message, 'Ciente', { duration: 5000 });
         }
       });
