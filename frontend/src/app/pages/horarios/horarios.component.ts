@@ -26,6 +26,7 @@ import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 
 const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
+const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 30;
 
 @Component({
     selector: 'app-horarios',
@@ -1045,7 +1046,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
       const agora = new Date(Date.now() + this.timeOffsetMs);
       const diferencaMinutos = (dataAgendamento.getTime() - agora.getTime()) / 60000;
 
-      return diferencaMinutos >= 15;
+      return diferencaMinutos >= ANTECEDENCIA_CANCELAMENTO_MINUTOS;
     }
 
     private obterDataHoraAgendamento(agendamento: Agendamento): Date | null {
