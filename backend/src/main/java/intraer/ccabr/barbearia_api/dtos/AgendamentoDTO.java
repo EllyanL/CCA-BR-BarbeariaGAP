@@ -20,6 +20,9 @@ public class AgendamentoDTO {
     private String canceladoPor;
     private UserDTO militar;
     private String usuarioSaram;
+    private String saramUsuario;
+    private String cpfUsuario;
+    private String nomeUsuario;
     private Long timestamp;
 
     public AgendamentoDTO(Agendamento agendamento) {
@@ -53,6 +56,9 @@ public class AgendamentoDTO {
             this.militar.setSecao(m.getSecao());
             this.militar.setRamal(m.getRamal());
             this.usuarioSaram = m.getSaram();
+            this.saramUsuario = m.getSaram();
+            this.cpfUsuario = m.getCpf();
+            this.nomeUsuario = m.getNomeCompleto();
         }
     }
 }

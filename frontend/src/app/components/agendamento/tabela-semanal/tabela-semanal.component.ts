@@ -109,6 +109,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   usuarioCarregado = false;
   horariosCarregados = false;
   agendamentoBloqueado = false;
+  private usuarioLogado: (UserData | Militar) | null = null;
   private storageKey: string = '';
   private desbloqueioTimeout?: any;
   private avisoBloqueioMostrado = false;
@@ -492,6 +493,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private handleUsuarioContext(usuario: UserData | Militar | null): void {
+    this.usuarioLogado = usuario ?? null;
+
     if (usuario?.cpf) {
       const newKey = `agendamentos-${usuario.cpf}`;
       if (this.storageKey && this.storageKey !== newKey) {
@@ -808,8 +811,23 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
-    const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
-    return !!agendamento && saramAgendamento === this.saramUsuario;
+    if (!agendamento) {
+      return false;
+    }
+
+    const usuarioAtual = this.usuarioLogado;
+    const saramUsuarioAtual = usuarioAtual?.saram || this.saramUsuario || '';
+    const cpfUsuarioAtual = usuarioAtual?.cpf || this.cpfMilitarLogado || '';
+
+    const saramAgendamento =
+      agendamento.saramUsuario ?? agendamento.usuarioSaram ?? agendamento.militar?.saram;
+    const cpfAgendamento = agendamento.cpfUsuario ?? agendamento.militar?.cpf;
+
+    const mesmoSaram =
+      !!saramUsuarioAtual && !!saramAgendamento && saramAgendamento === saramUsuarioAtual;
+    const mesmoCpf = !!cpfUsuarioAtual && !!cpfAgendamento && cpfAgendamento === cpfUsuarioAtual;
+
+    return mesmoSaram || mesmoCpf;
   }
 
 
@@ -834,8 +852,19 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     if (!agendamento) {
       return "";
     }
-    return `SARAM: ${agendamento.militar?.saram || 'Não informado'}\n` +
-           `Nome: ${agendamento.militar?.nomeDeGuerra || 'Não informado'}\n` +
+    const saram =
+      agendamento.militar?.saram ||
+      agendamento.saramUsuario ||
+      agendamento.usuarioSaram ||
+      'Não informado';
+    const nome =
+      agendamento.militar?.nomeDeGuerra ||
+      agendamento.militar?.nomeCompleto ||
+      agendamento.nomeUsuario ||
+      'Não informado';
+
+    return `SARAM: ${saram}\n` +
+           `Nome: ${nome}\n` +
            `Email: ${agendamento.militar?.email || 'Não informado'}\n` +
            `OM: ${agendamento.militar?.om || 'Não informado'}\n` +
            `Seção: ${agendamento.militar?.secao || 'Não informado'}\n` +
@@ -1179,17 +1208,20 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const agendamentoReferencia =
       agendamento ?? (dia && hora ? this.getAgendamentoParaDiaHora(dia, hora) : undefined);
 
-    let pertenceAoUsuario = false;
-    if (agendamentoReferencia) {
-      pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
-    } else if (dia && hora) {
-      const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
-      const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
-      pertenceAoUsuario =
-        slotUsuarioId != null && this.idMilitarLogado != null && slotUsuarioId === this.idMilitarLogado;
-    }
+let pertenceAoUsuario = false;
+if (agendamentoReferencia) {
+  pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
+} else if (dia && hora) {
+  const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
+  const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
+  pertenceAoUsuario =
+    slotUsuarioId != null && this.idMilitarLogado != null && slotUsuarioId === this.idMilitarLogado;
+}
 
-    if (!pertenceAoUsuario) {
+if (!pertenceAoUsuario) {
+  return false;
+}
+
       return false;
     }
 

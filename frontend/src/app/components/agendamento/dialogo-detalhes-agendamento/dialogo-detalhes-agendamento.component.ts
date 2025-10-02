@@ -14,11 +14,9 @@ import { SNACKBAR_DURATION } from 'src/app/utils/ui-constants';
       <p><strong>Data:</strong> {{ agendamento.data ? (agendamento.data | date:'dd/MM/yyyy':'':'pt-BR') : 'Não informado' }}</p>
       <p><strong>Hora:</strong> {{ agendamento.hora ? (agendamento.hora | slice:0:5) : 'Não informado' }}</p>
       <p><strong>Dia:</strong> {{ agendamento.diaSemana ? (agendamento.diaSemana | titlecase) : 'Não informado' }}</p>
-      <div *ngIf="agendamento.militar">
-        <p><strong>SARAM:</strong> {{ agendamento.militar.saram || 'Não informado' }}</p>
-        <p><strong>Nome:</strong> {{ formatarNome(agendamento.militar.nomeDeGuerra) }}</p>
-        <p><strong>OM:</strong> {{ agendamento.militar.om || 'Não informado' }}</p>
-      </div>
+      <p><strong>SARAM:</strong> {{ obterSaramAgendamento() }}</p>
+      <p><strong>Nome:</strong> {{ formatarNome(obterNomeAgendamento()) }}</p>
+      <p><strong>OM:</strong> {{ obterOmAgendamento() }}</p>
     </div>
     <div mat-dialog-actions class="detalhes-dialog__actions">
       <button mat-flat-button color="primary" (click)="fechar()">Fechar</button>
@@ -89,6 +87,28 @@ export class DialogoDetalhesAgendamentoComponent {
       .split(' ')
       .map(p => p.charAt(0).toUpperCase() + p.slice(1))
       .join(' ');
+  }
+
+  obterSaramAgendamento(): string {
+    return (
+      this.agendamento.militar?.saram ||
+      this.agendamento.saramUsuario ||
+      this.agendamento.usuarioSaram ||
+      'Não informado'
+    );
+  }
+
+  obterNomeAgendamento(): string | undefined {
+    return (
+      this.agendamento.militar?.nomeDeGuerra ||
+      this.agendamento.militar?.nomeCompleto ||
+      this.agendamento.nomeUsuario ||
+      undefined
+    );
+  }
+
+  obterOmAgendamento(): string {
+    return this.agendamento.militar?.om || 'Não informado';
   }
 
   // edição desabilitada

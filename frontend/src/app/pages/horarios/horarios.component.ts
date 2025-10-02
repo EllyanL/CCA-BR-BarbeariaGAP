@@ -1013,58 +1013,81 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     }
 
     isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
-      const saramAgendamento = agendamento?.usuarioSaram || agendamento?.militar?.saram;
-      return saramAgendamento === this.saramUsuario;
+      if (!agendamento) {
+        return false;
+      }
+
+      const usuarioAtual = this.usuarioLogado;
+      const saramUsuarioAtual = usuarioAtual?.saram || this.saramUsuario || '';
+      const cpfUsuarioAtual = usuarioAtual?.cpf || this.cpfUsuario || '';
+
+      const saramAgendamento =
+        agendamento.saramUsuario ?? agendamento.usuarioSaram ?? agendamento.militar?.saram;
+      const cpfAgendamento = agendamento.cpfUsuario ?? agendamento.militar?.cpf;
+
+      const mesmoSaram =
+        !!saramUsuarioAtual && !!saramAgendamento && saramAgendamento === saramUsuarioAtual;
+      const mesmoCpf = !!cpfUsuarioAtual && !!cpfAgendamento && cpfAgendamento === cpfUsuarioAtual;
+
+      return mesmoSaram || mesmoCpf;
     }
 
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
-      if (!agendamento) {
-        return true;
+      if (!agendamento || !this.isAgendamentoDoMilitarLogado(agendamento)) {
+        return false;
+      }
+
+      const dataAgendamento = this.obterDataHoraAgendamento(agendamento);
+      if (!dataAgendamento) {
+        return false;
       }
 
       const agora = new Date(Date.now() + this.timeOffsetMs);
-      let dataAgendamento: Date | null = null;
+      const diferencaMinutos = (dataAgendamento.getTime() - agora.getTime()) / 60000;
 
+      return diferencaMinutos >= 15;
+    }
+
+    private obterDataHoraAgendamento(agendamento: Agendamento): Date | null {
       if (typeof agendamento.timestamp === 'number') {
-        dataAgendamento = new Date(agendamento.timestamp);
-      } else if (agendamento.data && agendamento.hora) {
-        const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
-        const [horaNum, minutoNum] = horaFormatada.split(':').map(Number);
-
-        let dia: number | undefined;
-        let mes: number | undefined;
-        let ano: number | undefined;
-
-        if (agendamento.data.includes('-')) {
-          [ano, mes, dia] = agendamento.data.split('-').map(part => Number(part));
-        } else {
-          [dia, mes, ano] = agendamento.data.split('/').map(part => Number(part));
-        }
-
-        if (
-          dia !== undefined && !Number.isNaN(dia) &&
-          mes !== undefined && !Number.isNaN(mes) &&
-          ano !== undefined && !Number.isNaN(ano)
-        ) {
-          dataAgendamento = new Date(ano, mes - 1, dia, horaNum, minutoNum);
-        }
+        return new Date(agendamento.timestamp);
       }
 
-      if (!dataAgendamento || Number.isNaN(dataAgendamento.getTime())) {
-        return true;
+      const dataTexto = agendamento.data;
+      if (!dataTexto || !agendamento.hora) {
+        return null;
       }
 
-      const diffMs = dataAgendamento.getTime() - agora.getTime();
-      const mesmoDia =
-        dataAgendamento.getFullYear() === agora.getFullYear() &&
-        dataAgendamento.getMonth() === agora.getMonth() &&
-        dataAgendamento.getDate() === agora.getDate();
-
-      if (!mesmoDia) {
-        return diffMs > 0;
+      const horaNormalizada = normalizeHora(agendamento.hora)?.substring(0, 5);
+      if (!horaNormalizada) {
+        return null;
       }
 
-      return diffMs >= 30 * 60 * 1000;
+      const [horaNum, minutoNum] = horaNormalizada.split(':').map(Number);
+      if (Number.isNaN(horaNum) || Number.isNaN(minutoNum)) {
+        return null;
+      }
+
+      let dia: number | undefined;
+      let mes: number | undefined;
+      let ano: number | undefined;
+
+      if (dataTexto.includes('-')) {
+        [ano, mes, dia] = dataTexto.split('-').map(part => Number(part));
+      } else {
+        [dia, mes, ano] = dataTexto.split('/').map(part => Number(part));
+      }
+
+      if (
+        dia === undefined || Number.isNaN(dia) ||
+        mes === undefined || Number.isNaN(mes) ||
+        ano === undefined || Number.isNaN(ano)
+      ) {
+        return null;
+      }
+
+      const dataCalculada = new Date(ano, (mes ?? 1) - 1, dia, horaNum, minutoNum);
+      return Number.isNaN(dataCalculada.getTime()) ? null : dataCalculada;
     }
 
     getAgendamentoParaDiaHora(dia: string, hora: string): Agendamento | undefined {
