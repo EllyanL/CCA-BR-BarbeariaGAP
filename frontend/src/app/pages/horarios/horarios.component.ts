@@ -26,6 +26,7 @@ import { ServerTimeService } from 'src/app/services/server-time.service';
 import { UserService } from 'src/app/services/user.service';
 
 const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
+const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
 
 @Component({
     selector: 'app-horarios',
@@ -992,24 +993,35 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
     
     
     handleClick(agendamento: Agendamento): void {
-      if (this.isAgendamentoDoMilitarLogado(agendamento)) {
-        const selectedDate = agendamento.data || '';
-        const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
-          width: '400px',
-          data: {
-            diaSemana: agendamento.diaSemana,
-            hora: agendamento.hora,
-            usuarioId: agendamento.militar?.id,
-            data: selectedDate,
-          },
-        });
-
-        dialogRef.afterClosed().subscribe((payload) => {
-          if (payload) {
-            this.desmarcarAgendamento(agendamento);
-          }
-        });
+      if (!this.isAgendamentoDoMilitarLogado(agendamento)) {
+        return;
       }
+
+      if (!this.isAgendamentoDesmarcavel(agendamento)) {
+        this.snackBar.open(
+          `Você só pode desmarcar até ${ANTECEDENCIA_CANCELAMENTO_MINUTOS} minutos antes do horário agendado.`,
+          'Ciente',
+          { duration: SNACKBAR_DURATION }
+        );
+        return;
+      }
+
+      const selectedDate = agendamento.data || '';
+      const dialogRef = this.dialog.open(DialogoCancelamentoComponent, {
+        width: '400px',
+        data: {
+          diaSemana: agendamento.diaSemana,
+          hora: agendamento.hora,
+          usuarioId: agendamento.militar?.id,
+          data: selectedDate,
+        },
+      });
+
+      dialogRef.afterClosed().subscribe((payload) => {
+        if (payload) {
+          this.desmarcarAgendamento(agendamento);
+        }
+      });
     }
 
     isAgendamentoDoMilitarLogado(agendamento?: Agendamento): boolean {
@@ -1045,7 +1057,7 @@ const ANTECEDENCIA_PRIMEIRO_HORARIO_MINUTOS = 15;
       const agora = new Date(Date.now() + this.timeOffsetMs);
       const diferencaMinutos = (dataAgendamento.getTime() - agora.getTime()) / 60000;
 
-      return diferencaMinutos >= 15;
+      return diferencaMinutos >= ANTECEDENCIA_CANCELAMENTO_MINUTOS;
     }
 
     private obterDataHoraAgendamento(agendamento: Agendamento): Date | null {
