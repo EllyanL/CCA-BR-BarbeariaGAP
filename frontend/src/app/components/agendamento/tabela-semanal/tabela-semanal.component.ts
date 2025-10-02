@@ -1176,73 +1176,51 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   ): boolean {
     const agora = new Date(Date.now() + this.timeOffsetMs);
 
-    const isMesmoDia = (data: Date): boolean =>
-      data.getFullYear() === agora.getFullYear() &&
-      data.getMonth() === agora.getMonth() &&
-      data.getDate() === agora.getDate();
+    const agendamentoReferencia =
+      agendamento ?? (dia && hora ? this.getAgendamentoParaDiaHora(dia, hora) : undefined);
 
-    const diffPermitido = (data: Date): boolean => {
-      const diffMs = data.getTime() - agora.getTime();
-      if (!isMesmoDia(data)) {
-        return diffMs > 0;
-      }
-      return diffMs >= 30 * 60 * 1000;
-    };
+    let pertenceAoUsuario = false;
+    if (agendamentoReferencia) {
+      pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
+    } else if (dia && hora) {
+      const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
+      const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
+      pertenceAoUsuario =
+        slotUsuarioId != null && this.idMilitarLogado != null && slotUsuarioId === this.idMilitarLogado;
+    }
 
+    if (!pertenceAoUsuario) {
+      return false;
+    }
+
+    const dataAgendamento = this.obterDataHoraAgendamento(agendamentoReferencia, dia, hora);
+    if (!dataAgendamento) {
+      return false;
+    }
+
+    const diffMinutos = (dataAgendamento.getTime() - agora.getTime()) / 60000;
+    return diffMinutos >= 15;
+  }
+
+  private obterDataHoraAgendamento(
+    agendamento?: Agendamento,
+    dia?: string,
+    hora?: string
+  ): Date | null {
     if (agendamento) {
-      if (!this.isAgendamentoDoMilitarLogado(agendamento)) {
-        return false;
+      const dataComAgendamento = this.getDataHoraAgendamento(agendamento);
+      if (dataComAgendamento) {
+        return dataComAgendamento;
       }
-
-      let dataAgendamento: Date | null = null;
-
-      if (typeof agendamento.timestamp === 'number') {
-        dataAgendamento = new Date(agendamento.timestamp);
-      } else if (agendamento.data && agendamento.hora) {
-        const horaFormatada = normalizeHora(agendamento.hora).substring(0, 5);
-        const [horaAg, minutoAg] = horaFormatada.split(':').map(Number);
-
-        let diaAg: number | undefined;
-        let mesAg: number | undefined;
-        let anoAg: number | undefined;
-
-        if (agendamento.data.includes('-')) {
-          [anoAg, mesAg, diaAg] = agendamento.data.split('-').map(part => Number(part));
-        } else {
-          [diaAg, mesAg, anoAg] = agendamento.data.split('/').map(part => Number(part));
-        }
-
-        if (
-          diaAg !== undefined && !Number.isNaN(diaAg) &&
-          mesAg !== undefined && !Number.isNaN(mesAg) &&
-          anoAg !== undefined && !Number.isNaN(anoAg)
-        ) {
-          dataAgendamento = new Date(anoAg, mesAg - 1, diaAg, horaAg, minutoAg);
-        }
-      }
-
-      if (dataAgendamento && !Number.isNaN(dataAgendamento.getTime())) {
-        return diffPermitido(dataAgendamento);
-      }
-
-      return true;
     }
 
     if (!dia || !hora) {
-      return false;
-    }
-
-    const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
-    const usuarioId = this.horariosPorDia[diaKey]?.find(
-      h => h.horario === hora
-    )?.usuarioId;
-    if (usuarioId !== this.idMilitarLogado) {
-      return false;
+      return null;
     }
 
     const dataStr = this.getDataFromDiaSemana(dia);
     if (!dataStr) {
-      return true;
+      return null;
     }
 
     const [diaNum, mesNum, anoNum] = dataStr.split('/').map(part => Number(part));
@@ -1252,17 +1230,15 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     if (
       Number.isNaN(diaNum) ||
       Number.isNaN(mesNum) ||
-      Number.isNaN(anoNum)
+      Number.isNaN(anoNum) ||
+      Number.isNaN(horaNum) ||
+      Number.isNaN(minutoNum)
     ) {
-      return true;
+      return null;
     }
 
-    const agendamentoDate = new Date(anoNum, mesNum - 1, diaNum, horaNum, minutoNum);
-    if (Number.isNaN(agendamentoDate.getTime())) {
-      return true;
-    }
-
-    return diffPermitido(agendamentoDate);
+    const dataCalculada = new Date(anoNum, mesNum - 1, diaNum, horaNum, minutoNum);
+    return Number.isNaN(dataCalculada.getTime()) ? null : dataCalculada;
   }
   
   abrirModalAgendamento(agendamento: Agendamento): void {
