@@ -3,6 +3,7 @@ package intraer.ccabr.barbearia_api.infra.security;
 import java.util.Collection;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,18 @@ public class SecurityFilter extends OncePerRequestFilter {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
+        }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("barbearia-token".equals(cookie.getName())) {
+                    String token = cookie.getValue();
+                    if (token != null && !token.trim().isEmpty()) {
+                        return token;
+                    }
+                }
+            }
         }
         return null;
     }
