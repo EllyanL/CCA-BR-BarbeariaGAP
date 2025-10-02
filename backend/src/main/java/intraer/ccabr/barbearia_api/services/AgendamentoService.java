@@ -100,12 +100,11 @@ public class AgendamentoService {
             throw new IllegalStateException("Horário indisponível");
         }
 
-        boolean ocupado = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+        boolean ocupado = agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(
             agendamento.getData(),
             agendamento.getHora(),
             dia,
-            agendamento.getCategoria(),
-            "CANCELADO"
+            agendamento.getCategoria()
         );
         if (ocupado) {
             throw new IllegalStateException("Horário indisponível");
@@ -182,10 +181,10 @@ public class AgendamentoService {
     }
 
     public boolean isAgendamentoDisponivel(LocalDate data, LocalTime hora, String diaSemana, String categoria) {
-        // Considera apenas agendamentos cujo status seja diferente de 'CANCELADO'
+        // Considera apenas agendamentos ativos (desconsiderando cancelamentos pelo usuário ou admin)
         String dia = DiaSemana.from(diaSemana).getValor();
-        return !agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
-                data, hora, dia, categoria, "CANCELADO");
+        return !agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(
+                data, hora, dia, categoria);
     }
 
     public Optional<Agendamento> findAgendamentoByDataHoraDiaCategoria(
@@ -210,12 +209,11 @@ public class AgendamentoService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado já está ocupado ou indisponível.");
         }
 
-        boolean ocupado = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+        boolean ocupado = agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(
             data,
             hora,
             dia,
-            categoria,
-            "CANCELADO"
+            categoria
         );
         if (ocupado) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O horário selecionado já está ocupado para esta data.");
@@ -223,12 +221,11 @@ public class AgendamentoService {
     }
 
     public void checarDuplicidade(LocalDate data, LocalTime hora, String dia, String categoria) {
-        boolean jaExiste = agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(
+        boolean jaExiste = agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(
             data,
             hora,
             dia,
-            categoria,
-            "CANCELADO"
+            categoria
         );
 
         if (jaExiste) {
