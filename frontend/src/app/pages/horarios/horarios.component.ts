@@ -40,6 +40,7 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
     militarLogado: string = '';
     omMilitar: string = '';
     usuarioLogado: Militar | null = null;
+    private usuarioIdLogado: number | null = null;
 
     /** Mapa de chaves normalizadas para labels com acento */
   readonly diaLabelMap: Record<DiaKey, string> = DIA_LABEL_MAP;
@@ -89,6 +90,7 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
     ) {
       const usuario = this.authService.getUsuarioAutenticado();
       this.usuarioLogado = usuario;
+      this.usuarioIdLogado = usuario?.id ?? null;
       this.saramUsuario = usuario?.saram || '';
     }
 
@@ -315,6 +317,7 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
 
     private initAfterTime(): void {
       const fallback = this.authService.getUsuarioAutenticado();
+      this.usuarioIdLogado = fallback?.id ?? this.usuarioIdLogado;
       this.saramUsuario = fallback?.saram || '';
       if (fallback?.cpf) {
         this.cpfUsuario = fallback.cpf;
@@ -338,6 +341,21 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
           if (userData && userData.length > 0) {
             this.cpfUsuario = userData[0].cpf;
             this.saramUsuario = userData[0].saram;
+            this.usuarioIdLogado = userData[0].id ?? this.usuarioIdLogado;
+            if (this.usuarioLogado) {
+              this.usuarioLogado = {
+                ...this.usuarioLogado,
+                id: this.usuarioIdLogado ?? this.usuarioLogado.id,
+                cpf: this.cpfUsuario || this.usuarioLogado.cpf,
+                saram: this.saramUsuario || this.usuarioLogado.saram,
+              };
+            } else {
+              this.usuarioLogado = {
+                id: this.usuarioIdLogado ?? undefined,
+                cpf: this.cpfUsuario,
+                saram: this.saramUsuario,
+              } as Militar;
+            }
             const newKey = `agendamentos-${this.cpfUsuario}`;
             if (newKey !== this.storageKey) {
               this.storageKey = newKey;
@@ -1032,16 +1050,25 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
       const usuarioAtual = this.usuarioLogado;
       const saramUsuarioAtual = usuarioAtual?.saram || this.saramUsuario || '';
       const cpfUsuarioAtual = usuarioAtual?.cpf || this.cpfUsuario || '';
+      const usuarioIdAtual = this.usuarioIdLogado ?? usuarioAtual?.id ?? null;
 
       const saramAgendamento =
         agendamento.saramUsuario ?? agendamento.usuarioSaram ?? agendamento.militar?.saram;
       const cpfAgendamento = agendamento.cpfUsuario ?? agendamento.militar?.cpf;
+      const idAgendamento = agendamento.militar?.id ?? null;
+
+      const slotRelacionado = this.getSlot(agendamento.diaSemana, agendamento.hora);
+      const idSlot = slotRelacionado?.usuarioId ?? null;
 
       const mesmoSaram =
         !!saramUsuarioAtual && !!saramAgendamento && saramAgendamento === saramUsuarioAtual;
       const mesmoCpf = !!cpfUsuarioAtual && !!cpfAgendamento && cpfAgendamento === cpfUsuarioAtual;
+      const mesmoIdAgendamento =
+        usuarioIdAtual != null && idAgendamento != null && Number(idAgendamento) === Number(usuarioIdAtual);
+      const mesmoIdSlot =
+        usuarioIdAtual != null && idSlot != null && Number(idSlot) === Number(usuarioIdAtual);
 
-      return mesmoSaram || mesmoCpf;
+      return mesmoSaram || mesmoCpf || mesmoIdAgendamento || mesmoIdSlot;
     }
 
     isAgendamentoDesmarcavel(agendamento: Agendamento): boolean {
