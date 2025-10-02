@@ -65,7 +65,7 @@ class AgendamentoServiceTest {
 
         when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
                 .thenReturn(Optional.of(horario));
-        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO"))
+        when(agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(data, hora, dia, categoria))
                 .thenReturn(false);
 
         Agendamento resultado = agendamentoService.criarAgendamentoTransactional(agendamento);
@@ -113,7 +113,7 @@ class AgendamentoServiceTest {
 
         when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
                 .thenReturn(Optional.of(horario));
-        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO"))
+        when(agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(data, hora, dia, categoria))
                 .thenReturn(true);
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
@@ -133,11 +133,11 @@ class AgendamentoServiceTest {
 
         when(horarioRepository.findByDiaAndHorarioAndCategoria(dia, hora, categoria))
                 .thenReturn(Optional.of(horario));
-        when(agendamentoRepository.existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO"))
+        when(agendamentoRepository.existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(data, hora, dia, categoria))
                 .thenReturn(false);
 
         assertDoesNotThrow(() -> agendamentoService.verificarHorarioDisponivel(data, dia, hora, categoria));
-        verify(agendamentoRepository).existsByDataAndHoraAndDiaSemanaAndCategoriaAndStatusNot(data, hora, dia, categoria, "CANCELADO");
+        verify(agendamentoRepository).existsAtivoByDataAndHoraAndDiaSemanaAndCategoria(data, hora, dia, categoria);
     }
 
     @Test
