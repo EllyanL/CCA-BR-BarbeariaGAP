@@ -11,6 +11,9 @@ export interface Agendamento {
   categoria: string;
   militar?: Partial<Militar> | null; // aceita resumos vindos do backend
   usuarioSaram?: string;
+  saramUsuario?: string;
+  cpfUsuario?: string;
+  nomeUsuario?: string;
   disponivel?: boolean;
   timestamp?: number;
   status?: string;
