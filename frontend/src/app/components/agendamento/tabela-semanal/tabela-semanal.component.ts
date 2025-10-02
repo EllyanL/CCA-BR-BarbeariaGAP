@@ -174,6 +174,39 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     return !!normalizadoA && !!normalizadoB && normalizadoA === normalizadoB;
   }
 
+  private extrairDiaKey(dia?: string | DiaKey | null): DiaKey | null {
+    if (!dia) {
+      return null;
+    }
+
+    const baseDia = typeof dia === 'string' ? dia.split(' - ')[0] : dia;
+    if (!baseDia || (typeof baseDia === 'string' && baseDia.trim().length === 0)) {
+      return null;
+    }
+
+    return normalizeDia(baseDia as string);
+  }
+
+  private pertenceAoMilitarLogado(dia: DiaKey | null, hora: string | null): boolean {
+    if (!dia || !hora) {
+      return false;
+    }
+
+    const horaNormalizada = normalizeHora(hora);
+    if (!horaNormalizada) {
+      return false;
+    }
+
+    const slotsDoDia = this.horariosPorDia[dia] ?? [];
+    const slotCorrespondente = slotsDoDia.find(slot => normalizeHora(slot.horario) === horaNormalizada);
+
+    if (!slotCorrespondente) {
+      return false;
+    }
+
+    return this.idsCorrespondem(slotCorrespondente.usuarioId, this.idMilitarLogado);
+  }
+
   private atualizarMapaAgendamentos(): void {
     this.agendamentosPorSlot.clear();
     for (const agendamento of this.agendamentos) {
@@ -836,7 +869,11 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       agendamento.militar?.id ?? (agendamento as any)?.militarId
     );
 
-    if (idMilitarLogadoNormalizado && idAgendamentoNormalizado && idMilitarLogadoNormalizado === idAgendamentoNormalizado) {
+    if (
+      idMilitarLogadoNormalizado &&
+      idAgendamentoNormalizado &&
+      idMilitarLogadoNormalizado === idAgendamentoNormalizado
+    ) {
       return true;
     }
 
@@ -848,11 +885,30 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       agendamento.saramUsuario ?? agendamento.usuarioSaram ?? agendamento.militar?.saram;
     const cpfAgendamento = agendamento.cpfUsuario ?? agendamento.militar?.cpf;
 
-    const mesmoSaram =
-      !!saramUsuarioAtual && !!saramAgendamento && saramAgendamento === saramUsuarioAtual;
-    const mesmoCpf = !!cpfUsuarioAtual && !!cpfAgendamento && cpfAgendamento === cpfUsuarioAtual;
+    const mesmoSaram = this.idsCorrespondem(saramUsuarioAtual, saramAgendamento);
+    const mesmoCpf = this.idsCorrespondem(cpfUsuarioAtual, cpfAgendamento);
 
-    return mesmoSaram || mesmoCpf;
+    if (mesmoSaram || mesmoCpf) {
+      return true;
+    }
+
+    const possuiIdentificadores =
+      !!idAgendamentoNormalizado ||
+      !!this.normalizeId(saramAgendamento) ||
+      !!this.normalizeId(cpfAgendamento);
+
+    if (possuiIdentificadores) {
+      return false;
+    }
+
+    const diaAgendamento = this.extrairDiaKey(agendamento.diaSemana);
+    const horaAgendamento = normalizeHora(agendamento.hora);
+
+    if (diaAgendamento && horaAgendamento) {
+      return this.pertenceAoMilitarLogado(diaAgendamento, horaAgendamento);
+    }
+
+    return false;
   }
 
 
@@ -1266,13 +1322,16 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     const agendamentoReferencia =
       agendamento ?? (dia && hora ? this.getAgendamentoParaDiaHora(dia, hora) : undefined);
 
+    const diaReferencia = this.extrairDiaKey(dia ?? agendamentoReferencia?.diaSemana ?? null);
+    const horaReferencia = normalizeHora(hora ?? agendamentoReferencia?.hora ?? '');
+
     let pertenceAoUsuario = false;
     if (agendamentoReferencia) {
       pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamentoReferencia);
-    } else if (dia && hora) {
-      const diaKey: DiaKey = normalizeDia(dia.split(' - ')[0]);
-      const slotUsuarioId = this.horariosPorDia[diaKey]?.find(h => h.horario === hora)?.usuarioId;
-      pertenceAoUsuario = this.idsCorrespondem(slotUsuarioId, this.idMilitarLogado);
+    }
+
+    if (!pertenceAoUsuario) {
+      pertenceAoUsuario = this.pertenceAoMilitarLogado(diaReferencia, horaReferencia);
     }
 
     if (!pertenceAoUsuario) {
