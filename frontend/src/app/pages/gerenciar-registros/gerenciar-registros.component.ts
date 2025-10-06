@@ -40,6 +40,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
     'hora',
     'nomeDeGuerra',
     'postoGrad',
+    'ramal',
     'status',
     'canceladoPor'
   ];
@@ -83,6 +84,12 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         switch (property) {
           case 'data':
             return parseDataHora(item.data, item.hora);
+          case 'nomeDeGuerra':
+            return item.militar?.nomeDeGuerra || '';
+          case 'postoGrad':
+            return item.militar?.postoGrad || '';
+          case 'ramal':
+            return item.militar?.ramal || '';
           default:
             return (item as any)[property];
         }
@@ -135,7 +142,8 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       const termo = this.filtros.texto.toLowerCase();
       filtrados = filtrados.filter(a =>
         (a.militar?.nomeDeGuerra || '').toLowerCase().includes(termo) ||
-        (a.militar?.postoGrad || '').toLowerCase().includes(termo)
+        (a.militar?.postoGrad || '').toLowerCase().includes(termo) ||
+        (a.militar?.ramal || '').toLowerCase().includes(termo)
       );
     }
 
@@ -236,6 +244,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
         this.formatarHoraBR(r.hora),
         r.militar?.postoGrad ?? '',
         this.formatName(r.militar?.nomeDeGuerra),
+        this.formatarRamal(r.militar?.ramal),
         this.statusFormat.transform(r.status),
         this.formatarCanceladoPor(r.canceladoPor)
       ]);
@@ -248,6 +257,7 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
             'HORA',
             'POSTO/GRAD',
             'NOME DE GUERRA',
+            'RAMAL',
             'STATUS',
             'CANCELADO POR'
           ]
@@ -331,6 +341,13 @@ export class GerenciarRegistrosComponent implements OnInit, AfterViewInit {
       .split(' ')
       .map(n => n.charAt(0).toUpperCase() + n.substring(1))
       .join(' ');
+  }
+
+  formatarRamal(ramal?: string | null): string {
+    if (!ramal) {
+      return '';
+    }
+    return ramal.trim();
   }
 
   formatarCanceladoPor(valor?: string | null): string {

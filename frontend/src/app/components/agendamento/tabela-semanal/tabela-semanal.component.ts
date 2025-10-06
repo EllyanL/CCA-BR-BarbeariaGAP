@@ -109,6 +109,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   usuarioCarregado = false;
   horariosCarregados = false;
   agendamentoBloqueado = false;
+  isAdmin = false;
   private usuarioLogado: (UserData | Militar) | null = null;
   private storageKey: string = '';
   private desbloqueioTimeout?: any;
@@ -559,6 +560,8 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
     this.omMilitar = usuario?.om || '';
     this.cpfMilitarLogado = usuario?.cpf || '';
     this.idMilitarLogado = usuario?.id ?? null;
+    const categoriaUsuario = (usuario?.categoria || '').toUpperCase();
+    this.isAdmin = this.authService.isAdmin() || categoriaUsuario === 'ADMIN';
 
     this.usuarioCarregado = true;
     this.cdr.markForCheck();
@@ -953,19 +956,34 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   formatarMilitar(agendamento?: Agendamento | null): string {
-    const postoGrad = agendamento?.militar?.postoGrad;
-    const nomeDeGuerra = agendamento?.militar?.nomeDeGuerra;
-
-    if (!postoGrad || !nomeDeGuerra) {
+    if (!agendamento) {
       return 'Agendado';
     }
 
-    return `${postoGrad} ${nomeDeGuerra}`
-      .toLowerCase()
-      .split(' ')
-      .filter(parte => parte.trim().length > 0)
-      .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
-      .join(' ');
+    const pertenceAoUsuario = this.isAgendamentoDoMilitarLogado(agendamento);
+    if (!this.isAdmin && !pertenceAoUsuario) {
+      return 'Agendado';
+    }
+
+    const postoGrad = agendamento.militar?.postoGrad?.trim();
+    const nomeDeGuerra = agendamento.militar?.nomeDeGuerra?.trim();
+    const nomeAlternativo = agendamento.nomeUsuario?.trim();
+
+    const partes: string[] = [];
+    if (postoGrad) {
+      partes.push(postoGrad.toUpperCase());
+    }
+
+    const nome = nomeDeGuerra || nomeAlternativo;
+    if (nome) {
+      partes.push(nome.toUpperCase());
+    }
+
+    if (!partes.length) {
+      return 'Agendado';
+    }
+
+    return partes.join(' + ');
   }
 
 
