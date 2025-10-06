@@ -27,6 +27,7 @@ import intraer.ccabr.barbearia_api.dtos.AgendamentoResumoDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoAdminDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoCreateDTO;
+import intraer.ccabr.barbearia_api.dtos.MilitarBloqueadoDTO;
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
 import intraer.ccabr.barbearia_api.models.Militar;
@@ -214,6 +215,23 @@ public class AgendamentoController {
         List<AgendamentoAdminDTO> dtos =
             agendamentos.stream().map(AgendamentoAdminDTO::new).toList();
         return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/admin/bloqueios-15-dias")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<MilitarBloqueadoDTO>> listarBloqueios15Dias() {
+        List<MilitarBloqueadoDTO> bloqueados = agendamentoService.listarMilitaresBloqueados15Dias();
+        if (bloqueados.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(bloqueados);
+    }
+
+    @PutMapping("/admin/bloqueios-15-dias/{militarId}/liberar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> liberarBloqueio15Dias(@PathVariable Long militarId) {
+        agendamentoService.liberarRestricao15Dias(militarId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
