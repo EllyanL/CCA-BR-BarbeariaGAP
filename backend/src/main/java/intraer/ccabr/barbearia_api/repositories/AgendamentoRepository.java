@@ -168,6 +168,17 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     );
 
     @Query("""
+            SELECT a FROM Agendamento a
+            JOIN FETCH a.militar
+            WHERE a.data BETWEEN :inicio AND :fim
+              AND a.status NOT IN ('CANCELADO', 'ADMIN_CANCELADO')
+            """)
+    List<Agendamento> findAtivosNoPeriodo(
+            @Param("inicio") LocalDate inicio,
+            @Param("fim") LocalDate fim
+    );
+
+    @Query("""
             SELECT COUNT(a) > 0 FROM Agendamento a
             WHERE a.categoria = :categoria
               AND ((a.status = 'AGENDADO' AND a.data >= :dataAtual)

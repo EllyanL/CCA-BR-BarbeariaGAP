@@ -14,9 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.CacheEvict;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -74,6 +76,87 @@ public class HorarioService {
     private boolean horarioDentroIntervalo(LocalTime hora, ConfiguracaoAgendamento config) {
         LocalTime inicioPermitido = calcularHorarioInicioPermitido(config);
         return !hora.isBefore(inicioPermitido) && !hora.isAfter(config.getHorarioFim());
+    }
+
+    private LocalDate calcularInicioSemana(LocalDate referencia) {
+        DayOfWeek dia = referencia.getDayOfWeek();
+        return switch (dia) {
+            case SATURDAY -> referencia.plusDays(2);
+            case SUNDAY -> referencia.plusDays(1);
+            default -> referencia.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        };
+    }
+
+    private String chaveDiaCategoria(String dia, String categoria) {
+        return dia + "|" + categoria;
+    }
+
+    private Map<String, Map<LocalTime, Agendamento>> agruparAgendamentosPorDiaCategoria(List<Agendamento> agendamentos) {
+        Map<String, Map<LocalTime, Agendamento>> agrupados = new HashMap<>();
+        for (Agendamento agendamento : agendamentos) {
+            String chave = chaveDiaCategoria(agendamento.getDiaSemana(), agendamento.getCategoria());
+            agrupados
+                .computeIfAbsent(chave, k -> new HashMap<>())
+                .merge(
+                    agendamento.getHora(),
+                    agendamento,
+                    (existente, novo) -> existente.getData().isAfter(novo.getData()) ? novo : existente
+                );
+        }
+        return agrupados;
+    }
+
+    private int ajustarStatusHorariosSemanaAtual(LocalDate inicioSemana,
+                                                 LocalDate fimSemana,
+                                                 Map<String, Map<LocalTime, Agendamento>> agendamentosAgrupados) {
+        List<Horario> todosHorarios = horarioRepository.findAll();
+        List<Horario> alterados = new ArrayList<>();
+
+        for (Horario horario : todosHorarios) {
+            if (horario.getStatus() == HorarioStatus.INDISPONIVEL) {
+                continue;
+            }
+
+            String chave = chaveDiaCategoria(horario.getDia(), horario.getCategoria());
+            Map<LocalTime, Agendamento> agendados = agendamentosAgrupados.get(chave);
+            boolean possuiAgendamento = agendados != null && agendados.containsKey(horario.getHorario());
+
+            HorarioStatus statusEsperado = possuiAgendamento ? HorarioStatus.AGENDADO : HorarioStatus.DISPONIVEL;
+            if (horario.getStatus() != statusEsperado) {
+                horario.setStatus(statusEsperado);
+                alterados.add(horario);
+            }
+        }
+
+        if (!alterados.isEmpty()) {
+            horarioRepository.saveAll(alterados);
+            logger.info(
+                    "Status dos horários atualizados para a semana de {} a {}. {} registros ajustados.",
+                    inicioSemana,
+                    fimSemana,
+                    alterados.size()
+            );
+        } else {
+            logger.debug(
+                    "Nenhuma atualização de status necessária para a semana de {} a {}.",
+                    inicioSemana,
+                    fimSemana
+            );
+        }
+
+        return alterados.size();
+    }
+
+    @Transactional
+    public int ajustarStatusHorariosSemanaAtual() {
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicioSemana = calcularInicioSemana(hoje);
+        LocalDate fimSemana = inicioSemana.plusDays(4);
+
+        List<Agendamento> agendamentosSemana = agendamentoRepository.findAtivosNoPeriodo(inicioSemana, fimSemana);
+        Map<String, Map<LocalTime, Agendamento>> agendamentosAgrupados = agruparAgendamentosPorDiaCategoria(agendamentosSemana);
+
+        return ajustarStatusHorariosSemanaAtual(inicioSemana, fimSemana, agendamentosAgrupados);
     }
 
 
@@ -163,8 +246,18 @@ public class HorarioService {
         };
     }
 
+    @Transactional
     public Map<String, List<HorarioDTO>> listarHorariosAgrupadosPorCategoria(String categoria) {
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicioSemana = calcularInicioSemana(hoje);
+        LocalDate fimSemana = inicioSemana.plusDays(4);
+
+        List<Agendamento> agendamentosSemana = agendamentoRepository.findAtivosNoPeriodo(inicioSemana, fimSemana);
+        Map<String, Map<LocalTime, Agendamento>> agendamentosAgrupados = agruparAgendamentosPorDiaCategoria(agendamentosSemana);
+        ajustarStatusHorariosSemanaAtual(inicioSemana, fimSemana, agendamentosAgrupados);
+
         List<Horario> horarios = horarioRepository.findByCategoria(categoria).stream()
                 .filter(h -> horarioDentroIntervalo(h.getHorario(), config))
                 .collect(Collectors.toList());
@@ -173,18 +266,15 @@ public class HorarioService {
             HorarioDTO dto = new HorarioDTO(h);
             String status = h.getStatus().name();
 
-            Optional<Agendamento> agendamento = agendamentoRepository
-                    .findFirstByHoraAndDiaSemanaAndCategoriaAndDataGreaterThanEqualOrderByDataAsc(
-                            h.getHorario(),
-                            h.getDia(),
-                            h.getCategoria(),
-                            LocalDate.now());
-            if (agendamento.isPresent()) {
-                dto.setUsuarioId(agendamento.get().getMilitar().getId());
-                if (!List.of("CANCELADO", "ADMIN_CANCELADO")
-                        .contains(agendamento.get().getStatus().toUpperCase())) {
-                    status = "AGENDADO";
-                }
+            String chave = chaveDiaCategoria(h.getDia(), h.getCategoria());
+            Map<LocalTime, Agendamento> agendados = agendamentosAgrupados.getOrDefault(
+                    chave,
+                    Collections.<LocalTime, Agendamento>emptyMap()
+            );
+            Agendamento agendamento = agendados.get(h.getHorario());
+            if (agendamento != null) {
+                dto.setUsuarioId(agendamento.getMilitar().getId());
+                status = "AGENDADO";
             }
 
             dto.setStatus(normalizeStatus(status));
