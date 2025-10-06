@@ -94,7 +94,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("DELETE FROM Agendamento a WHERE a.hora = :hora")
     void deleteByHora(@Param("hora") LocalTime hora);
 
-    @Query("SELECT COUNT(a) > 0 FROM Agendamento a WHERE a.hora = :hora AND a.diaSemana = :diaSemana AND a.categoria = :categoria AND a.status = 'AGENDADO'")
+    @Query("""
+            SELECT COUNT(a) > 0 FROM Agendamento a
+            WHERE a.hora = :hora
+              AND a.diaSemana = :diaSemana
+              AND a.categoria = :categoria
+              AND a.status = 'AGENDADO'
+              AND a.data >= CURRENT_DATE
+            """)
     boolean existsByHoraAndDiaSemanaAndCategoria(
             @Param("hora") LocalTime hora,
             @Param("diaSemana") String diaSemana,
