@@ -35,6 +35,11 @@ export class AdminComponent {
     this.router.navigate(['/admin/usuarios']).catch(err => this.logger.error('Erro na navegação:', err));
   }
 
+  verBloqueios15Dias(): void {
+    this.logger.log('Navegando para bloqueios da regra de 15 dias');
+    this.router.navigate(['/admin/bloqueios']).catch(err => this.logger.error('Erro na navegação:', err));
+  }
+
   abrirDashboard() {
     this.logger.log('Navegando para dashboard admin');
     this.router.navigate(['/admin/dashboard']).catch(err => this.logger.error('Erro na navegação:', err));

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.dtos.AgendamentoResumoDTO;
+import intraer.ccabr.barbearia_api.dtos.MilitarBloqueadoDTO;
 import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
@@ -131,12 +132,49 @@ public class AgendamentoService {
     }
 
     @Transactional(readOnly = true)
+    public List<MilitarBloqueadoDTO> listarMilitaresBloqueados15Dias() {
+        LocalDate hoje = agora().toLocalDate();
+        LocalDate limite = hoje.minusDays(15);
+        List<Object[]> resultado = agendamentoRepository.findMilitaresBloqueados15Dias(hoje, limite);
+
+        return resultado.stream()
+                .map(item -> new MilitarBloqueadoDTO(
+                        (Militar) item[0],
+                        (LocalDate) item[1],
+                        hoje))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<AgendamentoResumoDTO> buscarAgendamentosFuturosPorCategoria(String categoria) {
         List<Agendamento> agendamentos = agendamentoRepository.findFuturosByCategoria(
                 categoria != null ? categoria.toUpperCase() : null,
                 LocalDate.now()
         );
         return agendamentos.stream().map(AgendamentoResumoDTO::new).toList();
+    }
+
+    public void liberarRestricao15Dias(Long militarId) {
+        Agendamento ultimoAgendamento = agendamentoRepository.findUltimoAgendamentoAtivoByMilitarId(militarId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Nenhum agendamento ativo encontrado para o militar informado."
+                ));
+
+        LocalDate hoje = agora().toLocalDate();
+        if (ultimoAgendamento.getData().isAfter(hoje)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "O último agendamento ainda não ocorreu e não pode ser liberado."
+            );
+        }
+
+        ultimoAgendamento.setStatus("ADMIN_CANCELADO");
+        ultimoAgendamento.setCanceladoPor("ADMIN_LIBERACAO");
+        agendamentoRepository.save(ultimoAgendamento);
+        logger.info("🔓 Restrição de 15 dias liberada para o militar {} (agendamento {}).",
+                ultimoAgendamento.getMilitar().getId(),
+                ultimoAgendamento.getId());
     }
 
     public Optional<Agendamento> findById(Long id) {

@@ -5,6 +5,7 @@ import ptBrLocale from '@angular/common/locales/pt';
 
 import { AdminComponent } from './pages/admin/admin.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { AdminBloqueiosComponent } from './pages/admin-bloqueios/admin-bloqueios.component';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
@@ -93,6 +94,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     DialogoDesmarcarComponent,
     CpfMaskDirective,
     AdminDashboardComponent,
+    AdminBloqueiosComponent,
     SidebarComponent,
     UsuariosComponent,
     AdminNavbarComponent,
