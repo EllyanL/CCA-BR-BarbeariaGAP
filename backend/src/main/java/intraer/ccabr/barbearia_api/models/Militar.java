@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -83,6 +84,10 @@ public class Militar implements UserDetails {
     @Column(name = "quadro", length = 15)
     @JsonProperty
     private String quadro;
+
+    @Column(name = "U_Agendamento")
+    @JsonProperty
+    private LocalDate ultimoAgendamento;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "categoria", length = 10)

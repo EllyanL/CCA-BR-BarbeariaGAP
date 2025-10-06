@@ -48,21 +48,6 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Agendamento> findByStatus(String status);
 
 
-    @Query("""
-            SELECT a.militar, MAX(a.data)
-            FROM Agendamento a
-            WHERE a.status IN ('AGENDADO', 'REALIZADO')
-              AND a.data <= :hoje
-            GROUP BY a.militar
-            HAVING MAX(a.data) > :limite
-            ORDER BY MAX(a.data) DESC
-            """)
-    List<Object[]> findMilitaresBloqueados15Dias(
-            @Param("hoje") LocalDate hoje,
-            @Param("limite") LocalDate limite
-    );
-
-
     @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram AND a.status IN ('AGENDADO', 'REALIZADO') ORDER BY a.data DESC")
     Optional<Agendamento> findUltimoAgendamentoBySaram(@Param("saram") String saram);
 
