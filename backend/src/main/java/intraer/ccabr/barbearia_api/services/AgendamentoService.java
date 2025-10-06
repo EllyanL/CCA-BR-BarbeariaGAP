@@ -11,6 +11,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -71,6 +73,21 @@ public class AgendamentoService {
         return ZonedDateTime.now(ZONE_ID_SAO_PAULO);
     }
 
+    private void atualizarUltimoAgendamentoDoMilitar(Militar militar) {
+        if (militar == null || militar.getId() == null) {
+            return;
+        }
+
+        LocalDate ultimaData = agendamentoRepository.findUltimoAgendamentoAtivoByMilitarId(militar.getId())
+            .map(Agendamento::getData)
+            .orElse(null);
+
+        if (!Objects.equals(militar.getUltimoAgendamento(), ultimaData)) {
+            militar.setUltimoAgendamento(ultimaData);
+            militarRepository.save(militar);
+        }
+    }
+
     @Transactional
     public Agendamento saveAgendamento(Agendamento agendamento) {
         Militar militar = agendamento.getMilitar();
@@ -79,7 +96,9 @@ public class AgendamentoService {
         }
         String dia = DiaSemana.from(agendamento.getDiaSemana()).getValor();
         agendamento.setDiaSemana(dia);
-        return agendamentoRepository.save(agendamento);
+        Agendamento salvo = agendamentoRepository.save(agendamento);
+        atualizarUltimoAgendamentoDoMilitar(salvo.getMilitar());
+        return salvo;
     }
 
     @Transactional
@@ -112,6 +131,7 @@ public class AgendamentoService {
         }
 
         Agendamento agendamentoSalvo = agendamentoRepository.save(agendamento);
+        atualizarUltimoAgendamentoDoMilitar(agendamentoSalvo.getMilitar());
         marcarHorarioComoAgendado(agendamentoSalvo);
         return agendamentoSalvo;
     }
@@ -135,12 +155,13 @@ public class AgendamentoService {
     public List<MilitarBloqueadoDTO> listarMilitaresBloqueados15Dias() {
         LocalDate hoje = agora().toLocalDate();
         LocalDate limite = hoje.minusDays(15);
-        List<Object[]> resultado = agendamentoRepository.findMilitaresBloqueados15Dias(hoje, limite);
+        List<Militar> bloqueados = militarRepository.findByUltimoAgendamentoAfter(limite);
 
-        return resultado.stream()
-                .map(item -> new MilitarBloqueadoDTO(
-                        (Militar) item[0],
-                        (LocalDate) item[1],
+        return bloqueados.stream()
+                .sorted(Comparator.comparing(Militar::getUltimoAgendamento).reversed())
+                .map(militar -> new MilitarBloqueadoDTO(
+                        militar,
+                        militar.getUltimoAgendamento(),
                         hoje))
                 .toList();
     }
@@ -172,6 +193,7 @@ public class AgendamentoService {
         ultimoAgendamento.setStatus("ADMIN_CANCELADO");
         ultimoAgendamento.setCanceladoPor("ADMIN_LIBERACAO");
         agendamentoRepository.save(ultimoAgendamento);
+        atualizarUltimoAgendamentoDoMilitar(ultimoAgendamento.getMilitar());
         logger.info("🔓 Restrição de 15 dias liberada para o militar {} (agendamento {}).",
                 ultimoAgendamento.getMilitar().getId(),
                 ultimoAgendamento.getId());
@@ -214,6 +236,7 @@ public class AgendamentoService {
             agendamento.setStatus(isAdmin ? "ADMIN_CANCELADO" : "CANCELADO");
             agendamento.setCanceladoPor(isAdmin ? "ADMIN" : "USUARIO");
             agendamentoRepository.save(agendamento);
+            atualizarUltimoAgendamentoDoMilitar(agendamento.getMilitar());
             marcarHorarioComoDisponivel(agendamento);
         });
     }
@@ -276,8 +299,9 @@ public class AgendamentoService {
     }
 
     public boolean podeAgendar15Dias(String saram, LocalDate dataNova) {
-        return agendamentoRepository.findUltimoAgendamentoBySaram(saram)
-                .map(ultimo -> ChronoUnit.DAYS.between(ultimo.getData(), dataNova) >= 15)
+        return militarRepository.findBySaram(saram)
+                .map(Militar::getUltimoAgendamento)
+                .map(ultimaData -> ChronoUnit.DAYS.between(ultimaData, dataNova) >= 15)
                 .orElse(true);
     }
 
@@ -511,6 +535,7 @@ public class AgendamentoService {
         agendamento.setDiaSemana(novoDiaNorm);
 
         Agendamento atualizado = agendamentoRepository.save(agendamento);
+        atualizarUltimoAgendamentoDoMilitar(atualizado.getMilitar());
 
         // Marca novo horário como agendado
         marcarHorarioComoAgendado(atualizado);
