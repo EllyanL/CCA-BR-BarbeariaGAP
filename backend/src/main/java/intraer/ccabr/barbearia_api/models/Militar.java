@@ -85,7 +85,7 @@ public class Militar implements UserDetails {
     @JsonProperty
     private String quadro;
 
-    @Column(name = "U_Agendamento")
+    @Column(name = "u_agendamento")
     @JsonProperty
     private LocalDate ultimoAgendamento;
 
