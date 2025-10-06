@@ -3,6 +3,7 @@ package intraer.ccabr.barbearia_api.repositories;
 import intraer.ccabr.barbearia_api.models.Militar;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,4 +38,6 @@ public interface MilitarRepository extends JpaRepository<Militar, Long> {
      */
     @Query("SELECT m FROM Militar m WHERE LOWER(m.quadro) = LOWER(:quadro)")
     List<Militar> findByQuadro(String quadro);
+
+    List<Militar> findByUltimoAgendamentoAfter(LocalDate limite);
 }
