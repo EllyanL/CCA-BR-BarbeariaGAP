@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/justificativas-ausencia")
+@RequestMapping("/api/justificativas-ausencia")
 public class JustificativaAusenciaController {
 
     private final JustificativaAusenciaService justificativaAusenciaService;
