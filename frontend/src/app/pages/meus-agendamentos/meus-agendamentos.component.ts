@@ -173,10 +173,10 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
     return mapa[justificativa.status] ?? '';
   }
 
-  tooltipJustificativa(agendamento: Agendamento): string | null {
+  tooltipJustificativa(agendamento: Agendamento): string {
     const justificativa = agendamento.justificativaAusencia;
     if (!justificativa) {
-      return null;
+      return '';
     }
 
     if (justificativa.status === 'AGUARDANDO') {
@@ -190,7 +190,7 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
       .filter(Boolean)
       .join(' ');
     if (!avaliador) {
-      return null;
+      return '';
     }
 
     const textoBase = justificativa.status === 'APROVADO' ? 'Aprovado' : 'Recusado';
