@@ -27,9 +27,9 @@ import intraer.ccabr.barbearia_api.dtos.AgendamentoResumoDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoUpdateDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoAdminDTO;
 import intraer.ccabr.barbearia_api.dtos.AgendamentoCreateDTO;
-import intraer.ccabr.barbearia_api.dtos.MilitarBloqueadoDTO;
 import intraer.ccabr.barbearia_api.enums.DiaSemana;
 import intraer.ccabr.barbearia_api.models.Agendamento;
+import intraer.ccabr.barbearia_api.models.JustificativaAusencia;
 import intraer.ccabr.barbearia_api.models.Militar;
 import org.springframework.security.core.Authentication;
 import org.slf4j.Logger;
@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import intraer.ccabr.barbearia_api.services.AgendamentoService;
 import intraer.ccabr.barbearia_api.services.HorarioUpdateService;
+import intraer.ccabr.barbearia_api.services.JustificativaAusenciaService;
 import jakarta.validation.Valid;
 
 @RestController
@@ -49,11 +50,14 @@ public class AgendamentoController {
     private final AgendamentoService agendamentoService;
 
     private final HorarioUpdateService horarioUpdateService;
+    private final JustificativaAusenciaService justificativaAusenciaService;
 
     public AgendamentoController(AgendamentoService agendamentoService,
-                                 HorarioUpdateService horarioUpdateService) {
+                                 HorarioUpdateService horarioUpdateService,
+                                 JustificativaAusenciaService justificativaAusenciaService) {
         this.agendamentoService = agendamentoService;
         this.horarioUpdateService = horarioUpdateService;
+        this.justificativaAusenciaService = justificativaAusenciaService;
     }
 
     @PostMapping
@@ -117,13 +121,16 @@ public class AgendamentoController {
                     LocalDate.now());
         }
 
-    if (agendamentos.isEmpty()) {
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+        if (agendamentos.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
 
-    List<AgendamentoDTO> agendamentoDTOs = agendamentos.stream()
-            .map(AgendamentoDTO::new)
-            .toList();
+        Map<Long, JustificativaAusencia> justificativas = justificativaAusenciaService
+                .mapearPorAgendamentos(agendamentos.stream().map(Agendamento::getId).toList());
+
+        List<AgendamentoDTO> agendamentoDTOs = agendamentos.stream()
+                .map(ag -> new AgendamentoDTO(ag, justificativas.get(ag.getId())))
+                .toList();
 
         return new ResponseEntity<>(agendamentoDTOs, HttpStatus.OK);
     }
@@ -166,8 +173,11 @@ public class AgendamentoController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
+        Map<Long, JustificativaAusencia> justificativas = justificativaAusenciaService
+                .mapearPorAgendamentos(agendamentos.stream().map(Agendamento::getId).toList());
+
         List<AgendamentoDTO> dtos = agendamentos.stream()
-                .map(AgendamentoDTO::new)
+                .map(ag -> new AgendamentoDTO(ag, justificativas.get(ag.getId())))
                 .toList();
 
         return new ResponseEntity<>(dtos, HttpStatus.OK);
@@ -185,8 +195,11 @@ public class AgendamentoController {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
 
+        Map<Long, JustificativaAusencia> justificativas = justificativaAusenciaService
+                .mapearPorAgendamentos(agendamentos.stream().map(Agendamento::getId).toList());
+
         List<AgendamentoAdminDTO> dtos = agendamentos.stream()
-                .map(AgendamentoAdminDTO::new)
+                .map(ag -> new AgendamentoAdminDTO(ag, justificativas.get(ag.getId())))
                 .toList();
 
         return new ResponseEntity<>(dtos, HttpStatus.OK);
@@ -212,26 +225,12 @@ public class AgendamentoController {
         if (agendamentos.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+        Map<Long, JustificativaAusencia> justificativas = justificativaAusenciaService
+                .mapearPorAgendamentos(agendamentos.stream().map(Agendamento::getId).toList());
+
         List<AgendamentoAdminDTO> dtos =
-            agendamentos.stream().map(AgendamentoAdminDTO::new).toList();
+            agendamentos.stream().map(ag -> new AgendamentoAdminDTO(ag, justificativas.get(ag.getId()))).toList();
         return ResponseEntity.ok(dtos);
-    }
-
-    @GetMapping("/admin/bloqueios-15-dias")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<MilitarBloqueadoDTO>> listarBloqueios15Dias() {
-        List<MilitarBloqueadoDTO> bloqueados = agendamentoService.listarMilitaresBloqueados15Dias();
-        if (bloqueados.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(bloqueados);
-    }
-
-    @PutMapping("/admin/bloqueios-15-dias/{militarId}/liberar")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> liberarBloqueio15Dias(@PathVariable Long militarId) {
-        agendamentoService.liberarRestricao15Dias(militarId);
-        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

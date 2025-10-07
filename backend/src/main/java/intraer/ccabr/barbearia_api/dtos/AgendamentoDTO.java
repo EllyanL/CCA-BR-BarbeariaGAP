@@ -1,6 +1,7 @@
 package intraer.ccabr.barbearia_api.dtos;
 
 import intraer.ccabr.barbearia_api.models.Agendamento;
+import intraer.ccabr.barbearia_api.models.JustificativaAusencia;
 import intraer.ccabr.barbearia_api.models.Militar;
 import lombok.Data;
 
@@ -24,8 +25,13 @@ public class AgendamentoDTO {
     private String cpfUsuario;
     private String nomeUsuario;
     private Long timestamp;
+    private JustificativaAusenciaDTO justificativaAusencia;
 
     public AgendamentoDTO(Agendamento agendamento) {
+        this(agendamento, null);
+    }
+
+    public AgendamentoDTO(Agendamento agendamento, JustificativaAusencia justificativa) {
         this.id = agendamento.getId();
         this.data = agendamento.getData();
         this.hora = agendamento.getHora();
@@ -37,6 +43,10 @@ public class AgendamentoDTO {
                 .atZone(ZoneId.of("America/Sao_Paulo"))
                 .toInstant()
                 .toEpochMilli();
+
+        if (justificativa != null) {
+            this.justificativaAusencia = new JustificativaAusenciaDTO(justificativa);
+        }
 
         // Conversão explícita do Militar para UserDTO
         Militar m = agendamento.getMilitar();

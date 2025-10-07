@@ -1,5 +1,6 @@
 import { Militar } from './militar';
 import { DiaKey } from '../shared/dias.util';
+import { JustificativaAusencia } from './justificativa-ausencia';
 
 export { Militar } from './militar';
 
@@ -18,4 +19,5 @@ export interface Agendamento {
   timestamp?: number;
   status?: string;
   canceladoPor?: string;
+  justificativaAusencia?: JustificativaAusencia | null;
 }
