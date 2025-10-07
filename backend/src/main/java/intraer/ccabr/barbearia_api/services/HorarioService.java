@@ -228,6 +228,7 @@ public class HorarioService {
     public Map<String, Map<String, List<Horario>>> getTodosHorarios() {
         liberarHorariosSemanaAtual();
 
+
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
         Map<String, Map<String, List<Horario>>> horarios = new HashMap<>();
         String[] categorias = {"GRADUADO", "OFICIAL"};
