@@ -1,3 +1,30 @@
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.filtros .campo {
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.filtros .campo-periodo {
+  max-width: 320px;
+}
+
+.filtros .campo-status {
+  min-width: 200px;
+}
+
+.botao-limpar {
+  align-self: center;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 .ausencias-wrapper {
   display: flex;
   gap: 24px;
@@ -74,6 +101,14 @@
 @media (max-width: 1024px) {
   .ausencias-wrapper {
     flex-direction: column;
+  }
+
+  .filtros {
+    align-items: stretch;
+  }
+
+  .botao-limpar {
+    align-self: flex-start;
   }
 
   .lista {

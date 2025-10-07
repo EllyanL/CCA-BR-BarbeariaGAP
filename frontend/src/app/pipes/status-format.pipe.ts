@@ -9,6 +9,7 @@ export class StatusFormatPipe implements PipeTransform {
     INDISPONIVEL: 'Indisponível',
     AGENDADO: 'Agendado',
     REALIZADO: 'Efetuado',
+    REAGENDADO: 'Reagendado',
     CANCELADO: 'Cancelado',
     ADMIN_CANCELADO: 'Cancelado'
   };
@@ -18,6 +19,7 @@ export class StatusFormatPipe implements PipeTransform {
     DISPONIVEL: 'status-disponivel',
     INDISPONIVEL: 'status-indisponivel',
     REALIZADO: 'status-realizado',
+    REAGENDADO: 'status-reagendado',
     CANCELADO: 'status-cancelado',
     ADMIN_CANCELADO: 'status-cancelado'
   };
@@ -27,6 +29,7 @@ export class StatusFormatPipe implements PipeTransform {
     AGENDADO: 'botao-agendado-outro',
     INDISPONIVEL: 'tabela-botao-indisponivel',
     REALIZADO: 'tabela-botao-realizado',
+    REAGENDADO: 'tabela-botao-reagendado',
     CANCELADO: 'tabela-botao-cancelado',
     ADMIN_CANCELADO: 'tabela-botao-cancelado'
   };
