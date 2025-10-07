@@ -20,8 +20,10 @@ export class AdminAusenciasComponent implements OnInit {
   carregando = false;
   erroCarregamento = false;
   filtroTexto = '';
+
   filtroDataInicio?: Date;
   filtroDataFim?: Date;
+
   filtroStatus: JustificativaStatus[] = [];
   readonly statusOptions: { value: JustificativaStatus; label: string }[] = [
     { value: 'AGUARDANDO', label: 'Aguardando' },
@@ -111,6 +113,7 @@ export class AdminAusenciasComponent implements OnInit {
     if (campo === 'texto') {
       this.filtroTexto = '';
     } else if (campo === 'dataInicio') {
+
       this.filtroDataInicio = undefined;
     } else if (campo === 'dataFim') {
       this.filtroDataFim = undefined;
@@ -122,8 +125,10 @@ export class AdminAusenciasComponent implements OnInit {
 
   limparFiltros(): void {
     this.filtroTexto = '';
+
     this.filtroDataInicio = undefined;
     this.filtroDataFim = undefined;
+
     this.filtroStatus = [];
     this.aplicarFiltros();
   }
@@ -233,6 +238,7 @@ export class AdminAusenciasComponent implements OnInit {
   }
 
   private normalizarInicio(data?: Date): Date | null {
+
     if (!data) {
       return null;
     }
@@ -242,6 +248,7 @@ export class AdminAusenciasComponent implements OnInit {
   }
 
   private normalizarFim(data?: Date): Date | null {
+
     if (!data) {
       return null;
     }
