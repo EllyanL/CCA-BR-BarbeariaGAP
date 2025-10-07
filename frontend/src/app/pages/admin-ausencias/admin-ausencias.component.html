@@ -19,46 +19,24 @@
       </button>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="campo campo-data">
-      <mat-label>Data inicial</mat-label>
-      <input
-        matInput
-        [matDatepicker]="dataInicioPicker"
-        [(ngModel)]="filtroDataInicio"
-        (dateChange)="aplicarFiltros()"
-      />
-      <mat-datepicker-toggle matSuffix [for]="dataInicioPicker"></mat-datepicker-toggle>
-      <button
-        *ngIf="filtroDataInicio"
-        mat-icon-button
-        matSuffix
-        aria-label="Limpar data inicial"
-        (click)="limparCampo('dataInicio')"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
-      <mat-datepicker #dataInicioPicker></mat-datepicker>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="campo campo-data">
-      <mat-label>Data final</mat-label>
-      <input
-        matInput
-        [matDatepicker]="dataFimPicker"
-        [(ngModel)]="filtroDataFim"
-        (dateChange)="aplicarFiltros()"
-      />
-      <mat-datepicker-toggle matSuffix [for]="dataFimPicker"></mat-datepicker-toggle>
-      <button
-        *ngIf="filtroDataFim"
-        mat-icon-button
-        matSuffix
-        aria-label="Limpar data final"
-        (click)="limparCampo('dataFim')"
-      >
-        <mat-icon>close</mat-icon>
-      </button>
-      <mat-datepicker #dataFimPicker></mat-datepicker>
+    <mat-form-field appearance="outline" class="campo campo-periodo">
+      <mat-label>Período</mat-label>
+      <mat-date-range-input [rangePicker]="picker">
+        <input
+          matStartDate
+          [(ngModel)]="filtroDataInicio"
+          (ngModelChange)="onDateRangeChange()"
+          placeholder="Data inicial"
+        />
+        <input
+          matEndDate
+          [(ngModel)]="filtroDataFim"
+          (ngModelChange)="onDateRangeChange()"
+          placeholder="Data final"
+        />
+      </mat-date-range-input>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-date-range-picker #picker></mat-date-range-picker>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="campo campo-status">

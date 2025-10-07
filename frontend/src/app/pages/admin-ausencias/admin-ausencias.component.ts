@@ -20,8 +20,10 @@ export class AdminAusenciasComponent implements OnInit {
   carregando = false;
   erroCarregamento = false;
   filtroTexto = '';
-  filtroDataInicio: Date | null = null;
-  filtroDataFim: Date | null = null;
+
+  filtroDataInicio?: Date;
+  filtroDataFim?: Date;
+
   filtroStatus: JustificativaStatus[] = [];
   readonly statusOptions: { value: JustificativaStatus; label: string }[] = [
     { value: 'AGUARDANDO', label: 'Aguardando' },
@@ -111,9 +113,10 @@ export class AdminAusenciasComponent implements OnInit {
     if (campo === 'texto') {
       this.filtroTexto = '';
     } else if (campo === 'dataInicio') {
-      this.filtroDataInicio = null;
+
+      this.filtroDataInicio = undefined;
     } else if (campo === 'dataFim') {
-      this.filtroDataFim = null;
+      this.filtroDataFim = undefined;
     } else if (campo === 'status') {
       this.filtroStatus = [];
     }
@@ -122,8 +125,10 @@ export class AdminAusenciasComponent implements OnInit {
 
   limparFiltros(): void {
     this.filtroTexto = '';
-    this.filtroDataInicio = null;
-    this.filtroDataFim = null;
+
+    this.filtroDataInicio = undefined;
+    this.filtroDataFim = undefined;
+
     this.filtroStatus = [];
     this.aplicarFiltros();
   }
@@ -228,7 +233,12 @@ export class AdminAusenciasComponent implements OnInit {
     return Number.isNaN(resultado.getTime()) ? null : resultado;
   }
 
-  private normalizarInicio(data: Date | null): Date | null {
+  onDateRangeChange(): void {
+    this.aplicarFiltros();
+  }
+
+  private normalizarInicio(data?: Date): Date | null {
+
     if (!data) {
       return null;
     }
@@ -237,7 +247,8 @@ export class AdminAusenciasComponent implements OnInit {
     return inicio;
   }
 
-  private normalizarFim(data: Date | null): Date | null {
+  private normalizarFim(data?: Date): Date | null {
+
     if (!data) {
       return null;
     }
