@@ -1,6 +1,7 @@
 package intraer.ccabr.barbearia_api.dtos;
 
 import intraer.ccabr.barbearia_api.models.Agendamento;
+import intraer.ccabr.barbearia_api.models.JustificativaAusencia;
 import intraer.ccabr.barbearia_api.models.Militar;
 import lombok.Data;
 
@@ -18,10 +19,15 @@ public class AgendamentoAdminDTO {
     private String canceladoPor;
     private UserDTO militar;
     private String usuarioSaram;
+    private JustificativaAusenciaDTO justificativaAusencia;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public AgendamentoAdminDTO(Agendamento agendamento) {
+        this(agendamento, null);
+    }
+
+    public AgendamentoAdminDTO(Agendamento agendamento, JustificativaAusencia justificativa) {
         this.id = agendamento.getId();
         this.data = agendamento.getData().format(DATE_FMT);
         this.hora = HoraUtil.format(agendamento.getHora());
@@ -29,6 +35,10 @@ public class AgendamentoAdminDTO {
         this.categoria = agendamento.getCategoria();
         this.status = agendamento.getStatus();
         this.canceladoPor = agendamento.getCanceladoPor();
+
+        if (justificativa != null) {
+            this.justificativaAusencia = new JustificativaAusenciaDTO(justificativa);
+        }
 
         Militar m = agendamento.getMilitar();
         if (m != null) {

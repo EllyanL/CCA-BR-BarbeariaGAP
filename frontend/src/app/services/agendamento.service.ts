@@ -10,7 +10,6 @@ import { normalizeDia, DiaKey } from '../shared/dias.util';
 import { getCookie } from '../utils/cookie.util';
 import { AgendamentoResumo } from '../models/agendamento-resumo';
 import { normalizeHora } from '../utils/horarios-utils';
-import { MilitarBloqueado } from '../models/militar-bloqueado';
 
 @Injectable({
   providedIn: 'root'
@@ -75,30 +74,6 @@ export class AgendamentoService {
         ),
         catchError(error => {
           this.logger.error('Erro ao obter agendamentos admin:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
-  listarBloqueados15Dias(): Observable<MilitarBloqueado[]> {
-    return this.http
-      .get<MilitarBloqueado[] | null>(`${this.apiUrl}/admin/bloqueios-15-dias`)
-      .pipe(
-        map(resposta => resposta ?? []),
-        catchError(error => {
-          this.logger.error('Erro ao obter usuários bloqueados pela regra de 15 dias:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
-  liberarRestricao15Dias(militarId: number): Observable<void> {
-    return this.http
-      .put<void>(`${this.apiUrl}/admin/bloqueios-15-dias/${militarId}/liberar`, {})
-      .pipe(
-        tap(() => this.logger.log('Restrição de 15 dias liberada para o militar', militarId)),
-        catchError(error => {
-          this.logger.error('Erro ao liberar restrição de 15 dias:', error);
           return throwError(() => error);
         })
       );

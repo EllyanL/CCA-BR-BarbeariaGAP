@@ -1,0 +1,55 @@
+<app-admin-navbar [containerClass]="'ausencias-container'" [contentClass]="'ausencias-content'">
+  <div class="ausencias-wrapper" *ngIf="!carregando; else loading">
+    <ng-container *ngIf="solicitacoes.length; else vazio">
+      <div class="lista">
+        <mat-nav-list>
+          <a
+            mat-list-item
+            *ngFor="let solicitacao of solicitacoes"
+            (click)="selecionar(solicitacao)"
+            [class.selecionado]="selecionada?.id === solicitacao.id"
+          >
+            <div matLine>{{ tituloSolicitacao(solicitacao) }}</div>
+            <div matLine class="status" [ngClass]="classeStatus(solicitacao.status)">
+              {{ descricaoStatus(solicitacao) }}
+            </div>
+          </a>
+        </mat-nav-list>
+      </div>
+      <div class="detalhe" *ngIf="selecionada; else selecione">
+        <h2>Justificativa</h2>
+        <p class="texto-justificativa">{{ selecionada?.justificativa }}</p>
+        <div class="status-detalhe" [ngClass]="classeStatus(selecionada!.status)">
+          Status: {{ descricaoStatus(selecionada!) }}
+        </div>
+        <div class="acoes" *ngIf="selecionada?.status === 'AGUARDANDO'">
+          <button mat-raised-button color="primary" (click)="aprovarSelecionada()">
+            Aprovar
+          </button>
+          <button mat-stroked-button color="warn" (click)="recusarSelecionada()">
+            Recusar
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</app-admin-navbar>
+
+<ng-template #loading>
+  <div class="estado">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Carregando justificativas...</p>
+  </div>
+</ng-template>
+
+<ng-template #vazio>
+  <div class="estado">
+    <p>Nenhuma justificativa de ausência no momento.</p>
+  </div>
+</ng-template>
+
+<ng-template #selecione>
+  <div class="estado">
+    <p>Selecione uma justificativa para visualizar os detalhes.</p>
+  </div>
+</ng-template>

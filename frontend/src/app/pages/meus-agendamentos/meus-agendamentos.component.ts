@@ -6,6 +6,10 @@ import { AgendamentoService } from '../../services/agendamento.service';
 import { DatePipe } from '@angular/common';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { JustificativaAusencia, JustificativaStatus } from '../../models/justificativa-ausencia';
+import { JustificarAusenciaDialogComponent } from '../../components/justificar-ausencia-dialog/justificar-ausencia-dialog.component';
 
 @Component({
   selector: 'app-meus-agendamentos',
@@ -20,7 +24,8 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
     'postoGrad',
     'nomeDeGuerra',
     'status',
-    'canceladoPor'
+    'canceladoPor',
+    'ausencia'
   ];
   dataSource = new MatTableDataSource<Agendamento>([]);
 
@@ -29,7 +34,9 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
 
   constructor(
     private agendamentoService: AgendamentoService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -102,6 +109,128 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
         console.error('Erro ao carregar agendamentos', err);
       }
     });
+  }
+
+  podeExibirBotao(agendamento: Agendamento): boolean {
+    return this.podeJustificar(agendamento) || !!agendamento.justificativaAusencia;
+  }
+
+  podeJustificar(agendamento: Agendamento): boolean {
+    if (!agendamento || agendamento.justificativaAusencia) {
+      return false;
+    }
+
+    if (!agendamento.data || !agendamento.hora) {
+      return false;
+    }
+
+    const status = (agendamento.status || '').toUpperCase();
+    if (status === 'CANCELADO' || status === 'ADMIN_CANCELADO') {
+      return false;
+    }
+
+    const dataAgendamento = new Date(agendamento.data);
+    if (Number.isNaN(dataAgendamento.getTime())) {
+      return false;
+    }
+
+    const [horaStr, minutoStr] = (agendamento.hora || '00:00').split(':');
+    const dataHora = new Date(dataAgendamento);
+    dataHora.setHours(Number(horaStr ?? 0), Number(minutoStr ?? 0), 0, 0);
+    const agora = new Date();
+
+    if (agora < dataHora) {
+      return false;
+    }
+
+    const diffDias = this.diferencaDias(this.normalizarData(agora), this.normalizarData(dataAgendamento));
+    return diffDias >= 0 && diffDias <= 3;
+  }
+
+  textoBotaoJustificativa(agendamento: Agendamento): string {
+    const justificativa = agendamento.justificativaAusencia;
+    if (!justificativa) {
+      return 'Justificar ausência';
+    }
+
+    const mapa: Record<JustificativaStatus, string> = {
+      AGUARDANDO: 'Aguardando',
+      APROVADO: 'Aprovado',
+      RECUSADO: 'Recusado'
+    };
+    return mapa[justificativa.status] ?? 'Justificar ausência';
+  }
+
+  classeBotaoJustificativa(justificativa?: JustificativaAusencia | null): string {
+    if (!justificativa) {
+      return '';
+    }
+    const mapa: Record<JustificativaStatus, string> = {
+      AGUARDANDO: 'btn-aguardando',
+      APROVADO: 'btn-aprovado',
+      RECUSADO: 'btn-recusado'
+    };
+    return mapa[justificativa.status] ?? '';
+  }
+
+  tooltipJustificativa(agendamento: Agendamento): string | null {
+    const justificativa = agendamento.justificativaAusencia;
+    if (!justificativa) {
+      return null;
+    }
+
+    if (justificativa.status === 'AGUARDANDO') {
+      return 'Aguardando análise do administrador.';
+    }
+
+    const avaliador = [
+      justificativa.avaliadoPorPostoGrad,
+      justificativa.avaliadoPorNomeDeGuerra
+    ]
+      .filter(Boolean)
+      .join(' ');
+    if (!avaliador) {
+      return null;
+    }
+
+    const textoBase = justificativa.status === 'APROVADO' ? 'Aprovado' : 'Recusado';
+    return `${textoBase} por ${avaliador}.`;
+  }
+
+  abrirDialogoJustificar(agendamento: Agendamento): void {
+    if (!this.podeJustificar(agendamento)) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(JustificarAusenciaDialogComponent, {
+      width: '420px',
+      data: agendamento
+    });
+
+    dialogRef.afterClosed().subscribe((justificativa?: JustificativaAusencia) => {
+      if (!justificativa) {
+        return;
+      }
+
+      const dados = this.dataSource.data.map(item =>
+        item.id === agendamento.id ? { ...item, justificativaAusencia: justificativa } : item
+      );
+      this.dataSource.data = dados;
+      this.snackBar.open('Solicitação enviada. Aguarde a análise do administrador.', 'Fechar', {
+        duration: 5000
+      });
+    });
+  }
+
+  private diferencaDias(dataFinal: Date, dataInicial: Date): number {
+    const diff = dataFinal.getTime() - dataInicial.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  }
+
+  private normalizarData(data: Date): Date {
+    const d = new Date(data);
+    d.setHours(0, 0, 0, 0);
+    return d;
   }
 
   formatarStatus(status: string): string {

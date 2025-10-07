@@ -5,7 +5,7 @@ import ptBrLocale from '@angular/common/locales/pt';
 
 import { AdminComponent } from './pages/admin/admin.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
-import { AdminBloqueiosComponent } from './pages/admin-bloqueios/admin-bloqueios.component';
+import { AdminAusenciasComponent } from './pages/admin-ausencias/admin-ausencias.component';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
@@ -67,6 +67,7 @@ import { DialogoGerenciarHorariosComponent } from './components/dialogo-gerencia
 import { MeusAgendamentosComponent } from './pages/meus-agendamentos/meus-agendamentos.component';
 import { DialogoAgendamentoRealizadoComponent } from './components/agendamento/dialogo-agendamento-realizado/dialogo-agendamento-realizado.component';
 import { ConfirmarToggleDiaComponent } from './components/confirmar-toggle-dia/confirmar-toggle-dia.component';
+import { JustificarAusenciaDialogComponent } from './components/justificar-ausencia-dialog/justificar-ausencia-dialog.component';
 
 registerLocaleData(ptBrLocale, 'pt-BR');
 
@@ -94,7 +95,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     DialogoDesmarcarComponent,
     CpfMaskDirective,
     AdminDashboardComponent,
-    AdminBloqueiosComponent,
+    AdminAusenciasComponent,
     SidebarComponent,
     UsuariosComponent,
     AdminNavbarComponent,
@@ -103,6 +104,7 @@ registerLocaleData(ptBrLocale, 'pt-BR');
     MeusAgendamentosComponent,
     DialogoAgendamentoRealizadoComponent,
     ConfirmarToggleDiaComponent,
+    JustificarAusenciaDialogComponent,
   ],
   imports: [
     BrowserModule,

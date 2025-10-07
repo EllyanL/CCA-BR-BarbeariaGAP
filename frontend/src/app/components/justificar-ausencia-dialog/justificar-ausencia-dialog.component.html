@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>Justificar ausência</h2>
+<div mat-dialog-content>
+  <p>
+    Informe o motivo da ausência referente ao agendamento do dia
+    <strong>{{ agendamento.data | date: 'dd/MM/yyyy':'':'pt-BR' }}</strong>
+    às <strong>{{ agendamento.hora }}</strong>.
+  </p>
+  <mat-form-field appearance="fill" class="campo-justificativa">
+    <mat-label>Justificativa</mat-label>
+    <textarea
+      matInput
+      [formControl]="justificativaControl"
+      rows="4"
+      maxlength="250"
+      placeholder="Descreva o motivo da ausência"
+    ></textarea>
+    <mat-hint align="end">{{ caracteresRestantes }} caracteres restantes</mat-hint>
+    <mat-error *ngIf="justificativaControl.hasError('required')">
+      O motivo da ausência é obrigatório.
+    </mat-error>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button [disabled]="enviando" mat-dialog-close>Cancelar</button>
+  <button mat-raised-button color="primary" [disabled]="enviando" (click)="enviar()">
+    Enviar
+  </button>
+</div>

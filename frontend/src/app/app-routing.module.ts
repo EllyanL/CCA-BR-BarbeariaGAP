@@ -2,7 +2,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AdminComponent } from './pages/admin/admin.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
-import { AdminBloqueiosComponent } from './pages/admin-bloqueios/admin-bloqueios.component';
+import { AdminAusenciasComponent } from './pages/admin-ausencias/admin-ausencias.component';
 import { AdminGuard } from './guards/admin.guard';
 import { GraduadoGuard } from './guards/graduado.guard';
 import { GraduadosComponent } from './pages/graduados/graduados.component';
@@ -28,7 +28,7 @@ const routes: Routes = [
     { path: 'admin', component: AdminComponent, data: { title: 'Admin' }, canActivate: [AdminGuard] },
     { path: 'admin/horarios', component: HorariosComponent, data: { title: 'Gerenciar Horários' }, canActivate: [AdminGuard] },
     { path: 'admin/dashboard', component: AdminDashboardComponent, data: { title: 'Dashboard Admin' }, canActivate: [AdminGuard] },
-    { path: 'admin/bloqueios', component: AdminBloqueiosComponent, data: { title: 'Regra de 15 dias' }, canActivate: [AdminGuard] },
+    { path: 'admin/ausencias', component: AdminAusenciasComponent, data: { title: 'Ausências' }, canActivate: [AdminGuard] },
     { path: 'admin/usuarios', component: UsuariosComponent, data: { title: 'Usuários' }, canActivate: [AdminGuard] },
     { path: 'admin/gerenciar-registros', component: GerenciarRegistrosComponent, canActivate: [AdminGuard], data: { title: 'Gerenciar Registros' } },
     { path: 'not-authorized', component: NotAuthorizedComponent, data: { title: 'Acesso não autorizado' } },
