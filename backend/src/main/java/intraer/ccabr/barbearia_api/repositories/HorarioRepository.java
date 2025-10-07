@@ -1,5 +1,6 @@
 package intraer.ccabr.barbearia_api.repositories;
 
+import intraer.ccabr.barbearia_api.enums.HorarioStatus;
 import intraer.ccabr.barbearia_api.models.Horario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -25,6 +26,8 @@ public interface HorarioRepository extends JpaRepository<Horario, Long> {
     List<Horario> findByCategoria(String categoria);
 
     long countByDia(String dia);
+
+    List<Horario> findByStatus(HorarioStatus status);
 
     @Transactional
     @Modifying
