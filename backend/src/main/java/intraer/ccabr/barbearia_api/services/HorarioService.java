@@ -177,8 +177,57 @@ public class HorarioService {
     //     logger.info("Horários base inicializados a partir do banco: {}", horariosBase);
     // }
 
+    private void liberarHorariosSemanaAtual() {
+        List<Horario> agendados = horarioRepository.findByStatus(HorarioStatus.AGENDADO);
+        if (agendados.isEmpty()) {
+            return;
+        }
+
+        LocalDate hoje = LocalDate.now();
+        LocalDate inicioSemana = calcularInicioSemana(hoje);
+        LocalDate fimSemana = inicioSemana.plusDays(4);
+
+        List<Agendamento> agendamentosSemana = agendamentoRepository.findAtivosNoPeriodo(inicioSemana, fimSemana);
+        Map<String, Map<LocalTime, Agendamento>> agendamentosAgrupados = agruparAgendamentosPorDiaCategoria(agendamentosSemana);
+
+        List<Horario> liberados = new ArrayList<>();
+
+        for (Horario horario : agendados) {
+            String chave = chaveDiaCategoria(horario.getDia(), horario.getCategoria());
+            Map<LocalTime, Agendamento> agendadosDia = agendamentosAgrupados.get(chave);
+            boolean possuiAgendamentoNaSemana = agendadosDia != null && agendadosDia.containsKey(horario.getHorario());
+
+            if (possuiAgendamentoNaSemana) {
+                continue;
+            }
+
+            boolean possuiAgendamentoFuturo = agendamentoRepository.existsByHoraAndDiaSemanaAndCategoria(
+                    horario.getHorario(),
+                    horario.getDia(),
+                    horario.getCategoria()
+            );
+
+            if (!possuiAgendamentoFuturo) {
+                horario.setStatus(HorarioStatus.DISPONIVEL);
+                liberados.add(horario);
+            }
+        }
+
+        if (!liberados.isEmpty()) {
+            horarioRepository.saveAll(liberados);
+            logger.info(
+                    "Horários liberados automaticamente para a semana de {} a {}. {} registros atualizados.",
+                    inicioSemana,
+                    fimSemana,
+                    liberados.size()
+            );
+        }
+    }
+
+    @Transactional
     public Map<String, Map<String, List<Horario>>> getTodosHorarios() {
-        ajustarStatusHorariosSemanaAtual();
+        liberarHorariosSemanaAtual();
+
 
         ConfiguracaoAgendamento config = configuracaoAgendamentoService.buscarConfiguracao();
         Map<String, Map<String, List<Horario>>> horarios = new HashMap<>();
@@ -242,8 +291,7 @@ public class HorarioService {
         }
         String status = raw.toUpperCase();
         return switch (status) {
-            case "AGENDADO", "INDISPONIVEL" -> status;
-            case "REALIZADO" -> "AGENDADO";
+            case "AGENDADO", "INDISPONIVEL", "REALIZADO", "REAGENDADO" -> status;
             default -> "DISPONIVEL";
         };
     }
@@ -276,7 +324,7 @@ public class HorarioService {
             Agendamento agendamento = agendados.get(h.getHorario());
             if (agendamento != null) {
                 dto.setUsuarioId(agendamento.getMilitar().getId());
-                status = "AGENDADO";
+                status = agendamento.getStatus();
             }
 
             dto.setStatus(normalizeStatus(status));
