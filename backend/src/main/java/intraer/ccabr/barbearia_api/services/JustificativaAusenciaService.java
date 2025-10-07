@@ -116,7 +116,7 @@ public class JustificativaAusenciaService {
         }
 
         Militar militar = justificativa.getMilitar();
-        militar.setUltimoAgendamento(LocalDate.now());
+        militar.setUltimoAgendamento(null);
         militarRepository.save(militar);
 
         return repository.save(justificativa);
