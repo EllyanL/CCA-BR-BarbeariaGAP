@@ -1,3 +1,11 @@
+.campo-justificativa {
+  width: 100%;
+}
+
 .campo-justificativa textarea {
   resize: vertical;
+  min-height: 180px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
 }
