@@ -129,6 +129,11 @@ export class MeusAgendamentosComponent implements OnInit, AfterViewInit {
       return false;
     }
 
+    const statusPermitidos = new Set(['REALIZADO', 'EFETUADO']);
+    if (!statusPermitidos.has(status)) {
+      return false;
+    }
+
     const dataAgendamento = new Date(agendamento.data);
     if (Number.isNaN(dataAgendamento.getTime())) {
       return false;
