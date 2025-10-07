@@ -26,13 +26,16 @@ public class JustificativaAusenciaService {
     private final JustificativaAusenciaRepository repository;
     private final AgendamentoRepository agendamentoRepository;
     private final MilitarRepository militarRepository;
+    private final AgendamentoService agendamentoService;
 
     public JustificativaAusenciaService(JustificativaAusenciaRepository repository,
                                         AgendamentoRepository agendamentoRepository,
-                                        MilitarRepository militarRepository) {
+                                        MilitarRepository militarRepository,
+                                        AgendamentoService agendamentoService) {
         this.repository = repository;
         this.agendamentoRepository = agendamentoRepository;
         this.militarRepository = militarRepository;
+        this.agendamentoService = agendamentoService;
     }
 
     @Transactional
@@ -104,6 +107,13 @@ public class JustificativaAusenciaService {
         justificativa.setDataResposta(LocalDateTime.now());
         justificativa.setAvaliadoPorPostoGrad(admin.getPostoGrad());
         justificativa.setAvaliadoPorNomeGuerra(admin.getNomeDeGuerra());
+
+        Agendamento agendamento = justificativa.getAgendamento();
+        if (agendamento != null) {
+            agendamento.setStatus("REAGENDADO");
+            agendamentoService.marcarHorarioComoIndisponivel(agendamento);
+            agendamentoRepository.save(agendamento);
+        }
 
         Militar militar = justificativa.getMilitar();
         militar.setUltimoAgendamento(LocalDate.now());

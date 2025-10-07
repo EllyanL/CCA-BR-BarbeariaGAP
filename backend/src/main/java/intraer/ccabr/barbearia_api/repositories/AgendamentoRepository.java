@@ -48,14 +48,14 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     List<Agendamento> findByStatus(String status);
 
 
-    @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram AND a.status IN ('AGENDADO', 'REALIZADO') ORDER BY a.data DESC")
+    @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram AND a.status IN ('AGENDADO', 'REALIZADO', 'REAGENDADO') ORDER BY a.data DESC")
     Optional<Agendamento> findUltimoAgendamentoBySaram(@Param("saram") String saram);
 
     @Query("""
             SELECT a FROM Agendamento a
             JOIN FETCH a.militar
             WHERE a.militar.id = :militarId
-              AND a.status IN ('AGENDADO', 'REALIZADO')
+              AND a.status IN ('AGENDADO', 'REALIZADO', 'REAGENDADO')
             ORDER BY a.data DESC
             """)
     Optional<Agendamento> findUltimoAgendamentoAtivoByMilitarId(@Param("militarId") Long militarId);
@@ -111,13 +111,13 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
                             @Param("diaSemana") String diaSemana,
                             @Param("categoria") String categoria);
 
-    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.data = :data AND a.status IN ('AGENDADO', 'REALIZADO')")
+    @Query("SELECT COUNT(a) FROM Agendamento a WHERE a.data = :data AND a.status IN ('AGENDADO', 'REALIZADO', 'REAGENDADO')")
     long countByData(@Param("data") LocalDate data);
 
-    @Query("SELECT a.categoria, COUNT(a) FROM Agendamento a WHERE a.data = :data AND a.status IN ('AGENDADO', 'REALIZADO') GROUP BY a.categoria")
+    @Query("SELECT a.categoria, COUNT(a) FROM Agendamento a WHERE a.data = :data AND a.status IN ('AGENDADO', 'REALIZADO', 'REAGENDADO') GROUP BY a.categoria")
     List<Object[]> countByCategoria(@Param("data") LocalDate data);
 
-    @Query("SELECT a.data, COUNT(a) FROM Agendamento a WHERE a.data >= :startDate AND a.status IN ('AGENDADO', 'REALIZADO') GROUP BY a.data ORDER BY a.data")
+    @Query("SELECT a.data, COUNT(a) FROM Agendamento a WHERE a.data >= :startDate AND a.status IN ('AGENDADO', 'REALIZADO', 'REAGENDADO') GROUP BY a.data ORDER BY a.data")
     List<Object[]> countByDataSince(@Param("startDate") LocalDate startDate);
 
     List<Agendamento> findTop5ByStatusOrderByDataDescHoraDesc(String status);
@@ -167,7 +167,7 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
             SELECT COUNT(a) > 0 FROM Agendamento a
             WHERE a.categoria = :categoria
               AND ((a.status = 'AGENDADO' AND a.data >= :dataAtual)
-                OR (a.status = 'REALIZADO' AND a.data <= :dataAtual))
+                OR (a.status IN ('REALIZADO', 'REAGENDADO') AND a.data <= :dataAtual))
               AND (a.hora < :inicio OR a.hora > :fim)
             """)
     boolean existsAtivoForaJanela(@Param("inicio") LocalTime inicio,
