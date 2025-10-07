@@ -69,6 +69,10 @@
   color: #4caf50;
 }
 
+.status-reagendado {
+  color: #0288d1;
+}
+
 .status-cancelado {
   color: #f44336;
 }
