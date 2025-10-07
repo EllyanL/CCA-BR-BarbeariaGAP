@@ -69,10 +69,17 @@
               <div class="legenda-item">
                 <div class="circulo accent"></div><span>Agendado</span>
               </div>
+              <div class="legenda-item">
+                <div class="circulo realizado"></div><span>Realizado</span>
+              </div>
+              <div class="legenda-item">
+                <div class="circulo reagendado"></div><span>Reagendado</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
       <!-- Tabela de horários -->
       <div *ngIf="saramUsuario">
@@ -98,7 +105,9 @@
                             [ngClass]="{
                               'botao-hora-disponivel': getStatus(dia, horario) === 'DISPONIVEL',
                               'botao-hora-indisponivel': getStatus(dia, horario) === 'INDISPONIVEL',
-                              'botao-hora-agendado': getStatus(dia, horario) === 'AGENDADO'
+                              'botao-hora-agendado': getStatus(dia, horario) === 'AGENDADO',
+                              'botao-hora-realizado': getStatus(dia, horario) === 'REALIZADO',
+                              'botao-hora-reagendado': getStatus(dia, horario) === 'REAGENDADO'
                             }">
                       <ng-container [ngSwitch]="getStatus(dia, horario)">
                         <ng-container *ngSwitchCase="'AGENDADO'">
@@ -108,6 +117,18 @@
                           <ng-template #adminAgendadoFallback>
                             {{ formatarStatus('AGENDADO') }}
                           </ng-template>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'REAGENDADO'">
+                          <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento; else adminReagendadoFallback">
+                            {{ formatarMilitar(agendamento) }}
+                            <span class="status-chip">{{ formatarStatus('REAGENDADO') }}</span>
+                          </ng-container>
+                          <ng-template #adminReagendadoFallback>
+                            {{ formatarStatus('REAGENDADO') }}
+                          </ng-template>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'REALIZADO'">
+                          {{ formatarStatus('REALIZADO') }}
                         </ng-container>
                         <ng-container *ngSwitchDefault>
                           <b>{{ horario }}</b>
@@ -129,10 +150,24 @@
             <ng-template #visualizacaoUsuario>
               <ng-container *ngIf="getAgendamentoParaDiaHora(dia, horario) as agendamento; else usuarioDisponibilidade">
                 <button mat-raised-button
-                        class="botao-hora-agendado"
-                        [disabled]="!isAgendamentoDoMilitarLogado(agendamento)"
-                        (click)="handleClick(agendamento)">
-                  {{ formatarMilitar(agendamento) }}
+                        [ngClass]="{
+                          'botao-hora-agendado': getStatus(dia, horario) === 'AGENDADO' || getStatus(dia, horario) === 'REAGENDADO',
+                          'botao-hora-realizado': getStatus(dia, horario) === 'REALIZADO'
+                        }"
+                        [disabled]="getStatus(dia, horario) === 'REALIZADO' || !isAgendamentoDoMilitarLogado(agendamento)"
+                        (click)="getStatus(dia, horario) === 'REALIZADO' ? null : handleClick(agendamento)">
+                  <ng-container [ngSwitch]="getStatus(dia, horario)">
+                    <ng-container *ngSwitchCase="'REALIZADO'">
+                      {{ formatarStatus('REALIZADO') }}
+                    </ng-container>
+                    <ng-container *ngSwitchCase="'REAGENDADO'">
+                      {{ formatarMilitar(agendamento) }}
+                      <span class="status-chip">{{ formatarStatus('REAGENDADO') }}</span>
+                    </ng-container>
+                    <ng-container *ngSwitchDefault>
+                      {{ formatarMilitar(agendamento) }}
+                    </ng-container>
+                  </ng-container>
                 </button>
               </ng-container>
 
@@ -147,6 +182,12 @@
                 <span *ngIf="getStatus(dia, horario) === 'INDISPONIVEL'"
                       class="horario-indisponivel">
                   Indisponível
+                </span>
+                <span *ngIf="getStatus(dia, horario) === 'REALIZADO'" class="horario-realizado">
+                  Realizado
+                </span>
+                <span *ngIf="getStatus(dia, horario) === 'REAGENDADO'" class="horario-reagendado">
+                  Reagendado
                 </span>
               </ng-template>
 

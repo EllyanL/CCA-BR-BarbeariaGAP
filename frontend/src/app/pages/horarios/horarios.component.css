@@ -163,6 +163,14 @@ mat-icon {
   background-color: #4caf50; /* Agendado */
 }
 
+.circulo.realizado {
+  background-color: #9e9e9e;
+}
+
+.circulo.reagendado {
+  background-color: #ff9800;
+}
+
 /* === Categoria Info === */
 .categoria-info {
   margin-bottom: 1rem;
@@ -174,7 +182,9 @@ mat-icon {
 .horarios-card .botao-hora-disponivel,
 .horarios-card .botao-hora-indisponivel,
 .horarios-card .botao-hora-adicionar,
-.horarios-card .botao-hora-agendado {
+.horarios-card .botao-hora-agendado,
+.horarios-card .botao-hora-realizado,
+.horarios-card .botao-hora-reagendado {
   width: 100%;
   max-width: 150px;
   margin: 0 auto;
@@ -206,6 +216,18 @@ mat-icon {
 .botao-hora-agendado {
   background-color: #4caf50 !important;
   color: white !important;
+  cursor: not-allowed;
+}
+
+.botao-hora-realizado {
+  background-color: #9e9e9e !important;
+  color: #ffffff !important;
+  cursor: not-allowed;
+}
+
+.botao-hora-reagendado {
+  background-color: #ff9800 !important;
+  color: #ffffff !important;
   cursor: not-allowed;
 }
 
@@ -308,6 +330,14 @@ mat-icon {
   background-color: #ffab40;
 }
 
+.realizado {
+  background-color: #9e9e9e;
+}
+
+.reagendado {
+  background-color: #ff9800;
+}
+
 
 /* === Painel de Informações === */
 .info-panel {
@@ -329,4 +359,30 @@ mat-icon {
 .tabela-footer-padding {
   height: 6rem;
   background-color:#ffff !important;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.25);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: inherit;
+  text-transform: capitalize;
+}
+
+.horario-realizado {
+  display: inline-block;
+  color: #616161;
+  font-weight: 600;
+}
+
+.horario-reagendado {
+  display: inline-block;
+  color: #ff9800;
+  font-weight: 600;
 }

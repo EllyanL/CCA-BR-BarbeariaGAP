@@ -187,6 +187,24 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
       this.cdr.markForCheck?.();
     }
 
+    private normalizarStatusSlot(status?: string): SlotHorario['status'] {
+      const upper = (status ?? '').toUpperCase();
+      switch (upper) {
+        case 'DISPONIVEL':
+        case 'INDISPONIVEL':
+        case 'AGENDADO':
+        case 'REALIZADO':
+        case 'REAGENDADO':
+          return upper as SlotHorario['status'];
+        default:
+          return 'AGENDADO';
+      }
+    }
+
+    private statusPossuiAgendamento(status?: SlotHorario['status']): boolean {
+      return status === 'AGENDADO' || status === 'REALIZADO' || status === 'REAGENDADO';
+    }
+
     private sincronizarSlotsComAgendamentos(): void {
       const agendamentosAtivos = (this.agendamentos ?? []).filter(ag => {
         if (!ag?.diaSemana || !ag?.hora) {
@@ -214,14 +232,15 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
         const slotsDia = atualizado[diaKey] ?? [];
         const indice = slotsDia.findIndex(slot => normalizeHora(slot.horario) === hora);
         const usuarioId = agendamento.militar?.id ?? (indice >= 0 ? slotsDia[indice]?.usuarioId ?? null : null);
+        const statusSlot = this.normalizarStatusSlot(agendamento.status);
 
         if (indice >= 0) {
           const slotAtual = slotsDia[indice];
-          if (slotAtual.status !== 'AGENDADO' || slotAtual.usuarioId !== usuarioId) {
+          if (slotAtual.status !== statusSlot || slotAtual.usuarioId !== usuarioId) {
             const novosSlots = [...slotsDia];
             novosSlots[indice] = {
               ...slotAtual,
-              status: 'AGENDADO',
+              status: statusSlot,
               usuarioId
             };
             atualizado[diaKey] = novosSlots;
@@ -230,7 +249,7 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
         } else {
           const novoSlot: SlotHorario = {
             horario: hora,
-            status: 'AGENDADO',
+            status: statusSlot,
             usuarioId
           };
           atualizado[diaKey] = [...slotsDia, novoSlot];
@@ -416,13 +435,19 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
         this.abrirDialogoAgendamento(dia, horario);
       } else if (status === 'INDISPONIVEL') {
         this.snackBar.open(
-          'Horário indisponivel; provavelmente já reservado ou bloqueado. Escolha outro.',
+          'Horário indisponível; provavelmente já reservado ou bloqueado. Escolha outro.',
           'Ciente',
           { duration: SNACKBAR_DURATION }
         );
-      } else if (status === 'AGENDADO') {
+      } else if (status === 'AGENDADO' || status === 'REAGENDADO') {
         this.snackBar.open(
           'Você já possui agendamento neste horário. Desmarque o atual para escolher outro.',
+          'Ciente',
+          { duration: SNACKBAR_DURATION }
+        );
+      } else if (status === 'REALIZADO') {
+        this.snackBar.open(
+          'Este atendimento já foi realizado. Escolha outro horário disponível.',
           'Ciente',
           { duration: SNACKBAR_DURATION }
         );
@@ -792,7 +817,7 @@ const ANTECEDENCIA_CANCELAMENTO_MINUTOS = 15;
       return;
     }
 
-    if (slot.status === 'AGENDADO') {
+    if (this.statusPossuiAgendamento(slot.status)) {
       const agendamento = this.getAgendamentoParaDiaHora(dia, hhmm);
       if (agendamento) {
         this.abrirModalAgendamento(agendamento);
