@@ -6,7 +6,6 @@ import intraer.ccabr.barbearia_api.models.JustificativaAusencia;
 import intraer.ccabr.barbearia_api.models.Militar;
 import intraer.ccabr.barbearia_api.repositories.AgendamentoRepository;
 import intraer.ccabr.barbearia_api.repositories.JustificativaAusenciaRepository;
-import intraer.ccabr.barbearia_api.repositories.MilitarRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,16 +24,13 @@ public class JustificativaAusenciaService {
 
     private final JustificativaAusenciaRepository repository;
     private final AgendamentoRepository agendamentoRepository;
-    private final MilitarRepository militarRepository;
     private final AgendamentoService agendamentoService;
 
     public JustificativaAusenciaService(JustificativaAusenciaRepository repository,
                                         AgendamentoRepository agendamentoRepository,
-                                        MilitarRepository militarRepository,
                                         AgendamentoService agendamentoService) {
         this.repository = repository;
         this.agendamentoRepository = agendamentoRepository;
-        this.militarRepository = militarRepository;
         this.agendamentoService = agendamentoService;
     }
 
@@ -116,8 +112,7 @@ public class JustificativaAusenciaService {
         }
 
         Militar militar = justificativa.getMilitar();
-        militar.setUltimoAgendamento(null);
-        militarRepository.save(militar);
+        agendamentoService.recalcularUltimoAgendamentoDoMilitar(militar);
 
         return repository.save(justificativa);
     }
