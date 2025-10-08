@@ -36,10 +36,18 @@
 .lista {
   flex: 1;
   min-width: 320px;
-  max-width: 420px;
+  max-width: 520px;
   border-right: 1px solid #e0e0e0;
   overflow-y: auto;
   padding-right: 8px;
+}
+
+.lista .mat-list-text,
+.lista a.mat-list-item .mat-line {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
 }
 
 .lista a.mat-list-item {
