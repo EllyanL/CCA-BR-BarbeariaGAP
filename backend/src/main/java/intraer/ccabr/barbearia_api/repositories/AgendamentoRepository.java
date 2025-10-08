@@ -51,14 +51,11 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
     @Query("SELECT a FROM Agendamento a WHERE a.militar.saram = :saram AND a.status IN ('AGENDADO', 'REALIZADO') ORDER BY a.data DESC")
     Optional<Agendamento> findUltimoAgendamentoBySaram(@Param("saram") String saram);
 
-    @Query("""
-            SELECT a FROM Agendamento a
-            JOIN FETCH a.militar
-            WHERE a.militar.id = :militarId
-              AND a.status IN ('AGENDADO', 'REALIZADO')
-            ORDER BY a.data DESC
-            """)
-    Optional<Agendamento> findUltimoAgendamentoAtivoByMilitarId(@Param("militarId") Long militarId);
+    @EntityGraph(attributePaths = "militar")
+    Optional<Agendamento> findFirstByMilitarIdAndStatusInOrderByDataDescHoraDescIdDesc(
+            Long militarId,
+            List<String> status
+    );
 
     boolean existsByMilitarSaramAndDataGreaterThanEqual(String saram, LocalDate data);
 
