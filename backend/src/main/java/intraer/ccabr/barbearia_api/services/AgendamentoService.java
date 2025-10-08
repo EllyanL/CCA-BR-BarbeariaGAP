@@ -49,6 +49,8 @@ public class AgendamentoService {
 
     private final MilitarRepository militarRepository;
 
+    private static final List<String> STATUS_ATIVOS_PARA_BLOQUEIO = List.of("AGENDADO", "REALIZADO");
+
     public AgendamentoService(AgendamentoRepository agendamentoRepository,
                               HorarioRepository horarioRepository,
                               ConfiguracaoAgendamentoService configuracaoAgendamentoService,
@@ -76,7 +78,8 @@ public class AgendamentoService {
             return;
         }
 
-        LocalDate ultimaData = agendamentoRepository.findUltimoAgendamentoAtivoByMilitarId(militar.getId())
+        LocalDate ultimaData = agendamentoRepository
+            .findFirstByMilitarIdAndStatusInOrderByDataDescHoraDescIdDesc(militar.getId(), STATUS_ATIVOS_PARA_BLOQUEIO)
             .map(Agendamento::getData)
             .orElse(null);
 
@@ -84,6 +87,10 @@ public class AgendamentoService {
             militar.setUltimoAgendamento(ultimaData);
             militarRepository.save(militar);
         }
+    }
+
+    public void recalcularUltimoAgendamentoDoMilitar(Militar militar) {
+        atualizarUltimoAgendamentoDoMilitar(militar);
     }
 
     @Transactional
