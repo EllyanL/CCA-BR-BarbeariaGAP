@@ -186,10 +186,16 @@ mat-icon {
 .horarios-card .botao-hora-realizado,
 .horarios-card .botao-hora-reagendado {
   width: 100%;
-  max-width: 150px;
+  max-width: 190px;
+  min-height: 52px;
   margin: 0 auto;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
 }
 
 .botao-hora-disponivel {
@@ -238,6 +244,11 @@ mat-icon {
   background-color: #e0e0e0;
   border-radius: 8px;
   margin-left: 5px;
+}
+
+.horarios-botao-container {
+  display: flex;
+  justify-content: center;
 }
 
 .horarios-botao-container mat-icon-button:hover {

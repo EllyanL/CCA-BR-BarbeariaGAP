@@ -34,20 +34,33 @@
 }
 
 .lista {
-  flex: 1;
+  flex: 1 1 360px;
   min-width: 320px;
-  max-width: 420px;
   border-right: 1px solid #e0e0e0;
   overflow-y: auto;
   padding-right: 8px;
 }
 
-.lista a.mat-list-item {
+.lista .mat-mdc-list-item {
   border-radius: 8px;
   margin-bottom: 8px;
+  height: auto;
+  min-height: 72px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  align-items: flex-start;
 }
 
-.lista a.mat-list-item.selecionado {
+.lista .mat-mdc-list-item .mdc-list-item__primary-text,
+.lista .mat-mdc-list-item .mat-line {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: break-word;
+}
+
+.lista a.mat-list-item.selecionado,
+.lista .mat-mdc-list-item.selecionado {
   background: rgba(25, 118, 210, 0.12);
 }
 
