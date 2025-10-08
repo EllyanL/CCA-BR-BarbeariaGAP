@@ -86,6 +86,10 @@ public class AgendamentoService {
         }
     }
 
+    public void recalcularUltimoAgendamentoDoMilitar(Militar militar) {
+        atualizarUltimoAgendamentoDoMilitar(militar);
+    }
+
     @Transactional
     public Agendamento saveAgendamento(Agendamento agendamento) {
         Militar militar = agendamento.getMilitar();
