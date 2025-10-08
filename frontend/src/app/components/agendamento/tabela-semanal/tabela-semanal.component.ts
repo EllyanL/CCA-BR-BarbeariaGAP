@@ -983,7 +983,7 @@ export class TabelaSemanalComponent implements OnInit, OnDestroy, OnChanges {
       return 'Agendado';
     }
 
-    return partes.join(' + ');
+    return partes.join(' ');
   }
 
 
